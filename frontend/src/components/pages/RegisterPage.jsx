@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/Auth.css';
 
@@ -8,7 +8,12 @@ function RegisterPage() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
+  const inputRef = useRef(null);
   const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    inputRef.current?.focus(); // ✅ 여기
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,7 +23,7 @@ function RegisterPage() {
     }
 
     try {
-      const response = await fetch(`api/auth/signup`, {
+      const response = await fetch(`/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,6 +55,7 @@ function RegisterPage() {
             value={id}
             onChange={(e) => setId(e.target.value)}
             required
+            autoFocus
           />
         </div>
         <div className="input-group">

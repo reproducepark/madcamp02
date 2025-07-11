@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../../styles/Auth.css';
 
@@ -7,12 +7,17 @@ function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
+  const inputRef = useRef(null);
   const API_URL = import.meta.env.VITE_API_URL;
+
+  useEffect(() => {
+    inputRef.current?.focus(); // ✅ 여기
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`api/auth/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,6 +49,7 @@ function LoginPage() {
             value={id}
             onChange={(e) => setId(e.target.value)}
             required
+            autoFocus
           />
         </div>
         <div className="input-group">
