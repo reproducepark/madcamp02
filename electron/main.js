@@ -28,9 +28,9 @@ function createMainWindow() {
         console.error("Failed to load URL:", err);
     });
 
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
+    // if (isDev) {
+    //     mainWindow.webContents.openDevTools();
+    // }
 }
 
 app.on("ready", createMainWindow);
