@@ -1,24 +1,18 @@
 
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Auth.css';
+import '../../styles/Auth.css';
 
-function RegisterPage() {
+function LoginPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const navigate = useNavigate();
   const API_URL = import.meta.env.VITE_API_URL;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      alert('Passwords do not match!');
-      return;
-    }
-
     try {
-      const response = await fetch(`api/auth/signup`, {
+      const response = await fetch(`api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,20 +21,20 @@ function RegisterPage() {
       });
       const data = await response.json();
       if (response.ok) {
-        alert('Registration successful!');
-        navigate('/login');
+        localStorage.setItem('token', data.token);
+        navigate('/main'); // Redirect to a protected route
       } else {
         alert(data.message);
       }
     } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      console.error('Login failed:', error);
+      alert('Login failed. Please try again.');
     }
   };
 
   return (
     <div className="auth-form">
-      <h1>회원가입</h1>
+      <h1>로그인</h1>
       <form onSubmit={handleSubmit}>
         <div className="input-group">
           <label htmlFor="username">아이디</label>
@@ -62,23 +56,13 @@ function RegisterPage() {
             required
           />
         </div>
-        <div className="input-group">
-          <label htmlFor="confirm-password">비밀번호 확인</label>
-          <input
-            type="password"
-            id="confirm-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
-        <button type="submit">회원가입</button>
+        <button type="submit">로그인</button>
       </form>
       <p className="switch-auth">
-        이미 계정이 있으신가요? <Link to="/login">로그인</Link>
+        계정이 없으신가요? <Link to="/register">회원가입</Link>
       </p>
     </div>
   );
 }
 
-export default RegisterPage;
+export default LoginPage;

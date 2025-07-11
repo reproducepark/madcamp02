@@ -1,9 +1,9 @@
 
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
-import TodoListPage from './pages/TodoListPage';
+import LoginPage from './components/pages/LoginPage';
+import RegisterPage from './components/pages/RegisterPage';
+import TodoListPage from './components/pages/TodoListPage';
 import './App.css';
 
 function App() {

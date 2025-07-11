@@ -1,5 +1,5 @@
 import React from 'react';
-import './GoalSection.css';
+import '../../styles/GoalSection.css';
 
 function GoalSection({ title, todos = [], onAddTodo, onDeleteTodo }) {
   return (

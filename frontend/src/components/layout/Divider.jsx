@@ -1,5 +1,5 @@
 import React from 'react';
-import './Divider.css';
+import '../../styles/Divider.css';
 
 function Divider() {
   return <div className="divider" />;

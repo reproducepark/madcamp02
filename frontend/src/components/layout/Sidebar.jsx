@@ -1,6 +1,6 @@
 import React from 'react';
 import SidebarButton from './SidebarButton';
-import './Sidebar.css';
+import '../../styles/Sidebar.css';
 
 function Sidebar() {
   const menuItems = [
