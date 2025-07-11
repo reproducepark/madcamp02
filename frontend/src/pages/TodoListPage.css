@@ -1,0 +1,128 @@
+/* 전체 레이아웃 */
+.container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* 사이드바 */
+  .sidebar {
+    width: 128px; /* w-32 (128px) */
+    background-color: #d1d5db; /* bg-gray-300 */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: 48px; /* py-12 (48px) */
+    padding-bottom: 48px; /* py-12 (48px) */
+    padding-left: 16px; /* pl-4 (16px) */
+  }
+  
+  .sidebar-spacer {
+    margin-bottom: 64px; /* mb-16 (64px) */
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 48px; /* gap-12 (48px) */
+    text-align: left;
+    font-size: 1.125rem; /* text-lg (18px) */
+  }
+  
+  /* 본문 */
+  .main-content {
+    flex: 1; /* flex-1 */
+    display: flex;
+    justify-content: flex-end; /* justify-end */
+    align-items: flex-start; /* items-start */
+    padding-right: 64px; /* pr-16 (64px) */
+    padding-top: 48px; /* pt-12 (48px) */
+  }
+  
+  .todo-card {
+    width: 400px; /* w-[400px] */
+    background-color: #ffffff; /* bg-white */
+    padding: 16px; /* p-4 */
+    border-radius: 4px; /* rounded */
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* 날짜 */
+  .todo-date {
+    text-align: center;
+    font-size: 1.125rem; /* text-lg (18px) */
+    margin-bottom: 8px; /* mb-2 */
+  }
+  
+  /* 구분선 */
+  .divider {
+    border-top: 1px solid #9ca3af; /* border-t border-gray-400 */
+    margin-bottom: 8px; /* mb-2 */
+  }
+  
+  /* 목표 섹션 */
+  .goal-section {
+    margin-bottom: 8px; /* mb-2 */
+  }
+  
+  .goal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px; /* mb-1 */
+  }
+  
+  .goal-title {
+    font-weight: 600; /* font-semibold */
+  }
+  
+  .add-button {
+    width: 24px; /* w-6 */
+    height: 24px; /* h-6 */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #e5e7eb; /* bg-gray-200 */
+    border-radius: 9999px; /* rounded-full */
+    border: none;
+    cursor: pointer;
+  }
+  
+  .todo-list {
+    margin-left: 16px; /* ml-4 */
+    list-style: none; /* 기본 리스트 스타일 제거 */
+    padding: 0; /* 기본 패딩 제거 */
+  }
+  
+  .todo-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px; /* mb-1 */
+  }
+  
+  .todo-checkbox {
+    margin-right: 8px; /* mr-2 */
+  }
+  
+  /* 메모 */
+  .memo {
+    margin-bottom: 16px; /* mb-4 */
+  }
+  
+  /* 버튼 영역 */
+  .button-group {
+    display: flex;
+    gap: 8px; /* gap-2 */
+  }
+  
+  .action-button {
+    flex: 1; /* flex-1 */
+    background-color: #d1d5db; /* bg-gray-300 */
+    padding-top: 16px; /* py-4 */
+    padding-bottom: 16px; /* py-4 */
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px; /* 적당한 라운딩 추가 */
+  }
