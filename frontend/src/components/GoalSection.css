@@ -1,0 +1,75 @@
+/* 목표 섹션 */
+.goal-section {
+  margin-bottom: 8px; /* mb-2 */
+}
+
+.goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px; /* mb-1 */
+}
+
+.goal-title {
+  font-weight: 600; /* font-semibold */
+}
+
+.add-button {
+  width: 24px; /* w-6 */
+  height: 24px; /* h-6 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e5e7eb; /* bg-gray-200 */
+  border-radius: 9999px; /* rounded-full */
+  border: none;
+  cursor: pointer;
+}
+
+.todo-list {
+  margin-left: 16px; /* ml-4 */
+  list-style: none; /* 기본 리스트 스타일 제거 */
+  padding: 0; /* 기본 패딩 제거 */
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px; /* mb-1 */
+  position: relative;
+  padding: 4px 0;
+}
+
+.todo-item:hover .delete-button {
+  opacity: 1;
+  visibility: visible;
+}
+
+.todo-checkbox {
+  margin-right: 8px; /* mr-2 */
+}
+
+.todo-text {
+  flex: 1;
+  margin-right: 8px;
+}
+
+.delete-button {
+  opacity: 0;
+  visibility: hidden;
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 3px;
+  transition: all 0.2s ease;
+  line-height: 1;
+}
+
+.delete-button:hover {
+  background-color: #fee2e2;
+  color: #dc2626;
+} 

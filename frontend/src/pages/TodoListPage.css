@@ -1,51 +1,84 @@
+/* 전체 앱 래퍼 */
+.app-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 상단 메뉴 */
+.top-menu {
+  height: 60px;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.top-menu-left .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #374151;
+  margin: 0;
+}
+
+.top-menu-right {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.icon-button:hover {
+  background-color: #e5e7eb;
+  transform: scale(1.05);
+}
+
+.icon {
+  font-size: 1.25rem;
+}
+
 /* 전체 레이아웃 */
 .container {
     display: flex;
-    height: 100vh;
+    flex: 1; /* 남은 공간 모두 차지 */
+    margin: 5px;
+    margin-left: 20px;
   }
   
-  /* 사이드바 */
-  .sidebar {
-    width: 128px; /* w-32 (128px) */
-    background-color: #d1d5db; /* bg-gray-300 */
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding-top: 48px; /* py-12 (48px) */
-    padding-bottom: 48px; /* py-12 (48px) */
-    padding-left: 16px; /* pl-4 (16px) */
-  }
-  
-  .sidebar-spacer {
-    margin-bottom: 64px; /* mb-16 (64px) */
-  }
-  
-  .sidebar-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 48px; /* gap-12 (48px) */
-    text-align: left;
-    font-size: 1.125rem; /* text-lg (18px) */
-  }
+
   
   /* 본문 */
   .main-content {
     flex: 1; /* flex-1 */
     display: flex;
     justify-content: flex-end; /* justify-end */
-    align-items: flex-start; /* items-start */
-    padding-right: 64px; /* pr-16 (64px) */
-    padding-top: 48px; /* pt-12 (48px) */
+    align-items: center; /* items-center - 높이 중앙 정렬 */
   }
   
   .todo-card {
-    width: 400px; /* w-[400px] */
+    width: 300px; /* w-[400px] */
+    height: 80vh; /* 뷰포트 높이의 80%로 제한 */
     background-color: #ffffff; /* bg-white */
     padding: 16px; /* p-4 */
     border-radius: 4px; /* rounded */
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); /* shadow */
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* 내부 스크롤을 위해 필요 */
   }
   
   /* 날짜 */
@@ -55,56 +88,41 @@
     margin-bottom: 8px; /* mb-2 */
   }
   
-  /* 구분선 */
-  .divider {
-    border-top: 1px solid #9ca3af; /* border-t border-gray-400 */
-    margin-bottom: 8px; /* mb-2 */
-  }
+
   
-  /* 목표 섹션 */
-  .goal-section {
-    margin-bottom: 8px; /* mb-2 */
+  /* 스크롤 가능한 콘텐츠 영역 */
+  .todo-content {
+    flex: 1; /* 남은 공간 모두 차지 */
+    overflow-y: auto; /* 세로 스크롤 활성화 */
+    padding-right: 4px; /* 스크롤바 공간 */
   }
-  
-  .goal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px; /* mb-1 */
+
+  /* 스크롤바 스타일링 */
+  .todo-content::-webkit-scrollbar {
+    width: 6px;
   }
-  
-  .goal-title {
-    font-weight: 600; /* font-semibold */
+
+  .todo-content::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
   }
-  
-  .add-button {
-    width: 24px; /* w-6 */
-    height: 24px; /* h-6 */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #e5e7eb; /* bg-gray-200 */
-    border-radius: 9999px; /* rounded-full */
-    border: none;
-    cursor: pointer;
+
+  .todo-content::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
   }
-  
-  .todo-list {
-    margin-left: 16px; /* ml-4 */
-    list-style: none; /* 기본 리스트 스타일 제거 */
-    padding: 0; /* 기본 패딩 제거 */
+
+  .todo-content::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
   }
-  
-  .todo-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 4px; /* mb-1 */
+
+  /* 하단 고정 영역 */
+  .todo-footer {
+    margin-top: 16px; /* 상단 여백 */
+    border-top: 1px solid #e5e7eb; /* 상단 구분선 */
+    padding-top: 16px; /* 상단 패딩 */
   }
-  
-  .todo-checkbox {
-    margin-right: 8px; /* mr-2 */
-  }
-  
+
   /* 메모 */
   .memo {
     margin-bottom: 16px; /* mb-4 */

@@ -1,0 +1,30 @@
+/* 사이드바 */
+.sidebar {
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 가로 중앙 정렬 */
+  justify-content: center; /* 세로 중앙 정렬 */
+  height: 100%; /* 부모 컨테이너의 높이만큼 차지 */
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 40px; /* 버튼 간격 */
+}
+
+.sidebar-button {
+  background: none;
+  border: none;
+  font-weight: bold;
+  font-size: 1.125rem; /* text-lg (18px) */
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.sidebar-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+} 
