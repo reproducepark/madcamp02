@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 function Sidebar() {
   const navigate = useNavigate();
   const menuItems = [
-    { id: 'teams', label: '팀즈', onClick: () => navigate('/teams') },
     { id: 'todo', label: '투두리스트', onClick: () => navigate('/todo') },
     { id: 'scrum', label: '스크럼', onClick: () => navigate('/scrum') },
     { id: 'stretching', label: '스트레칭\n및\n타이머', onClick: () => navigate('/stretching') }

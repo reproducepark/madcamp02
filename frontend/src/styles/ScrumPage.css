@@ -1,121 +1,161 @@
 /* 전체 레이아웃 */
-.scrum-container {
-  min-height: 100vh;
+.todo-container {
+  min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
-  background: #f3f3f3;
 }
-.scrum-body {
+.todo-body {
   display: flex;
-  flex: 1;
+  height: calc(100vh - 60px);
+  margin: 5px;
+  margin-left: 20px;
 }
-.scrum-main {
+.todo-main {
   flex: 1;
   display: flex;
   flex-direction: row;
-  padding: 32px;
   gap: 24px;
   position: relative;
 }
 
+/* 왼쪽 영역 (2:1 비율의 2) */
+.todo-left-section {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 시간표 섹션 (상단 절반) */
+.todo-schedule-section {
+  flex: 1;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.todo-schedule-title {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+  color: #374151;
+}
+
+.todo-schedule-content {
+  flex: 1;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 1.1rem;
+}
+
 /* 헤더 및 일정표 */
-.scrum-header {
+.todo-header {
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 20px;
   margin-bottom: 16px;
 }
-.scrum-title {
+.todo-title {
   font-weight: bold;
   font-size: 1.2rem;
   margin-bottom: 12px;
 }
-.scrum-schedule-wrapper {
+.todo-schedule-wrapper {
   overflow-x: auto;
 }
-.scrum-schedule-table {
+.todo-schedule-table {
   width: 100%;
   text-align: center;
   margin-bottom: 8px;
 }
-.scrum-schedule-table th {
+.todo-schedule-table th {
   color: #888;
   font-size: 0.95rem;
   padding: 0 8px;
 }
-.scrum-bar-green {
+.todo-bar-green {
   background: #b9fbc0;
   border-radius: 8px;
   padding: 2px 16px;
   display: inline-block;
 }
-.scrum-bar-red {
+.todo-bar-red {
   background: #ffb3b3;
   border-radius: 8px;
   padding: 2px 32px;
   display: inline-block;
 }
-.scrum-bar-gray {
+.todo-bar-gray {
   background: #e0e0e0;
   border-radius: 8px;
   padding: 2px 64px;
   display: inline-block;
 }
-.scrum-link-hint {
+.todo-link-hint {
   font-size: 0.8rem;
   color: #888;
 }
 
-/* 우측 목표 및 날짜 */
-.scrum-goal-aside {
-  width: 260px;
+/* 우측 목표 및 날짜 (2:1 비율의 1) */
+.todo-goal-aside {
+  flex: 1;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 18px;
-  margin-left: auto;
-  height: fit-content;
+  display: flex;
+  flex-direction: column;
 }
-.scrum-date {
+.todo-date {
   text-align: center;
   font-weight: 600;
   border-bottom: 1px solid #eee;
   padding-bottom: 8px;
   margin-bottom: 10px;
 }
-.scrum-goal-list {
+.todo-goal-list {
   list-style: none;
   padding: 0;
   margin-bottom: 10px;
+  flex: 1;
+  overflow-y: auto;
 }
-.scrum-goal-list li {
+.todo-goal-list li {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 4px;
   font-size: 0.98rem;
 }
-.scrum-goal-dot {
+.todo-goal-dot {
   width: 12px;
   height: 12px;
   border: 1.5px solid #bbb;
   border-radius: 50%;
   display: inline-block;
 }
-.scrum-goal-input-group {
+.todo-goal-input-group {
   display: flex;
   gap: 6px;
   margin-top: 8px;
 }
-.scrum-goal-input {
+.todo-goal-input {
   flex: 1;
   border: 1px solid #ccc;
   border-radius: 6px;
   padding: 4px 8px;
   font-size: 0.92rem;
 }
-.scrum-goal-btn {
+.todo-goal-btn {
   background: #eee;
   border: none;
   border-radius: 6px;
@@ -124,32 +164,32 @@
   cursor: pointer;
 }
 
-/* 공지/메모/스크럼 생성 */
-.scrum-memo-section {
+/* 메모장 섹션 (하단 절반) */
+.todo-memo-section {
+  flex: 1;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 20px;
-  margin-top: 0;
-  flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
-.scrum-memo-title {
+.todo-memo-title {
   font-weight: 600;
   margin-bottom: 10px;
 }
-.scrum-memo-content {
+.todo-memo-content {
   background: #f5f5f5;
   border-radius: 8px;
   min-height: 60px;
   padding: 16px;
   margin-bottom: 10px;
 }
-.scrum-memo-btn-group {
+.todo-memo-btn-group {
   display: flex;
   justify-content: flex-end;
 }
-.scrum-memo-btn {
+.todo-memo-btn {
   background: #eee;
   border: none;
   border-radius: 6px;

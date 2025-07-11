@@ -5,6 +5,7 @@ import LoginPage from './components/pages/LoginPage';
 import RegisterPage from './components/pages/RegisterPage';
 import TodoListPage from './components/pages/TodoListPage';
 import ScrumPage from './components/pages/ScrumPage';
+import StretchingPage from './components/pages/StretchingPage';
 import './App.css';
 
 function App() {
@@ -15,7 +16,8 @@ function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/main" element={<TodoListPage />} />
         <Route path="/scrum" element={<ScrumPage />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="/stretching" element={<StretchingPage />} />
+        <Route path="*" element={<Navigate to="/todo" />} />
       </Routes>
     </Router>
   );

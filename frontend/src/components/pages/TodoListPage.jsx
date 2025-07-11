@@ -122,6 +122,14 @@ function TodoListPage() {
         <Sidebar />
       {/* 본문 */}
       <main className="main-content">
+        {/* 중앙 컴포넌트 */}
+        <div className="todo-center-card">
+          <div className="todo-center-title">중앙 영역</div>
+          <div className="todo-center-content">
+            중앙에 들어갈 컴포넌트입니다
+          </div>
+        </div>
+        
         <div className="todo-card">
           {/* 날짜 */}
           <div className="todo-date">2025. 1. 1.</div>
