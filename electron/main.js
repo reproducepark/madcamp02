@@ -27,6 +27,11 @@ function createMainWindow() {
     mainWindow.loadURL(startURL).catch((err) => {
         console.error("Failed to load URL:", err);
     });
+    
+    mainWindow.once('ready-to-show', () => {
+        mainWindow.show();
+        mainWindow.focus(); // 👈 창을 강제로 포커스
+    });
 
     if (isDev) {
         mainWindow.webContents.openDevTools();

@@ -12,8 +12,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/todo" element={<TodoListPage />} />
-        <Route path="*" element={<Navigate to="/todo" />} />
+        <Route path="/main" element={<TodoListPage />} />
+        <Route path="*" element={<Navigate to="/login" />} /> {/* 기본 경로를 /login으로 변경 */}
       </Routes>
     </Router>
   );
