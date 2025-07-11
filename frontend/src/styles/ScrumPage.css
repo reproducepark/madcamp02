@@ -1,0 +1,159 @@
+/* 전체 레이아웃 */
+.scrum-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f3f3f3;
+}
+.scrum-body {
+  display: flex;
+  flex: 1;
+}
+.scrum-main {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  padding: 32px;
+  gap: 24px;
+  position: relative;
+}
+
+/* 헤더 및 일정표 */
+.scrum-header {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.scrum-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+}
+.scrum-schedule-wrapper {
+  overflow-x: auto;
+}
+.scrum-schedule-table {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.scrum-schedule-table th {
+  color: #888;
+  font-size: 0.95rem;
+  padding: 0 8px;
+}
+.scrum-bar-green {
+  background: #b9fbc0;
+  border-radius: 8px;
+  padding: 2px 16px;
+  display: inline-block;
+}
+.scrum-bar-red {
+  background: #ffb3b3;
+  border-radius: 8px;
+  padding: 2px 32px;
+  display: inline-block;
+}
+.scrum-bar-gray {
+  background: #e0e0e0;
+  border-radius: 8px;
+  padding: 2px 64px;
+  display: inline-block;
+}
+.scrum-link-hint {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+/* 우측 목표 및 날짜 */
+.scrum-goal-aside {
+  width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 18px;
+  margin-left: auto;
+  height: fit-content;
+}
+.scrum-date {
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+}
+.scrum-goal-list {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 10px;
+}
+.scrum-goal-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 0.98rem;
+}
+.scrum-goal-dot {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid #bbb;
+  border-radius: 50%;
+  display: inline-block;
+}
+.scrum-goal-input-group {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.scrum-goal-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 0.92rem;
+}
+.scrum-goal-btn {
+  background: #eee;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+/* 공지/메모/스크럼 생성 */
+.scrum-memo-section {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px;
+  margin-top: 0;
+  flex: 1;
+  min-width: 0;
+}
+.scrum-memo-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.scrum-memo-content {
+  background: #f5f5f5;
+  border-radius: 8px;
+  min-height: 60px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.scrum-memo-btn-group {
+  display: flex;
+  justify-content: flex-end;
+}
+.scrum-memo-btn {
+  background: #eee;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 1rem;
+  cursor: pointer;
+} 
