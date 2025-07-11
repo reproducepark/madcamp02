@@ -4,7 +4,7 @@ import Sidebar from '../components/Sidebar';
 import TopMenu from '../components/TopMenu';
 import GoalSection from '../components/GoalSection';
 import Divider from '../components/Divider';
-import Modal from '../components/Modal';
+import Modal from '../components/Modal/Modal';
 import { useModal } from '../hooks/useModal';
 
 function TodoListPage() {
