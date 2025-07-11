@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import './TodoListPage.css'; // 새로 생성할 CSS 파일을 import 합니다.
-import Sidebar from '../components/Sidebar';
-import TopMenu from '../components/TopMenu';
-import GoalSection from '../components/GoalSection';
-import Divider from '../components/Divider';
-import Modal from '../components/Modal/Modal';
-import { useModal } from '../hooks/useModal';
+import '../../styles/TodoListPage.css'; // 새로 생성할 CSS 파일을 import 합니다.
+import Sidebar from '../layout/Sidebar';
+import TopMenu from '../layout/TopMenu';
+import GoalSection from '../layout/GoalSection';
+import Divider from '../layout/Divider';
+import Modal from '../Modal/Modal';
+import { useModal } from '../../hooks/useModal';
 
 function TodoListPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
