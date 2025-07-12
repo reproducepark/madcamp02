@@ -70,7 +70,9 @@ router.get('/myTeams', authenticateToken, async (req, res) => {
       id: membership.team.id,
       name: membership.team.name,
       created_at: membership.team.created_at,
-      members: (membership.team.TeamMembers || []).map(member => member.user),
+      members: (membership.team.TeamMembers || [])
+      .filter(member => member.user.num !== userNum) // 자기 자신 제외
+      .map(member => member.user),
     }));
 
     console.log('teams to send:', JSON.stringify(teams, null, 2));
