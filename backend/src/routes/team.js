@@ -40,4 +40,46 @@ router.post('/createTeam', authenticateToken, async (req, res) => {
   }
 });
 
+// 사용자가 속한 팀 목록 조회 API
+router.get('/myTeams', authenticateToken, async (req, res) => {
+  const userNum = req.user.num;
+
+  try {
+    const teamMemberships = await prisma.teamMember.findMany({
+      where: { user_id: userNum },
+      include: {
+        team: {
+          include: {
+            TeamMembers: {
+              include: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        team_id: 'asc',
+      },
+    });
+
+    console.log('teamMemberships:', JSON.stringify(teamMemberships, null, 2));
+
+    // TeamMembers에서 user 정보만 추출해서 members로 정리
+    const teams = teamMemberships.map(membership => ({
+      id: membership.team.id,
+      name: membership.team.name,
+      created_at: membership.team.created_at,
+      members: (membership.team.TeamMembers || []).map(member => member.user),
+    }));
+
+    console.log('teams to send:', JSON.stringify(teams, null, 2));
+
+    res.status(200).json({ teams });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;

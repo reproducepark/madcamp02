@@ -14,7 +14,7 @@ export const createTeam = (teamName) => {
  * @returns {Promise<Object>} API 응답
  */
 export const getTeams = () => {
-  return apiGet('/teams');
+  return apiGet('/team/myTeams');
 };
 
 /**
