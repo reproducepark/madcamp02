@@ -17,4 +17,14 @@ export {
   apiDelete,
   apiUpload,
   handleApiError
-} from './apiService'; 
+} from './apiService';
+
+// Team Service
+export {
+  createTeam,
+  getTeams,
+  updateTeam,
+  deleteTeam,
+  addTeamMember,
+  removeTeamMember
+} from './teamService'; 
