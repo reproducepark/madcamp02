@@ -10,10 +10,8 @@ function TopMenu() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showTeammateDropdown, setShowTeammateDropdown] = useState(false);
-  const [teams, setTeams] = useState([
-    { id: 'team1', name: '하드코딩팀 A', members: [{ id: 'user1', name: '사용자1' }, { id: 'user2', name: '사용자2' }] },
-    { id: 'team2', name: '하드코딩팀 B', members: [{ id: 'user3', name: '사용자3' }] },
-  ]);
+  const [teams, setTeams] = useState([]);
+
   const [selectedTeam, setSelectedTeam] = useState(null);
 
   const { isOpen: isCreateModalOpen, openModal: openCreateModal, closeModal: closeCreateModal } = useTeamModal();
@@ -26,26 +24,27 @@ function TopMenu() {
   const isTeamViewPage = location.pathname === '/scrum/teammate-todolist';
 
   // fetchTeams 함수와 useEffect 훅은 하드코딩을 위해 주석 처리합니다.
-  // const fetchTeams = async () => {
-  //   try {
-  //     const response = await getTeams();
-  //     if (response.success) {
-  //       setTeams(response.data);
-  //     } else {
-  //       console.error('Failed to fetch teams:', response.message);
-  //       setTeams([]);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching teams:', error);
-  //     setTeams([]);
-  //   }
-  // };
+  const fetchTeams = async () => {
+    try {
+      const response = await getTeams();
+      if (response.success) {
+        setTeams(response.data.teams);
+      } else {
+        console.error('Failed to fetch teams:', response.message);
+        setTeams([]);
+      }
+    } catch (error) {
+      console.error('Error fetching teams:', error);
+      setTeams([]);
+    }
+  };
 
-  // useEffect(() => {
-  //   if (isDropdownOpen) {
-  //     fetchTeams();
-  //   }
-  // }, [isDropdownOpen]);
+  useEffect(() => {
+    if (isDropdownOpen) {
+      fetchTeams();
+    }
+  }, [isDropdownOpen]);
+
 
   const handleLogout = () => {
     logoutUser();
@@ -54,7 +53,7 @@ function TopMenu() {
   // 하드코딩된 데이터에서는 팀 생성/업데이트/삭제 시 목록 새로고침이 필요 없으므로 주석 처리합니다.
   const handleTeamCreated = () => {
     // fetchTeams(); // 팀 생성 후 목록 새로고침
-    alert('팀 생성 로직 (하드코딩): 실제 API 호출 필요');
+    
     closeCreateModal();
   };
 
