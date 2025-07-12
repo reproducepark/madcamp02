@@ -45,7 +45,7 @@ function LoginPage() {
       const result = await loginUser(id, password);
       
       if (result.success) {
-        navigate('/main'); // Redirect to a protected route
+        navigate('/todo'); // Redirect to a protected route
       } else {
         await showAlert('오류', result.message);
         inputRef.current?.focus();

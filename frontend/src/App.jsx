@@ -14,7 +14,7 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/main" element={<TodoListPage />} />
+        <Route path="/todo" element={<TodoListPage />} />
         <Route path="/scrum" element={<ScrumPage />} />
         <Route path="/stretching" element={<StretchingPage />} />
         <Route path="*" element={<Navigate to="/login" />} />

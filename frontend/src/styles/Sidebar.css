@@ -23,6 +23,7 @@
   padding: 8px;
   border-radius: 4px;
   transition: background-color 0.2s;
+  white-space: pre-wrap;
 }
 
 .sidebar-button:hover {
