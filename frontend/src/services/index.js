@@ -26,3 +26,13 @@ export {
   formatConversationHistory,
   handleLLMError
 } from './llmService'; 
+
+// Team Service
+export {
+  createTeam,
+  getTeams,
+  updateTeam,
+  deleteTeam,
+  addTeamMember,
+  removeTeamMember
+} from './teamService'; 
