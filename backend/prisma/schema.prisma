@@ -12,7 +12,7 @@ model User {
   id            String     @unique
   password      String
   name          String
-  class_section String?
+  class_section Int
   createdAt     DateTime   @default(now())
 
   TeamMembers   TeamMember[]

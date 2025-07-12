@@ -17,7 +17,7 @@ function App() {
         <Route path="/main" element={<TodoListPage />} />
         <Route path="/scrum" element={<ScrumPage />} />
         <Route path="/stretching" element={<StretchingPage />} />
-        <Route path="*" element={<Navigate to="/main" />} />
+        <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     </Router>
   );

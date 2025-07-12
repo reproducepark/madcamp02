@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 
 // 회원가입 API
 router.post('/signup', async (req, res) => {
-  const { id, password } = req.body; // 여기서 id는 Prisma User 모델의 id 필드 (email 대신)
+  const { id, password, name, class_section } = req.body;
 
   try {
     // 이미 같은 id 있는지 확인
@@ -26,13 +26,15 @@ router.post('/signup', async (req, res) => {
     const newUser = await prisma.user.create({
       data: {
         id,
-        password: hashedPassword
+        password: hashedPassword,
+        name,
+        class_section
       }
     });
 
     res.status(201).json({ 
       message: "Signup success", 
-      user: { num: newUser.num, id: newUser.id } 
+      user: { num: newUser.num, id: newUser.id, name: newUser.name, class_section: newUser.class_section } 
     });
 
   } catch (err) {
