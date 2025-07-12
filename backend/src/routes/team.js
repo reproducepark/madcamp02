@@ -84,4 +84,44 @@ router.get('/myTeams', authenticateToken, async (req, res) => {
   }
 });
 
+// 팀 이름 변경 API
+router.put('/:teamId', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+  const { name } = req.body;
+
+  if (!name || name.trim() === "") {
+    return res.status(400).json({ message: "팀 이름을 입력해주세요." });
+  }
+
+  try {
+    // 같은 이름으로 변경 방지
+    const current = await prisma.team.findUnique({
+      where : { id: teamId}
+    });
+    
+    if (current.name == name) {
+      return res.status(400).json({ message: "같은 이름으로는 변경할 수 없습니다." });
+    }
+
+    // 동일 이름 중복 방지
+    const existingTeam = await prisma.team.findUnique({
+      where: { name },
+    });
+
+    if (existingTeam && existingTeam.id !== teamId) {
+      return res.status(400).json({ message: "같은 이름의 팀이 이미 존재합니다." });
+    }
+
+    const updatedTeam = await prisma.team.update({
+      where: { id: teamId },
+      data: { name },
+    });
+
+    res.status(200).json({ success: true, team: updatedTeam });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
