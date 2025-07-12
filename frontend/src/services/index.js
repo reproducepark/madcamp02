@@ -19,6 +19,14 @@ export {
   handleApiError
 } from './apiService';
 
+// LLM Service (Google AI Studio)
+export {
+  generateTextResponse,
+  extractTextFromResponse,
+  formatConversationHistory,
+  handleLLMError
+} from './llmService'; 
+
 // Team Service
 export {
   createTeam,
