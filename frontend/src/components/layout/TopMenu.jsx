@@ -54,7 +54,7 @@ function TopMenu() {
   // 하드코딩된 데이터에서는 팀 생성/업데이트/삭제 시 목록 새로고침이 필요 없으므로 주석 처리합니다.
   const handleTeamCreated = () => {
     // fetchTeams(); // 팀 생성 후 목록 새로고침
-    alert('팀 생성 로직 (하드코딩): 실제 API 호출 필요');
+    
     closeCreateModal();
   };
 

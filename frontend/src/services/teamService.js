@@ -6,7 +6,7 @@ import { apiRequest, apiPost, apiGet, apiPut, apiDelete } from './apiService';
  * @returns {Promise<Object>} API 응답
  */
 export const createTeam = (teamName) => {
-  return apiPost('/teams', { name: teamName });
+  return apiPost('/team/createTeam', { name: teamName });
 };
 
 /**
