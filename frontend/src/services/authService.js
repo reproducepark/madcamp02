@@ -47,14 +47,14 @@ export const loginUser = async (id, password) => {
  * @param {string} password - 사용자 비밀번호
  * @returns {Promise<Object>} 회원가입 결과
  */
-export const registerUser = async (id, password) => {
+export const registerUser = async (id, password, name, class_section) => {
   try {
     const response = await fetch(`/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id, password }),
+      body: JSON.stringify({ id, password, name, class_section }),
     });
     
     const data = await response.json();

@@ -10,6 +10,8 @@ function RegisterPage() {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [class_section, setClassSection] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const inputRef = useRef(null);
@@ -48,7 +50,13 @@ function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const result = await registerUser(id, password);
+      const classSectionInt = class_section ? parseInt(class_section, 10) : null;
+      if (class_section && isNaN(classSectionInt)) {
+        await showAlert('오류', '분반은 숫자로만 입력해야 합니다.');
+        return;
+      }
+
+      const result = await registerUser(id, password, name, classSectionInt);
       
       if (result.success) {
         await showAlert('성공', result.message);
@@ -106,6 +114,29 @@ function RegisterPage() {
             onKeyPress={handleKeyPress}
             required
             placeholder="비밀번호를 다시 입력하세요"
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="name">이름</label>
+          <input
+            type="text"
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyPress={handleKeyPress}
+            required
+            placeholder="이름을 입력하세요"
+          />
+        </div>
+        <div className="input-group">
+          <label htmlFor="class_section">분반</label>
+          <input
+            type="text"
+            id="class_section"
+            value={class_section}
+            onChange={(e) => setClassSection(e.target.value.replace(/[^0-9]/g, ''))}
+            onKeyPress={handleKeyPress}
+            placeholder="분반을 입력하세요"
           />
         </div>
         <button type="submit" disabled={isLoading}>
