@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logoutUser } from '../../services/authService';
 import './TopMenu.css';
 
 function TopMenu() {
@@ -7,9 +8,7 @@ function TopMenu() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    alert("로그아웃 되었습니다.");
-    navigate('/login');
+    logoutUser();
   };
 
   return (
