@@ -136,12 +136,72 @@
   margin-bottom: 4px;
   font-size: 0.98rem;
 }
+
+.todo-goal-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 4px 0;
+  transition: background-color 0.2s;
+}
+
+.todo-goal-item:hover {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 4px 8px;
+  margin: 0 -8px 8px -8px;
+}
+
 .todo-goal-dot {
   width: 12px;
   height: 12px;
   border: 1.5px solid #bbb;
   border-radius: 50%;
   display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.todo-goal-dot:hover {
+  border-color: #666;
+  background-color: #f0f0f0;
+}
+
+.todo-goal-dot.completed {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.todo-goal-text {
+  flex: 1;
+  font-size: 0.98rem;
+  color: #374151;
+}
+
+.todo-goal-item .todo-goal-text.completed {
+  text-decoration: line-through;
+  color: #9ca3af;
+}
+
+.todo-goal-delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.todo-goal-item:hover .todo-goal-delete-btn {
+  opacity: 1;
+}
+
+.todo-goal-delete-btn:hover {
+  background-color: #fee2e2;
 }
 .todo-goal-input-group {
   display: flex;

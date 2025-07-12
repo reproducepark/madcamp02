@@ -60,9 +60,6 @@ function Modal({
       <div className="modal-container">
         <div className="modal-header">
           <h3 className="modal-title">{title}</h3>
-          <button className="modal-close" onClick={onClose}>
-            ×
-          </button>
         </div>
         
         <div className="modal-body">
