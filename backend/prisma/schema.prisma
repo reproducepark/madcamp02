@@ -8,8 +8,57 @@ datasource db {
 }
 
 model User {
-  num        Int      @id @default(autoincrement())
-  id     String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  num           Int        @id @default(autoincrement())
+  id            String     @unique
+  password      String
+  name          String
+  class_section String?
+  createdAt     DateTime   @default(now())
+
+  TeamMembers   TeamMember[]
+  SubGoals      SubGoal[]
+}
+
+model Team {
+  id          Int          @id @default(autoincrement())
+  name        String
+  created_at  DateTime     @default(now())
+
+  TeamMembers TeamMember[]
+  TeamGoals   TeamGoal[]
+}
+
+model TeamMember {
+  id           Int    @id @default(autoincrement())
+  team_id      Int
+  user_id      Int
+
+  team         Team   @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  user         User   @relation(fields: [user_id], references: [num], onDelete: Cascade)
+}
+
+model TeamGoal {
+  id               Int        @id @default(autoincrement())
+  team_id          Int
+  content          String
+  start_date       DateTime
+  planned_end_date DateTime?
+  real_end_date    DateTime?
+  created_at       DateTime   @default(now())
+
+  team             Team       @relation(fields: [team_id], references: [id], onDelete: Cascade)
+  SubGoals         SubGoal[]
+}
+
+model SubGoal {
+  id             Int      @id @default(autoincrement())
+  team_goal_id   Int
+  user_id        Int
+  content        String
+  is_completed   Boolean  @default(false)
+  completed_at   DateTime?
+  created_at     DateTime @default(now())
+
+  teamGoal       TeamGoal @relation(fields: [team_goal_id], references: [id], onDelete: Cascade)
+  user           User     @relation(fields: [user_id], references: [num], onDelete: Cascade)
 }
