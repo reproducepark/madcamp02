@@ -51,4 +51,4 @@ export const useModal = () => {
     showConfirm,
     closeModal
   };
-}; 
+};
