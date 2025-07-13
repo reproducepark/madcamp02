@@ -77,10 +77,16 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
       const ctx = canvas.getContext("2d");
       const modelInputSize = 640; // 모델 입력 크기
 
-      // 1. 비디오 프레임을 640x640 캔버스에 레터박싱하여 그림
-      ctx.fillStyle = '#000000'; // 검은색으로 배경 채우기
-      ctx.fillRect(0, 0, modelInputSize, modelInputSize);
+      // 1. 캔버스를 투명하게 초기화
+      ctx.clearRect(0, 0, modelInputSize, modelInputSize);
 
+      // 2. 추론용 임시 캔버스 생성 (화면에 표시되지 않음)
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = modelInputSize;
+      tempCanvas.height = modelInputSize;
+      const tempCtx = tempCanvas.getContext('2d');
+
+      // 3. 비디오 프레임을 임시 캔버스에 그리기
       const videoWidth = video.videoWidth;
       const videoHeight = video.videoHeight;
 
@@ -98,10 +104,11 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
       const offsetX = (modelInputSize - scaledWidth) / 2;
       const offsetY = (modelInputSize - scaledHeight) / 2;
 
-      ctx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
+      // 임시 캔버스에 비디오 프레임 그리기
+      tempCtx.drawImage(video, offsetX, offsetY, scaledWidth, scaledHeight);
 
-      // 2. 캔버스 픽셀을 텐서로 변환
-      const input = tf.browser.fromPixels(canvas)
+      // 4. 임시 캔버스 픽셀을 텐서로 변환
+      const input = tf.browser.fromPixels(tempCanvas)
         .toFloat()
         .div(tf.scalar(255))
         .expandDims(0);
@@ -140,6 +147,12 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
         });
 
         // 5. 가장 높은 신뢰도의 키포인트만 시각화
+        // 비디오 크기에 맞게 스케일링 팩터 계산
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const scaleX = canvasWidth / modelInputSize;
+        const scaleY = canvasHeight / modelInputSize;
+        
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'lime';
         ctx.fillStyle = 'red';
@@ -162,14 +175,14 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
           const x1 = x_center - width / 2;
           const y1 = y_center - height / 2;
 
-          // 바운딩 박스 그리기
+          // 바운딩 박스 그리기 (스케일링 적용)
           ctx.beginPath();
-          ctx.rect(x1, y1, width, height);
+          ctx.rect(x1 * scaleX, y1 * scaleY, width * scaleX, height * scaleY);
           ctx.stroke();
 
-          // 신뢰도 텍스트 표시
+          // 신뢰도 텍스트 표시 (스케일링 적용)
           ctx.fillStyle = 'white';
-          ctx.fillText(`Confidence: ${highestConfidence.toFixed(2)}`, x1, y1 > 10 ? y1 - 5 : y1 + 15);
+          ctx.fillText(`Confidence: ${highestConfidence.toFixed(2)}`, x1 * scaleX, y1 * scaleY > 10 ? y1 * scaleY - 5 : y1 * scaleY + 15);
           ctx.fillStyle = 'red';
 
           const keypoints = [];
@@ -181,9 +194,9 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
 
             if (visibility > KEYPOINT_VIS_THRESHOLD) {
               ctx.beginPath();
-              ctx.arc(kx, ky, 4, 0, 2 * Math.PI);
+              ctx.arc(kx * scaleX, ky * scaleY, 4, 0, 2 * Math.PI);
               ctx.fill();
-              keypoints.push({ x: kx, y: ky, score: visibility, name: KEYPOINT_NAMES[i] });
+              keypoints.push({ x: kx * scaleX, y: ky * scaleY, score: visibility, name: KEYPOINT_NAMES[i] });
               
               // 얼굴 키포인트 확인 (코, 왼쪽 눈, 오른쪽 눈, 왼쪽 귀, 오른쪽 귀)
               if (i >= 0 && i <= 4) {
@@ -269,6 +282,15 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
       width={640}
       height={640}
       className="pose-canvas"
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+        zIndex: 10,
+        width: '100%',
+        height: '100%'
+      }}
     />
   );
 }

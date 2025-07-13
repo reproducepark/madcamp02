@@ -69,7 +69,6 @@ function WebcamComponent() {
               playsInline
               muted
               className="webcam-video"
-              style={{ display: 'none' }} // 비디오는 숨기고 캔버스에 그립니다
             />
             <PoseDetectionComponent 
               videoRef={videoRef}
