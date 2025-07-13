@@ -123,19 +123,40 @@
   animation: pulse 2s infinite;
 }
 
-.test-toggle-btn {
-  margin-left: auto;
-  background: #6c757d;
-  color: white;
-  border: none;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
+.video-pose-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.test-toggle-btn:hover {
-  background: #5a6268;
+.pose-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.pose-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.pose-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #dc3545;
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
 }
 
 @keyframes pulse {

@@ -1,5 +1,6 @@
 // src/components/WebcamComponent.jsx
 import React, { useRef, useEffect, useState } from 'react';
+import PoseDetectionComponent from './PoseDetectionComponent';
 
 function WebcamComponent() {
   const videoRef = useRef(null);
@@ -61,13 +62,20 @@ function WebcamComponent() {
             <button onClick={startWebcam}>다시 시도</button>
           </div>
         ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="webcam-video"
-          />
+          <div className="video-pose-container">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="webcam-video"
+              style={{ display: 'none' }} // 비디오는 숨기고 캔버스에 그립니다
+            />
+            <PoseDetectionComponent 
+              videoRef={videoRef}
+              onRecognitionChange={setIsRecognized}
+            />
+          </div>
         )}
       </div>
       
@@ -80,13 +88,7 @@ function WebcamComponent() {
             : '얼굴과 어깨가 인식되지 않았어요. 웹캠을 조정해 주세요.'
           }
         </span>
-        {/* 테스트용 버튼 (나중에 제거) */}
-        <button 
-          className="test-toggle-btn"
-          onClick={() => setIsRecognized(!isRecognized)}
-        >
-          인식 상태 테스트
-        </button>
+
       </div>
 
       {/* 자세 확인 설정 영역 */}
