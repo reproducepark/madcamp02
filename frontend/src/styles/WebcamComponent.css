@@ -89,25 +89,53 @@
   background: #0056b3;
 }
 
-.webcam-status {
+.recognition-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 12px;
+  margin: 12px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.recognition-text {
   font-size: 14px;
-  color: #28a745;
+  font-weight: 500;
 }
 
 .status-indicator {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   background: #6c757d;
+  flex-shrink: 0;
 }
 
-.status-indicator.active {
+.status-indicator.recognized {
   background: #28a745;
   animation: pulse 2s infinite;
+}
+
+.status-indicator.not-recognized {
+  background: #dc3545;
+  animation: pulse 2s infinite;
+}
+
+.test-toggle-btn {
+  margin-left: auto;
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.test-toggle-btn:hover {
+  background: #5a6268;
 }
 
 @keyframes pulse {

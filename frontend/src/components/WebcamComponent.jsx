@@ -7,6 +7,7 @@ function WebcamComponent() {
   const [postureCheckInterval, setPostureCheckInterval] = useState(3);
   const [neckAngleCheck, setNeckAngleCheck] = useState(false);
   const [facePositionCheck, setFacePositionCheck] = useState(false);
+  const [isRecognized, setIsRecognized] = useState(false); // 얼굴과 어깨 인식 상태
 
   useEffect(() => {
     startWebcam();
@@ -69,12 +70,23 @@ function WebcamComponent() {
         )}
       </div>
       
-      {isStreaming && (
-        <div className="webcam-status">
-          <span className="status-indicator active"></span>
-          <span>스트리밍 중...</span>
-        </div>
-      )}
+      {/* 인식 상태 표시 */}
+      <div className="recognition-status">
+        <div className={`status-indicator ${isRecognized ? 'recognized' : 'not-recognized'}`}></div>
+        <span className="recognition-text">
+          {isRecognized 
+            ? '얼굴과 어깨가 인식되었어요' 
+            : '얼굴과 어깨가 인식되지 않았어요. 웹캠을 조정해 주세요.'
+          }
+        </span>
+        {/* 테스트용 버튼 (나중에 제거) */}
+        <button 
+          className="test-toggle-btn"
+          onClick={() => setIsRecognized(!isRecognized)}
+        >
+          인식 상태 테스트
+        </button>
+      </div>
 
       {/* 자세 확인 설정 영역 */}
       <div className="webcam-settings">
