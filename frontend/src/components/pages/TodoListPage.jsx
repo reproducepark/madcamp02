@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../../styles/TodoListPage.css';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
@@ -6,10 +6,12 @@ import GoalSection from '../layout/GoalSection';
 import Divider from '../layout/Divider';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
+import PersonalMemoSection from '../layout/PersonalMemoSection';
+import { getMemos, createMemo, deleteMemo } from '../../services/memoService';
 
 function TodoListPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
-
+  
   const [goals, setGoals] = useState([
     {
       id: 1,
@@ -29,24 +31,30 @@ function TodoListPage() {
     }
   ]);
 
-  // 🔥 선택된 GoalSection ID
   const [activeGoalId, setActiveGoalId] = useState(null);
-
-  // 선택된 목표 이름 찾기
   const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
 
-  // 🔥 입력 내용
   const [newTodoText, setNewTodoText] = useState('');
+  const [memos, setMemos] = useState([]);
+  const [newInput, setNewInput] = useState('');
+
+  // ✅ 입력창 wrapper ref
+  const inputGroupRef = useRef();
 
   // ✅ 페이지 다른 곳 클릭하면 비활성화
   useEffect(() => {
     const handleClickOutside = (e) => {
+      console.log('클릭한 요소:', e.target);
+
       if (
         e.target.closest('.goal-section') ||
-        e.target.closest('.todo-input-group')
+        inputGroupRef.current?.contains(e.target)
       ) {
+        console.log('✅ 내부 클릭 - 유지');
         return;
       }
+
+      console.log('🛑 외부 클릭 - 비활성화');
       setActiveGoalId(null);
     };
 
@@ -56,37 +64,53 @@ function TodoListPage() {
     };
   }, []);
 
-  // ✅ + 버튼 눌렀을 때
+  // 🗒️ 개인 메모 불러오기
+  useEffect(() => {
+    const loadMemos = async () => {
+      const res = await getMemos();
+      if (res.success) setMemos(res.data.memos);
+    }
+    loadMemos();
+  }, []);
+
   const handleActivateGoal = (goalId) => {
     setActiveGoalId(goalId);
   };
 
-  // ✅ 등록 버튼 눌렀을 때
-  const handleAddTodo = () => {
-    if (!newTodoText.trim()) {
+  const handleAddTodo = async () => {
+    if (!newInput.trim()) {
       showAlert('입력 오류', '내용을 입력해주세요.');
       return;
     }
-    setGoals(prevGoals =>
-      prevGoals.map(goal =>
-        goal.id === activeGoalId
-          ? {
-              ...goal,
-              todos: [
-                ...goal.todos,
-                {
-                  id: Date.now(),
-                  text: newTodoText.trim(),
-                  completed: false,
-                  disabled: false
-                }
-              ]
-            }
-          : goal
-      )
-    );
-    setNewTodoText('');
-    setActiveGoalId(null);
+
+    if (activeGoalId === 'memo') {
+      await createMemo(newInput.trim());
+      setNewInput('');
+      setActiveGoalId(null);
+      const res = await getMemos();
+      setMemos(res.data.memos);
+    } else {
+      setGoals(prevGoals =>
+        prevGoals.map(goal =>
+          goal.id === activeGoalId
+            ? {
+                ...goal,
+                todos: [
+                  ...goal.todos,
+                  {
+                    id: Date.now(),
+                    text: newInput.trim(),
+                    completed: false,
+                    disabled: false
+                  }
+                ]
+              }
+            : goal
+        )
+      );
+      setNewInput('');
+      setActiveGoalId(null);
+    }
   };
 
   const handleToggleTodo = (goalId, todoId) => {
@@ -113,7 +137,6 @@ function TodoListPage() {
       '삭제',
       '취소'
     );
-
     if (confirmed) {
       setGoals(prevGoals =>
         prevGoals.map(goal =>
@@ -133,7 +156,6 @@ function TodoListPage() {
       <TopMenu />
       <div className="container">
         <Sidebar />
-
         <main className="main-content">
           <div className="todo-center-card">
             <div className="todo-center-title">중앙 영역</div>
@@ -162,22 +184,33 @@ function TodoListPage() {
                   {index < goals.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
+
+              <Divider />
+              <PersonalMemoSection
+                memos={memos}
+                onActivate={() => setActiveGoalId('memo')}
+                onDeleteMemo={async (memoId) => {
+                  await deleteMemo(memoId);
+                  const res = await getMemos();
+                  setMemos(res.data.memos);
+                }}
+              />
             </div>
 
             {/* ✅ 항상 존재하되, 활성화된 목표일 때만 활성화 */}
-            <div className="todo-goal-input-group">
+            <div className="todo-goal-input-group" ref={inputGroupRef}>
               <input
-              className="todo-goal-input"
-              placeholder={
-                activeGoalId
-                  ? `"${activeGoalName}"에 할 일을 추가합니다`
-                  : "목표를 선택해 주세요."
-              }
-              value={newTodoText}
-              onChange={(e) => setNewTodoText(e.target.value)}
-              disabled={!activeGoalId}
-              onKeyPress={(e) => e.key === 'Enter' && handleAddTodo()}
-            />
+                placeholder={
+                  activeGoalId === 'memo'
+                    ? "개인 메모를 작성하세요"
+                    : activeGoalId
+                      ? `${activeGoalName}에 할 일을 추가합니다`
+                      : "목표를 선택해 주세요."
+                }
+                value={newInput}
+                onChange={(e) => setNewInput(e.target.value)}
+                disabled={!activeGoalId}
+              />
               <button
                 className="todo-goal-btn"
                 onClick={handleAddTodo}
