@@ -42,6 +42,9 @@ function ScrumPage() {
   ]);
 
   const [newGoalInput, setNewGoalInput] = useState('');
+  const today = new Date().toISOString().split('T')[0];
+  const [startDate, setStartDate] = useState(today);
+  const [endDate, setEndDate] = useState(today);
 
   const handleToggleGoal = (goalId) => {
     setScrumGoals(prevGoals => 
@@ -69,21 +72,32 @@ function ScrumPage() {
   };
 
   const handleAddGoal = () => {
-    if (newGoalInput.trim()) {
-      const newGoal = {
-        id: Date.now(),
-        text: newGoalInput.trim(),
-        completed: false,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
-      };
-      
-      setScrumGoals(prevGoals => [...prevGoals, newGoal]);
-      setNewGoalInput('');
-      showAlert('목표 추가', '새로운 목표가 추가되었습니다.');
-    } else {
+    if (!newGoalInput.trim()) {
       showAlert('입력 오류', '목표 내용을 입력해주세요.');
+      return;
     }
+    if (!startDate || !endDate) {
+      showAlert('입력 오류', '시작 날짜와 종료 날짜를 모두 선택해주세요.');
+      return;
+    }
+    if (new Date(startDate) > new Date(endDate)) {
+        showAlert('입력 오류', '종료 날짜는 시작 날짜보다 빠를 수 없습니다.');
+        return;
+    }
+
+    const newGoal = {
+      id: Date.now(),
+      text: newGoalInput.trim(),
+      completed: false,
+      startDate: startDate,
+      endDate: endDate
+    };
+    
+    setScrumGoals(prevGoals => [...prevGoals, newGoal]);
+    setNewGoalInput('');
+    setStartDate(today);
+    setEndDate(today);
+    showAlert('목표 추가', '새로운 목표가 추가되었습니다.');
   };
 
   const handleCreateScrum = () => {
@@ -130,9 +144,24 @@ function ScrumPage() {
               ))}
             </ul>
             <div className="todo-goal-input-group">
+              <div className="date-input-container">
+                <input 
+                  type="date" 
+                  className="date-input"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <span>~</span>
+                <input 
+                  type="date" 
+                  className="date-input"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                />
+              </div>
               <input 
                 className="todo-goal-input" 
-                placeholder="목표 내용, 시작날짜 종료날짜"
+                placeholder="목표 내용"
                 value={newGoalInput}
                 onChange={(e) => setNewGoalInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}

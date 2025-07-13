@@ -6,7 +6,7 @@ import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
 function StretchingPage() {
-  const [isStretchingEnabled, setIsStretchingEnabled] = useState(true);
+  const [isStretchingEnabled, setIsStretchingEnabled] = useState(false);
 
   const handleStretchingToggle = (enabled) => {
     setIsStretchingEnabled(enabled);
