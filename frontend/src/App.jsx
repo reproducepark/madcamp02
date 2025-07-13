@@ -21,7 +21,7 @@ function App() {
         <Route path="/scrum/teammate-todolist" element={<TeammateTodoListPage />} /> {/* 새로 추가 */}
         <Route path="/stretching" element={<StretchingPage />} />
         <Route path="/llm-test" element={<LLMExample />} />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route path="*" element={<Navigate to="/stretching" />} />
       </Routes>
     </Router>
   );

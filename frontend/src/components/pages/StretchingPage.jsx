@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
+import WebcamComponent from '../WebcamComponent';
 import '../../styles/StretchingPage.css';
+import '../../styles/WebcamComponent.css';
 
 function StretchingPage() {
+  const [isStretchingEnabled, setIsStretchingEnabled] = useState(false);
+
+  const handleStretchingToggle = (enabled) => {
+    setIsStretchingEnabled(enabled);
+  };
+
   return (
     <div className="todo-container">
       <TopMenu />
@@ -12,9 +20,31 @@ function StretchingPage() {
         <main className="todo-main">
           {/* 스트레칭 섹션 (왼쪽 반) */}
           <section className="todo-stretching-section">
-            <div className="todo-stretching-title">스트레칭</div>
+            
+            {/* 기능 on/off 토글 버튼 */}
+            <div className="stretching-controls">
+              <div className="toggle-container">
+                <span className="toggle-label">스트레칭 기능</span>
+                <button 
+                  className={`toggle-button ${isStretchingEnabled ? 'active' : ''}`}
+                  onClick={() => handleStretchingToggle(!isStretchingEnabled)}
+                >
+                  <span className="toggle-slider"></span>
+                  <span className="toggle-text">
+                    {isStretchingEnabled ? 'ON' : 'OFF'}
+                  </span>
+                </button>
+              </div>
+            </div>
+
             <div className="todo-stretching-content">
-              스트레칭 컴포넌트가 들어갈 공간입니다
+              {isStretchingEnabled ? (
+                <WebcamComponent />
+              ) : (
+                <div className="stretching-disabled">
+                  <p>스트레칭 기능을 활성화해주세요</p>
+                </div>
+              )}
             </div>
           </section>
 
