@@ -1,6 +1,7 @@
 // src/components/WebcamComponent.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import PoseDetectionComponent from './PoseDetectionComponent';
+import { analyzePose } from '../utils/poseAnalysis';
 
 function WebcamComponent() {
   const videoRef = useRef(null);
@@ -10,6 +11,7 @@ function WebcamComponent() {
   const [neckAngleCheck, setNeckAngleCheck] = useState(false);
   const [facePositionCheck, setFacePositionCheck] = useState(false);
   const [isRecognized, setIsRecognized] = useState(false); // 얼굴과 어깨 인식 상태
+  const [keypoints, setKeypoints] = useState(null);
 
   useEffect(() => {
     startWebcam();
@@ -50,6 +52,22 @@ function WebcamComponent() {
     }
   };
 
+  // 키포인트 데이터가 변경될 때 포즈 분석 실행 및 콘솔 출력
+  useEffect(() => {
+    if (keypoints && isRecognized) {
+      const analysis = analyzePose(keypoints, 640); // 캔버스 높이 640
+      
+      // 콘솔에 분석 결과 출력
+      console.log('=== 포즈 분석 결과 ===');
+      console.log('목-어깨 각도:', analysis.shoulderNeckAngle !== null ? `${Math.round(analysis.shoulderNeckAngle)}도` : '측정 불가');
+      console.log('얼굴 위치 (하단):', analysis.faceInLowerHalf ? '예' : '아니오');
+      console.log('목 각도 경고 (60도 미만):', analysis.isAngleLessThan60 ? '아니오' : '예');
+      console.log('분석 유효성:', analysis.isValid ? '유효' : '무효');
+      console.log('전체 분석 객체:', analysis);
+      console.log('========================');
+    }
+  }, [keypoints, isRecognized]);
+
 
 
   return (
@@ -73,6 +91,7 @@ function WebcamComponent() {
             <PoseDetectionComponent 
               videoRef={videoRef}
               onRecognitionChange={setIsRecognized}
+              onKeypointsChange={setKeypoints}
             />
           </div>
         )}

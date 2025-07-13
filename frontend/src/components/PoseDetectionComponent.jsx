@@ -27,7 +27,7 @@ const KEYPOINT_CONNECTIONS = [
     [12, 14], [14, 16]  // 오른쪽 다리
 ];
 
-function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
+function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChange }) {
   const canvasRef = useRef(null);
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -212,9 +212,14 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
             } else {
               keypoints.push(null);
             }
-          }
+                      }
 
-          // 키포인트 연결선 그리기 - 투명하게 설정
+            // 키포인트 데이터를 상위 컴포넌트로 전달
+            if (onKeypointsChange && hasValidDetection) {
+              onKeypointsChange(keypoints);
+            }
+
+            // 키포인트 연결선 그리기 - 투명하게 설정
           ctx.strokeStyle = 'rgba(0, 255, 255, 0)'; // 투명한 시안색
           ctx.lineWidth = 2;
           KEYPOINT_CONNECTIONS.forEach(([p1Index, p2Index]) => {
