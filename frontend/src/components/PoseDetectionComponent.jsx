@@ -123,7 +123,23 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
         const arr = await processedOutput.array();
         const detections = arr ? arr[0] : [];
 
-        // 4. 키포인트 및 바운딩 박스 시각화
+        // 4. 가장 높은 신뢰도를 가진 감지 결과 찾기
+        const BBOX_CONF_THRESHOLD = 0.25;
+        const KEYPOINT_VIS_THRESHOLD = 0.3;
+
+        let bestDetection = null;
+        let highestConfidence = 0;
+
+        // 가장 높은 신뢰도를 가진 감지 결과 찾기
+        detections.forEach((det) => {
+          const confidence = det && det.length > 4 ? det[4] : 0;
+          if (confidence > BBOX_CONF_THRESHOLD && confidence > highestConfidence) {
+            highestConfidence = confidence;
+            bestDetection = det;
+          }
+        });
+
+        // 5. 가장 높은 신뢰도의 키포인트만 시각화
         ctx.lineWidth = 2;
         ctx.strokeStyle = 'lime';
         ctx.fillStyle = 'red';
@@ -131,67 +147,61 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
 
         let hasValidDetection = false;
 
-        detections.forEach((det) => {
-          const confidence = det && det.length > 4 ? det[4] : 0;
-          const BBOX_CONF_THRESHOLD = 0.25;
-          const KEYPOINT_VIS_THRESHOLD = 0.3;
+        if (bestDetection) {
+          hasValidDetection = true;
+          
+          // 바운딩 박스
+          const x_center = bestDetection[0];
+          const y_center = bestDetection[1];
+          const width = bestDetection[2];
+          const height = bestDetection[3];
 
-          if (confidence > BBOX_CONF_THRESHOLD) {
-            hasValidDetection = true;
-            
-            // 바운딩 박스
-            const x_center = det && det.length > 0 ? det[0] : 0;
-            const y_center = det && det.length > 1 ? det[1] : 0;
-            const width = det && det.length > 2 ? det[2] : 0;
-            const height = det && det.length > 3 ? det[3] : 0;
+          const x1 = x_center - width / 2;
+          const y1 = y_center - height / 2;
 
-            const x1 = x_center - width / 2;
-            const y1 = y_center - height / 2;
+          // 바운딩 박스 그리기
+          ctx.beginPath();
+          ctx.rect(x1, y1, width, height);
+          ctx.stroke();
 
-            // 바운딩 박스 그리기
-            ctx.beginPath();
-            ctx.rect(x1, y1, width, height);
-            ctx.stroke();
+          // 신뢰도 텍스트 표시
+          ctx.fillStyle = 'white';
+          ctx.fillText(`Confidence: ${highestConfidence.toFixed(2)}`, x1, y1 > 10 ? y1 - 5 : y1 + 15);
+          ctx.fillStyle = 'red';
 
-            // 신뢰도 텍스트 표시
-            ctx.fillStyle = 'white';
-            ctx.fillText(`Confidence: ${confidence.toFixed(2)}`, x1, y1 > 10 ? y1 - 5 : y1 + 15);
-            ctx.fillStyle = 'red';
+          const keypoints = [];
+          // 키포인트 추출 및 그리기
+          for (let i = 0; i < 17; i++) {
+            const kx = bestDetection[5 + i * 3];
+            const ky = bestDetection[5 + i * 3 + 1];
+            const visibility = bestDetection[5 + i * 3 + 2];
 
-            const keypoints = [];
-            // 키포인트 추출 및 그리기
-            for (let i = 0; i < 17; i++) {
-              const kx = det && det.length > (5 + i * 3) ? det[5 + i * 3] : 0;
-              const ky = det && det.length > (5 + i * 3 + 1) ? det[5 + i * 3 + 1] : 0;
-              const visibility = det && det.length > (5 + i * 3 + 2) ? det[5 + i * 3 + 2] : 0;
-
-              if (visibility > KEYPOINT_VIS_THRESHOLD) {
-                ctx.beginPath();
-                ctx.arc(kx, ky, 4, 0, 2 * Math.PI);
-                ctx.fill();
-                keypoints.push({ x: kx, y: ky, score: visibility, name: KEYPOINT_NAMES[i] });
-              } else {
-                keypoints.push(null);
-              }
+            if (visibility > KEYPOINT_VIS_THRESHOLD) {
+              ctx.beginPath();
+              ctx.arc(kx, ky, 4, 0, 2 * Math.PI);
+              ctx.fill();
+              keypoints.push({ x: kx, y: ky, score: visibility, name: KEYPOINT_NAMES[i] });
+            } else {
+              keypoints.push(null);
             }
-
-            // 키포인트 연결선 그리기
-            ctx.strokeStyle = 'cyan';
-            ctx.lineWidth = 2;
-            KEYPOINT_CONNECTIONS.forEach(([p1Index, p2Index]) => {
-              const p1 = keypoints[p1Index];
-              const p2 = keypoints[p2Index];
-
-              if (p1 && p2 && p1.score > KEYPOINT_VIS_THRESHOLD && p2.score > KEYPOINT_VIS_THRESHOLD) {
-                ctx.beginPath();
-                ctx.moveTo(p1.x, p1.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.stroke();
-              }
-            });
-            ctx.strokeStyle = 'lime';
           }
-        });
+
+          // 키포인트 연결선 그리기
+          ctx.strokeStyle = 'cyan';
+          ctx.lineWidth = 2;
+          KEYPOINT_CONNECTIONS.forEach(([p1Index, p2Index]) => {
+            const p1 = keypoints[p1Index];
+            const p2 = keypoints[p2Index];
+
+            if (p1 && p2 && p1.score > KEYPOINT_VIS_THRESHOLD && p2.score > KEYPOINT_VIS_THRESHOLD) {
+              ctx.beginPath();
+              ctx.moveTo(p1.x, p1.y);
+              ctx.lineTo(p2.x, p2.y);
+              ctx.stroke();
+            }
+          });
+          ctx.strokeStyle = 'lime';
+        }
 
         // 인식 상태 변경 콜백 호출
         if (onRecognitionChange) {
