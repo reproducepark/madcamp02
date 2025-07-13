@@ -1,3 +1,4 @@
+// src/components/WebcamComponent.jsx
 import React, { useRef, useEffect, useState } from 'react';
 
 function WebcamComponent() {
