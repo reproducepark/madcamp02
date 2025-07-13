@@ -146,6 +146,9 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
         ctx.font = '12px Arial';
 
         let hasValidDetection = false;
+        let faceDetected = false;
+        let leftShoulderDetected = false;
+        let rightShoulderDetected = false;
 
         if (bestDetection) {
           hasValidDetection = true;
@@ -181,6 +184,18 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
               ctx.arc(kx, ky, 4, 0, 2 * Math.PI);
               ctx.fill();
               keypoints.push({ x: kx, y: ky, score: visibility, name: KEYPOINT_NAMES[i] });
+              
+              // 얼굴 키포인트 확인 (코, 왼쪽 눈, 오른쪽 눈, 왼쪽 귀, 오른쪽 귀)
+              if (i >= 0 && i <= 4) {
+                faceDetected = true;
+              }
+              // 어깨 키포인트 확인 (왼쪽 어깨, 오른쪽 어깨)
+              if (i === 5) { // 왼쪽 어깨
+                leftShoulderDetected = true;
+              }
+              if (i === 6) { // 오른쪽 어깨
+                rightShoulderDetected = true;
+              }
             } else {
               keypoints.push(null);
             }
@@ -202,6 +217,9 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
           });
           ctx.strokeStyle = 'lime';
         }
+
+        // 얼굴과 양쪽 어깨가 모두 인식되었을 때만 유효한 감지로 판단
+        hasValidDetection = hasValidDetection && faceDetected && leftShoulderDetected && rightShoulderDetected;
 
         // 인식 상태 변경 콜백 호출
         if (onRecognitionChange) {
