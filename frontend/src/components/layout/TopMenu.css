@@ -78,18 +78,49 @@
 }
 
 .dropdown-item {
-  display: block;
   width: 100%;
+  padding: 10px 15px;
   background: none;
   border: none;
-  cursor: pointer;
   text-align: left;
-  padding: 0.5rem 1rem;
-  white-space: nowrap;
+  cursor: pointer;
+  color: #333;
+  font-size: 14px;
 }
 
 .dropdown-item:hover {
-  background: #f0f0f0;
+  background-color: #f0f0f0;
+}
+
+.dropdown-item-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  cursor: pointer;
+}
+
+.dropdown-item-container:hover {
+  background-color: #f0f0f0;
+}
+
+.dropdown-item-name {
+  padding: 10px 0;
+  flex-grow: 1;
+}
+
+.dropdown-item-setting-btn {
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-left: 10px;
+}
+
+.dropdown-item-setting-btn:hover {
+  background-color: #e0e0e0;
 }
 
 /* 기존 아이콘 버튼 및 드롭다운 스타일 */

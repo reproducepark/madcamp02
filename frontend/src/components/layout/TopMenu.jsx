@@ -95,16 +95,26 @@ function TopMenu() {
                   <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
                   {teams.length > 0 ? (
                     teams.map((team) => (
-                      <button
-                        key={team.id}
-                        className="dropdown-item"
+                      <div key={team.id} className="dropdown-item-container">
+                        <span 
+                        className="dropdown-item-name"
                         onClick={() => {
-                          setSelectedTeam(team);
-                          openManageModal();
+                          navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
+                          setIsDropdownOpen(false); // 드롭다운 닫기
                         }}
                       >
                         {team.name}
-                      </button>
+                      </span>
+                        <button 
+                          className="dropdown-item-setting-btn"
+                          onClick={() => {
+                            setSelectedTeam(team);
+                            openManageModal();
+                          }}
+                        >
+                          설정
+                        </button>
+                      </div>
                     ))
                   ) : null
                 }

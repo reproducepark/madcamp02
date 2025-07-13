@@ -131,3 +131,56 @@
   .todo-goal-btn:hover {
     background-color: #218838;
   }
+  
+  /* ScrumGoalItem 스타일 */
+  .scrum-goal-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    position: relative; /* X 버튼 위치 지정을 위해 */
+  }
+  
+  .scrum-goal-item:last-child {
+    border-bottom: none;
+  }
+  
+  .scrum-goal-checkbox {
+    margin-right: 10px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+  
+  .scrum-goal-text {
+    flex-grow: 1;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .scrum-goal-text.completed {
+    text-decoration: line-through;
+    color: #aaa;
+  }
+  
+  .scrum-goal-dates {
+    font-size: 0.85rem;
+    color: #666;
+    margin-left: 10px;
+  }
+  
+  .scrum-goal-delete-btn {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 10px;
+    opacity: 0; /* 기본적으로 숨김 */
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  .scrum-goal-item:hover .scrum-goal-delete-btn {
+    opacity: 1; /* 호버 시 보임 */
+  }

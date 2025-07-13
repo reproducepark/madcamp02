@@ -1,24 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-function ScrumGoalItem({ goal, onToggle, onDelete }) {
+function ScrumGoalItem({ goal, onToggle, onDelete, isTeammateView = false }) {
   return (
-    <li className="todo-goal-item">
-      <span 
-        className={`todo-goal-dot ${goal.completed ? 'completed' : ''}`}
-        onClick={() => onToggle && onToggle(goal.id)}
-      ></span>
-      <span className={`todo-goal-text ${goal.completed ? 'completed' : ''}`}>{goal.text}</span>
-      {onDelete && (
-        <button 
-          className="todo-goal-delete-btn"
-          onClick={() => onDelete(goal.id)}
-          title="삭제"
-        >
-          ×
-        </button>
-      )}
+    <li className="todo-item">
+      <input
+        type="checkbox"
+        checked={goal.real_end_date !== null}
+        onChange={() => onToggle(goal.id)}
+      />
+      <span className="todo-text">
+        {goal.content}
+        <span className="scrum-goal-dates">
+          ({goal.start_date?.split('T')[0]} ~ {goal.planned_end_date?.split('T')[0]})
+        </span>
+      </span>
+      <button className="delete-button" onClick={() => onDelete(goal.id)}>×</button>
     </li>
   );
 }
 
-export default ScrumGoalItem; 
+export default ScrumGoalItem;
