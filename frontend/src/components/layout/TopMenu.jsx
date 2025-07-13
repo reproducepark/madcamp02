@@ -96,7 +96,15 @@ function TopMenu() {
                   {teams.length > 0 ? (
                     teams.map((team) => (
                       <div key={team.id} className="dropdown-item-container">
-                        <span className="dropdown-item-name">{team.name}</span>
+                        <span 
+                        className="dropdown-item-name"
+                        onClick={() => {
+                          navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
+                          setIsDropdownOpen(false); // 드롭다운 닫기
+                        }}
+                      >
+                        {team.name}
+                      </span>
                         <button 
                           className="dropdown-item-setting-btn"
                           onClick={() => {
