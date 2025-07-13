@@ -95,16 +95,18 @@ function TopMenu() {
                   <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
                   {teams.length > 0 ? (
                     teams.map((team) => (
-                      <button
-                        key={team.id}
-                        className="dropdown-item"
-                        onClick={() => {
-                          setSelectedTeam(team);
-                          openManageModal();
-                        }}
-                      >
-                        {team.name}
-                      </button>
+                      <div key={team.id} className="dropdown-item-container">
+                        <span className="dropdown-item-name">{team.name}</span>
+                        <button 
+                          className="dropdown-item-setting-btn"
+                          onClick={() => {
+                            setSelectedTeam(team);
+                            openManageModal();
+                          }}
+                        >
+                          설정
+                        </button>
+                      </div>
                     ))
                   ) : null
                 }
