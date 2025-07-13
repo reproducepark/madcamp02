@@ -55,3 +55,15 @@ export const addTeamMember = (teamId, userId) => {
 export const removeTeamMember = (teamId, userId) => {
   return apiDelete(`/team/${teamId}/members/${userId}`);
 };
+
+
+/**
+ * 팀 목표 생성
+ * @param {string} teamId 
+ * @param {Object} goalData 
+ * @returns {Promise<Object>}
+ */
+export const createTeamGoal = (teamId, goalData) => {
+  return apiPost(`/team/${teamId}/goal`, goalData);
+};
+

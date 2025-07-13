@@ -188,28 +188,38 @@ function ScrumPage() {
             <div className="todo-goal-input-group">
               <div className="date-input-container">
                 <input 
-                  type="date" 
+                  type="date"
                   className="date-input"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
+                  disabled={!currentTeamId}
                 />
                 <span>~</span>
                 <input 
-                  type="date" 
+                  type="date"
                   className="date-input"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
+                  disabled={!currentTeamId}
                 />
               </div>
               <input 
-                className="todo-goal-input" 
+                className="todo-goal-input"
                 placeholder="목표 내용"
                 value={newGoalInput}
                 onChange={(e) => setNewGoalInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAddGoal()}
+                disabled={!currentTeamId}
               />
-              <button className="todo-goal-btn" onClick={handleAddGoal}>등록</button>
+              <button 
+                className="todo-goal-btn" 
+                onClick={handleAddGoal}
+                disabled={!currentTeamId}
+              >
+                등록
+              </button>
             </div>
+
           </aside>
         </main>
       </div>
