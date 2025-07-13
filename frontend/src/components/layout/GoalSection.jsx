@@ -16,7 +16,7 @@ function GoalSection({ goalId, title, todos = [], onActivate, onDeleteTodo, isTe
             <input
               type="checkbox"
               className="todo-checkbox"
-              checked={todo.completed}
+              checked={todo.isCompleted}
               onChange={() => todo.onToggle && todo.onToggle(todo.id || index)}
               disabled={todo.disabled || isTeammateView}
             />

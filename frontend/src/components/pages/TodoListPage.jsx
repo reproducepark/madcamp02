@@ -7,77 +7,84 @@ import Divider from '../layout/Divider';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import PersonalMemoSection from '../layout/PersonalMemoSection';
+import { getTeams, getTeamGoals } from '../../services/teamService';
 import { getMemos, createMemo, deleteMemo } from '../../services/memoService';
+import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 
 function TodoListPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
-  
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      title: '프로젝트 계획',
-      todos: [
-        { id: 1, text: '요구사항 분석', completed: false, disabled: false },
-        { id: 2, text: '기술 스택 선정', completed: true, disabled: false }
-      ]
-    },
-    {
-      id: 2,
-      title: '개발 작업',
-      todos: [
-        { id: 3, text: '데이터베이스 설계', completed: true, disabled: false },
-        { id: 4, text: 'API 개발', completed: false, disabled: false }
-      ]
-    }
-  ]);
 
+  const [currentTeamId, setCurrentTeamId] = useState(null);
+  const [currentTeamName, setCurrentTeamName] = useState('');
+  const [goals, setGoals] = useState([]);
   const [activeGoalId, setActiveGoalId] = useState(null);
-  const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
-
-  const [newTodoText, setNewTodoText] = useState('');
-  const [memos, setMemos] = useState([]);
   const [newInput, setNewInput] = useState('');
+  const [memos, setMemos] = useState([]);
 
-  // ✅ 입력창 wrapper ref
+  const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
   const inputGroupRef = useRef();
 
-  // ✅ 페이지 다른 곳 클릭하면 비활성화
   useEffect(() => {
     const handleClickOutside = (e) => {
-      console.log('클릭한 요소:', e.target);
-
       if (
         e.target.closest('.goal-section') ||
         inputGroupRef.current?.contains(e.target)
-      ) {
-        console.log('✅ 내부 클릭 - 유지');
-        return;
-      }
-
-      console.log('🛑 외부 클릭 - 비활성화');
+      ) return;
       setActiveGoalId(null);
     };
-
     document.addEventListener('click', handleClickOutside);
-    return () => {
-      document.removeEventListener('click', handleClickOutside);
-    };
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
+
+  // ✅ 팀 불러오기
+  useEffect(() => {
+    const loadTeams = async () => {
+      const res = await getTeams();
+      if (res.success && res.data.teams.length > 0) {
+        setCurrentTeamId(res.data.teams[0].id);
+        setCurrentTeamName(res.data.teams[0].name);
+      }
+    };
+    loadTeams();
+  }, []);
+
+  // ✅ 팀 목표 + SubGoal 불러오기
+  const loadTeamGoals = async () => {
+    if (!currentTeamId) return;
+    const res = await getTeamGoals(currentTeamId);
+    if (res.success) {
+      const goalsWithSubGoals = await Promise.all(res.data.goals.map(async goal => {
+        const subRes = await getSubGoals(goal.id);
+        return {
+          id: goal.id,
+          title: goal.content,
+          todos: subRes.success ? subRes.data.subgoals.map(sg => ({
+            id: sg.id,
+            text: sg.content,
+            completed: sg.is_completed,
+            disabled: false
+          })) : []
+        };
+      }));
+      setGoals(goalsWithSubGoals);
+    }
+  };
+
+  useEffect(() => {
+    loadTeamGoals();
+  }, [currentTeamId]);
 
   // 🗒️ 개인 메모 불러오기
   useEffect(() => {
     const loadMemos = async () => {
       const res = await getMemos();
       if (res.success) setMemos(res.data.memos);
-    }
+    };
     loadMemos();
   }, []);
 
-  const handleActivateGoal = (goalId) => {
-    setActiveGoalId(goalId);
-  };
-
-  const handleAddTodo = async () => {
+  // ✅ 등록
+  const handleAdd = async () => {
     if (!newInput.trim()) {
       showAlert('입력 오류', '내용을 입력해주세요.');
       return;
@@ -85,69 +92,38 @@ function TodoListPage() {
 
     if (activeGoalId === 'memo') {
       await createMemo(newInput.trim());
-      setNewInput('');
-      setActiveGoalId(null);
       const res = await getMemos();
       setMemos(res.data.memos);
     } else {
-      setGoals(prevGoals =>
-        prevGoals.map(goal =>
-          goal.id === activeGoalId
-            ? {
-                ...goal,
-                todos: [
-                  ...goal.todos,
-                  {
-                    id: Date.now(),
-                    text: newInput.trim(),
-                    completed: false,
-                    disabled: false
-                  }
-                ]
-              }
-            : goal
-        )
-      );
-      setNewInput('');
-      setActiveGoalId(null);
+      await createSubGoal(activeGoalId, { content: newInput.trim() });
+      await loadTeamGoals();
+    }
+
+    setNewInput('');
+    setActiveGoalId(null);
+  };
+
+  // ✅ 토글
+  const handleToggleTodo = async (goalId, todoId, completed) => {
+    try {
+      if (completed) {
+        await uncompleteSubGoal(todoId);
+      } else {
+        await completeSubGoal(todoId);
+      }
+      await loadTeamGoals();
+    } catch (err) {
+      console.error('체크박스 토글 실패:', err);
+      showAlert('에러', '완료 상태 변경 실패');
     }
   };
 
-  const handleToggleTodo = (goalId, todoId) => {
-    setGoals(prevGoals =>
-      prevGoals.map(goal =>
-        goal.id === goalId
-          ? {
-              ...goal,
-              todos: goal.todos.map(todo =>
-                todo.id === todoId
-                  ? { ...todo, completed: !todo.completed }
-                  : todo
-              )
-            }
-          : goal
-      )
-    );
-  };
-
+  // ✅ 삭제
   const handleDeleteTodo = async (goalId, todoId) => {
-    const confirmed = await showConfirm(
-      '할일 삭제',
-      '정말로 이 할일을 삭제하시겠습니까?',
-      '삭제',
-      '취소'
-    );
+    const confirmed = await showConfirm('할일 삭제', '정말로 삭제할까요?', '삭제', '취소');
     if (confirmed) {
-      setGoals(prevGoals =>
-        prevGoals.map(goal =>
-          goal.id === goalId
-            ? {
-                ...goal,
-                todos: goal.todos.filter(todo => todo.id !== todoId)
-              }
-            : goal
-        )
-      );
+      await deleteSubGoal(todoId);
+      await loadTeamGoals();
     }
   };
 
@@ -159,13 +135,12 @@ function TodoListPage() {
         <main className="main-content">
           <div className="todo-center-card">
             <div className="todo-center-title">중앙 영역</div>
-            <div className="todo-center-content">
-              중앙에 들어갈 컴포넌트입니다
-            </div>
           </div>
 
           <div className="todo-card">
-            <div className="todo-date">2025. 1. 1.</div>
+            <div className="todo-date">
+              {currentTeamName ? `${currentTeamName} 팀` : '팀을 선택해주세요'}
+            </div>
             <Divider />
 
             <div className="todo-content">
@@ -176,9 +151,9 @@ function TodoListPage() {
                     title={goal.title}
                     todos={goal.todos.map(todo => ({
                       ...todo,
-                      onToggle: (todoId) => handleToggleTodo(goal.id, todoId)
+                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.completed)
                     }))}
-                    onActivate={handleActivateGoal}
+                    onActivate={setActiveGoalId}
                     onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
                   />
                   {index < goals.length - 1 && <Divider />}
@@ -197,7 +172,6 @@ function TodoListPage() {
               />
             </div>
 
-            {/* ✅ 항상 존재하되, 활성화된 목표일 때만 활성화 */}
             <div className="todo-goal-input-group" ref={inputGroupRef}>
               <input
                 placeholder={
@@ -213,7 +187,7 @@ function TodoListPage() {
               />
               <button
                 className="todo-goal-btn"
-                onClick={handleAddTodo}
+                onClick={handleAdd}
                 disabled={!activeGoalId}
               >
                 등록

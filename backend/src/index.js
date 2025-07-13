@@ -7,6 +7,7 @@ import authRouter from './routes/auth.js';
 import teamRouter from './routes/team.js';
 import teamGoalRouter from './routes/goal.js'
 import memoRouter from './routes/memo.js'
+import subgoalRouter from './routes/subgoal.js'
 
 
 const app = express();
@@ -19,6 +20,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/team', teamRouter);
 app.use('/api/team', teamGoalRouter)
 app.use('/api/memo', memoRouter)
+app.use('/api/teamGoal', subgoalRouter);
 
 app.get('/api', (req, res) => {
     res.json({ message: 'Hello from the backend!' });
