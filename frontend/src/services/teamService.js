@@ -24,7 +24,7 @@ export const getTeams = () => {
  * @returns {Promise<Object>} API 응답
  */
 export const updateTeam = (teamId, newName) => {
-  return apiPut(`/teams/${teamId}`, { name: newName });
+  return apiPut(`/team/${teamId}`, { name: newName });
 };
 
 /**
@@ -33,7 +33,7 @@ export const updateTeam = (teamId, newName) => {
  * @returns {Promise<Object>} API 응답
  */
 export const deleteTeam = (teamId) => {
-  return apiDelete(`/teams/${teamId}`);
+  return apiDelete(`/team/${teamId}`);
 };
 
 /**
@@ -43,7 +43,7 @@ export const deleteTeam = (teamId) => {
  * @returns {Promise<Object>} API 응답
  */
 export const addTeamMember = (teamId, userId) => {
-  return apiPost(`/teams/${teamId}/members`, { userId });
+  return apiPost(`/team/${teamId}/members`, { userId });
 };
 
 /**
@@ -53,5 +53,5 @@ export const addTeamMember = (teamId, userId) => {
  * @returns {Promise<Object>} API 응답
  */
 export const removeTeamMember = (teamId, userId) => {
-  return apiDelete(`/teams/${teamId}/members/${userId}`);
+  return apiDelete(`/team/${teamId}/members/${userId}`);
 };

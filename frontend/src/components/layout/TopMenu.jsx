@@ -59,7 +59,7 @@ function TopMenu() {
 
   const handleTeamUpdated = () => {
     // fetchTeams(); // 팀 업데이트 후 목록 새로고침
-    alert('팀 업데이트 로직 (하드코딩): 실제 API 호출 필요');
+    // alert('팀 업데이트 로직 (하드코딩): 실제 API 호출 필요');
   };
 
   const handleTeamDeleted = () => {
@@ -106,9 +106,8 @@ function TopMenu() {
                         {team.name}
                       </button>
                     ))
-                  ) : (
-                    <p className="dropdown-message">소속된 팀이 없습니다.</p>
-                  )}
+                  ) : null
+                }
                 </div>
               )}
             </div>
@@ -169,6 +168,7 @@ function TopMenu() {
 
       {selectedTeam && (
         <TeamManageModal
+          key={selectedTeam?.id || 'new-team'}
           isOpen={isManageModalOpen}
           onClose={() => {
             closeManageModal();
