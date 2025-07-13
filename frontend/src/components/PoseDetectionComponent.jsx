@@ -154,8 +154,8 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
         const scaleY = canvasHeight / modelInputSize;
         
         ctx.lineWidth = 2;
-        ctx.strokeStyle = 'lime';
-        ctx.fillStyle = 'red';
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0)'; // 투명한 라임색
+        ctx.fillStyle = 'rgba(255, 0, 0, 0)'; // 투명한 빨간색
         ctx.font = '12px Arial';
 
         let hasValidDetection = false;
@@ -180,10 +180,10 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
           ctx.rect(x1 * scaleX, y1 * scaleY, width * scaleX, height * scaleY);
           ctx.stroke();
 
-          // 신뢰도 텍스트 표시 (스케일링 적용)
-          ctx.fillStyle = 'white';
+          // 신뢰도 텍스트 표시 (스케일링 적용) - 투명하게 설정
+          ctx.fillStyle = 'rgba(255, 255, 255, 0)'; // 투명한 흰색
           ctx.fillText(`Confidence: ${highestConfidence.toFixed(2)}`, x1 * scaleX, y1 * scaleY > 10 ? y1 * scaleY - 5 : y1 * scaleY + 15);
-          ctx.fillStyle = 'red';
+          ctx.fillStyle = 'rgba(255, 0, 0, 0)'; // 투명한 빨간색
 
           const keypoints = [];
           // 키포인트 추출 및 그리기
@@ -214,8 +214,8 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
             }
           }
 
-          // 키포인트 연결선 그리기
-          ctx.strokeStyle = 'cyan';
+          // 키포인트 연결선 그리기 - 투명하게 설정
+          ctx.strokeStyle = 'rgba(0, 255, 255, 0)'; // 투명한 시안색
           ctx.lineWidth = 2;
           KEYPOINT_CONNECTIONS.forEach(([p1Index, p2Index]) => {
             const p1 = keypoints[p1Index];
@@ -228,7 +228,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange }) {
               ctx.stroke();
             }
           });
-          ctx.strokeStyle = 'lime';
+          ctx.strokeStyle = 'rgba(0, 255, 0, 0)'; // 투명한 라임색
         }
 
         // 얼굴과 양쪽 어깨가 모두 인식되었을 때만 유효한 감지로 판단
