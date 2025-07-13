@@ -1,4 +1,4 @@
-import { apiRequest, apiPost, apiGet, apiPut, apiDelete } from './apiService';
+import { apiRequest, apiPost, apiGet, apiPut, apiDelete, apiPatch } from './apiService'
 
 /**
  * 팀 생성
@@ -64,6 +64,26 @@ export const removeTeamMember = (teamId, userId) => {
  * @returns {Promise<Object>}
  */
 export const createTeamGoal = (teamId, goalData) => {
+  console.log('🛠 Sending POST to /api/team/${teamId}/goal', goalData)
   return apiPost(`/team/${teamId}/goal`, goalData);
 };
 
+// 팀 목표 목록 조회
+export const getTeamGoals = (teamId) => {
+  return apiGet(`/team/${teamId}/goals`);
+};
+
+// 팀 목표 삭제
+export const deleteTeamGoal = (goalId) => {
+  return apiDelete(`/team/goal/${goalId}`);
+};
+
+// 팀 목표 완료
+export const completeTeamGoal = (goalId) => {
+  return apiPatch(`/team/goal/${goalId}/complete`);
+};
+
+// 팀 목표 완료 취소
+export const uncompleteTeamGoal = (goalId) => {
+  return apiPatch(`/team/goal/${goalId}/uncomplete`);
+};

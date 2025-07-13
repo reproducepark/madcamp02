@@ -121,6 +121,23 @@ export const apiUpload = (endpoint, formData, headers = {}) => {
   });
 };
 
+
+/**
+ * PATCH 요청
+ * @param {string} endpoint - API 엔드포인트
+ * @param {Object} data - 전송할 데이터
+ * @param {Object} headers - 추가 헤더
+ * @returns {Promise<Object>} API 응답
+ */
+export const apiPatch = (endpoint, data, headers = {}) => {
+  return apiRequest(endpoint, {
+    method: 'PATCH',
+    headers: { ...getAuthHeaders(), ...headers },
+    body: JSON.stringify(data)
+  });
+};
+
+
 /**
  * 에러 메시지 처리
  * @param {Object} error - 에러 객체

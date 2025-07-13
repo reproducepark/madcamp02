@@ -5,24 +5,16 @@ function ScrumGoalItem({ goal, onToggle, onDelete, isTeammateView = false }) {
     <li className="todo-item">
       <input
         type="checkbox"
-        className="todo-checkbox"
-        checked={goal.completed}
+        checked={goal.real_end_date !== null}
         onChange={() => onToggle(goal.id)}
-        disabled={goal.disabled || isTeammateView}
       />
       <span className="todo-text">
-        {goal.text}
-        <span className="scrum-goal-dates"> ({goal.startDate} ~ {goal.endDate})</span>
+        {goal.content}
+        <span className="scrum-goal-dates">
+          ({goal.start_date?.split('T')[0]} ~ {goal.planned_end_date?.split('T')[0]})
+        </span>
       </span>
-      {!isTeammateView && (
-        <button 
-          className="delete-button"
-          onClick={() => onDelete(goal.id)}
-          title="삭제"
-        >
-          ×
-        </button>
-      )}
+      <button className="delete-button" onClick={() => onDelete(goal.id)}>×</button>
     </li>
   );
 }

@@ -7,6 +7,7 @@ import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import { getTeams } from '../../services'; // getTeams import
 import '../../styles/ScrumPage.css';
+import { createTeamGoal, getTeamGoals, deleteTeamGoal, completeTeamGoal, uncompleteTeamGoal } from '../../services/teamService';
 
 function ScrumPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
@@ -20,6 +21,15 @@ function ScrumPage() {
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
+  const loadGoals = async () => {
+    if (!currentTeamId) return;
+    try {
+      const response = await getTeamGoals(currentTeamId);
+      setScrumGoals(response.data.goals);
+    } catch (err) {
+      console.error('목표 로딩 실패:', err);
+    }
+  };
 
   // 팀 정보 설정 useEffect
   useEffect(() => {
@@ -54,64 +64,59 @@ function ScrumPage() {
 
   // 스크럼 목표 설정 useEffect
   useEffect(() => {
-    if (currentTeamId) {
-      // TODO: 실제 API 호출로 해당 currentTeamId의 목표를 불러오는 로직 추가
-      setScrumGoals([
-        {
-          id: 1,
-          text: `팀 ${currentTeamName}의 스프린트 계획 수립`,
-          completed: false,
-          startDate: '2025-01-01',
-          endDate: '2025-01-07'
-        },
-        {
-          id: 2,
-          text: `팀 ${currentTeamName}의 데일리 스크럼 진행`,
-          completed: true,
-          startDate: '2025-01-01',
-          endDate: '2025-01-15'
-        },
-      ]);
-    } else {
+    if (!currentTeamId) {
       // 팀이 선택되지 않은 경우 기본 목표 또는 빈 목록
-      setScrumGoals([
-        {
-          id: 1,
-          text: '기본 스프린트 계획 수립',
-          completed: false,
-          startDate: '2025-01-01',
-          endDate: '2025-01-07'
-        },
-      ]);
+      // setScrumGoals([
+      //   {
+      //     id: 1,
+      //     text: '기본 스프린트 계획 수립',
+      //     completed: false,
+      //     startDate: '2025-01-01',
+      //     endDate: '2025-01-07'
+      //   },
+      // ]);
     }
   }, [currentTeamId, currentTeamName]);
 
-  const handleToggleGoal = (goalId) => {
-    setScrumGoals(prevGoals => 
-      prevGoals.map(goal => 
-        goal.id === goalId 
-          ? { ...goal, completed: !goal.completed }
-          : goal
-      )
-    );
-  };
+  useEffect(() => {
+    loadGoals();
+  }, [currentTeamId]);
 
-  const handleDeleteGoal = async (goalId) => {
-    const confirmed = await showConfirm(
-      '목표 삭제',
-      '정말로 이 목표를 삭제하시겠습니까?',
-      '삭제',
-      '취소'
-    );
-    
-    if (confirmed) {
-      setScrumGoals(prevGoals => 
-        prevGoals.filter(goal => goal.id !== goalId)
-      );
+const handleToggleGoal = async (goalId, currentCompleted) => {
+  try {
+    if (currentCompleted) {
+      await uncompleteTeamGoal(goalId);
+    } else {
+      await completeTeamGoal(goalId);
     }
-  };
+    await loadGoals();
+  } catch (err) {
+    console.error('체크박스 처리 실패:', err);
+  }
+};
 
-  const handleAddGoal = () => {
+const handleDeleteGoal = async (goalId) => {
+  const confirmed = await showConfirm(
+    '목표 삭제',
+    '정말로 이 목표를 삭제하시겠습니까?',
+    '삭제',
+    '취소'
+  );
+  if (confirmed) {
+    try {
+      await deleteTeamGoal(goalId);
+      await loadGoals(); // 최신 목록 다시 불러오기
+      showAlert('삭제 완료', '목표가 삭제되었습니다.');
+    } catch (err) {
+      console.error('🔥 Failed to delete goal', err);
+      showAlert('삭제 실패', '목표 삭제 중 오류가 발생했습니다.');
+    }
+  }
+};
+
+  const handleAddGoal = async () => {
+    console.log('handleAddGoal called', { currentTeamId, newGoalInput, startDate, endDate });
+
     if (!newGoalInput.trim()) {
       showAlert('입력 오류', '목표 내용을 입력해주세요.');
       return;
@@ -121,23 +126,29 @@ function ScrumPage() {
       return;
     }
     if (new Date(startDate) > new Date(endDate)) {
-        showAlert('입력 오류', '종료 날짜는 시작 날짜보다 빠를 수 없습니다.');
-        return;
+      showAlert('입력 오류', '종료 날짜는 시작 날짜보다 빠를 수 없습니다.');
+      return;
+    }
+    if (!currentTeamId) {
+      showAlert('팀 없음', '팀을 먼저 선택해주세요.');
+      return;
     }
 
-    const newGoal = {
-      id: Date.now(),
-      text: newGoalInput.trim(),
-      completed: false,
-      startDate: startDate,
-      endDate: endDate
-    };
-    
-    setScrumGoals(prevGoals => [...prevGoals, newGoal]);
-    setNewGoalInput('');
-    setStartDate(today);
-    setEndDate(today);
-    showAlert('목표 추가', '새로운 목표가 추가되었습니다.');
+    try {
+      console.log('👉 Now calling createTeamGoal API');
+      await createTeamGoal(currentTeamId, {
+        content: newGoalInput.trim(),
+        startDate,
+        plannedEndDate: endDate
+      });
+      await loadGoals(); // 최신 데이터 반영
+      setNewGoalInput('');
+      setStartDate(today);
+      setEndDate(today);
+      showAlert('목표 추가', '새로운 목표가 추가되었습니다.');
+    } catch (err) {
+      console.error('🔥 Failed to create goal', err);
+    }
   };
 
   const handleCreateScrum = () => {
@@ -177,12 +188,12 @@ function ScrumPage() {
             </div>
             <ul className="todo-goal-list">
               {scrumGoals.map((goal) => (
-                <ScrumGoalItem
-                  key={goal.id}
-                  goal={goal}
-                  onToggle={handleToggleGoal}
-                  onDelete={handleDeleteGoal}
-                />
+              <ScrumGoalItem
+                key={goal.id}
+                goal={goal}
+                onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null)}
+                onDelete={handleDeleteGoal}
+              />
               ))}
             </ul>
             <div className="todo-goal-input-group">
