@@ -92,19 +92,19 @@ export function calculateShoulderNeckAngle(keypoints) {
 }
 
 /**
- * 어깨와 목의 각도가 60도보다 작은지 확인하는 함수
+ * 어깨와 목의 각도가 20도보다 큰지 확인하는 함수
  * @param {Array} keypoints - 키포인트 배열
- * @param {number} threshold - 각도 임계값 (기본값: 60도)
- * @returns {boolean} 각도가 임계값보다 작으면 true
+ * @param {number} threshold - 각도 임계값 (기본값: 20도)
+ * @returns {boolean} 각도가 임계값보다 크면 true
  */
-export function isShoulderNeckAngleLessThan(keypoints, threshold = 60) {
+export function isShoulderNeckAngleGreaterThan(keypoints, threshold = 20) {
   const angle = calculateShoulderNeckAngle(keypoints);
   
   if (angle === null) {
     return false;
   }
 
-  return angle < threshold;
+  return angle > threshold;
 }
 
 /**
@@ -116,12 +116,12 @@ export function isShoulderNeckAngleLessThan(keypoints, threshold = 60) {
 export function analyzePose(keypoints, canvasHeight) {
   const faceInLowerHalf = isFaceInLowerHalf(keypoints, canvasHeight);
   const shoulderNeckAngle = calculateShoulderNeckAngle(keypoints);
-  const isAngleLessThan60 = isShoulderNeckAngleLessThan(keypoints, 60);
+  const isAngleGreaterThan20 = isShoulderNeckAngleGreaterThan(keypoints, 20);
 
   return {
     faceInLowerHalf,
     shoulderNeckAngle,
-    isAngleLessThan60,
+    isAngleGreaterThan20,
     isValid: shoulderNeckAngle !== null
   };
 }
@@ -138,8 +138,8 @@ export function getPoseCorrectionMessage(poseAnalysis) {
     messages.push("얼굴을 화면 상단으로 올려주세요.");
   }
 
-  if (poseAnalysis.isValid && poseAnalysis.shoulderNeckAngle > 60) {
-    messages.push("목을 더 숙여주세요. (현재 각도: " + Math.round(poseAnalysis.shoulderNeckAngle) + "도)");
+  if (poseAnalysis.isValid && poseAnalysis.shoulderNeckAngle > 20) {
+    messages.push("목을 더 들어올려주세요. (현재 각도: " + Math.round(poseAnalysis.shoulderNeckAngle) + "도)");
   }
 
   if (messages.length === 0) {

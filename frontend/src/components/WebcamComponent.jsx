@@ -61,7 +61,7 @@ function WebcamComponent() {
       console.log('=== 포즈 분석 결과 ===');
       console.log('목-어깨 각도:', analysis.shoulderNeckAngle !== null ? `${Math.round(analysis.shoulderNeckAngle)}도` : '측정 불가');
       console.log('얼굴 위치 (하단):', analysis.faceInLowerHalf ? '예' : '아니오');
-      console.log('목 각도 경고 (60도 미만):', analysis.isAngleLessThan60 ? '아니오' : '예');
+      console.log('목 각도 경고 (20도 초과):', analysis.isAngleGreaterThan20 ? '예' : '아니오');
       console.log('분석 유효성:', analysis.isValid ? '유효' : '무효');
       console.log('전체 분석 객체:', analysis);
       console.log('========================');
