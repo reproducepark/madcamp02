@@ -4,6 +4,9 @@ function WebcamComponent() {
   const videoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState(null);
+  const [postureCheckInterval, setPostureCheckInterval] = useState(3);
+  const [neckAngleCheck, setNeckAngleCheck] = useState(false);
+  const [facePositionCheck, setFacePositionCheck] = useState(false);
 
   useEffect(() => {
     startWebcam();
@@ -48,9 +51,6 @@ function WebcamComponent() {
 
   return (
     <div className="webcam-container">
-      <div className="webcam-header">
-        <h3>실시간 웹캠</h3>
-      </div>
       
       <div className="webcam-video-container">
         {error ? (
@@ -76,30 +76,45 @@ function WebcamComponent() {
         </div>
       )}
 
-      {/* 설정 영역 */}
+      {/* 자세 확인 설정 영역 */}
       <div className="webcam-settings">
-        <h4>설정</h4>
+        <h4>자세 확인 설정</h4>
         <div className="settings-content">
           <div className="setting-item">
-            <label>해상도</label>
-            <select className="setting-select">
-              <option value="640x480">640x480</option>
-              <option value="1280x720">1280x720</option>
-              <option value="1920x1080">1920x1080</option>
+            <label>자세 확인 주기</label>
+            <select 
+              className="setting-select"
+              value={postureCheckInterval}
+              onChange={(e) => setPostureCheckInterval(Number(e.target.value))}
+            >
+              <option value={1}>1분</option>
+              <option value={3}>3분</option>
+              <option value={5}>5분</option>
             </select>
           </div>
           <div className="setting-item">
-            <label>프레임 레이트</label>
-            <select className="setting-select">
-              <option value="30">30 FPS</option>
-              <option value="60">60 FPS</option>
-            </select>
+            <label>목 각도 확인</label>
+            <button 
+              className={`toggle-button ${neckAngleCheck ? 'active' : ''}`}
+              onClick={() => setNeckAngleCheck(!neckAngleCheck)}
+            >
+              <span className="toggle-slider"></span>
+              <span className="toggle-text">
+                {neckAngleCheck ? 'ON' : 'OFF'}
+              </span>
+            </button>
           </div>
           <div className="setting-item">
-            <label>카메라</label>
-            <select className="setting-select">
-              <option value="default">기본 카메라</option>
-            </select>
+            <label>얼굴 위치 확인</label>
+            <button 
+              className={`toggle-button ${facePositionCheck ? 'active' : ''}`}
+              onClick={() => setFacePositionCheck(!facePositionCheck)}
+            >
+              <span className="toggle-slider"></span>
+              <span className="toggle-text">
+                {facePositionCheck ? 'ON' : 'OFF'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
