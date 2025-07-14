@@ -11,8 +11,8 @@ export const getTeamMemos = (teamId) => {
 };
 
 // 🔥 개인 메모 생성
-export const createMemo = (content) => {
-  return apiPost('/memo', { content });
+export const createMemo = (content, teamId) => {
+  return apiPost('/memo', { content, teamId });
 };
 
 // 🔥 개인 메모 삭제

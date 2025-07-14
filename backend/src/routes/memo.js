@@ -41,19 +41,10 @@ router.get('/team/:teamId', authenticateToken, async (req, res) => {
       return res.status(403).json({ error: '해당 팀의 멤버가 아닙니다.' });
     }
 
-    // 팀의 모든 멤버 ID 조회
-    const teamMembers = await prisma.teamMember.findMany({
-      where: { team_id: parseInt(teamId) },
-      select: { user_id: true },
-    });
-
-    const memberIds = teamMembers.map(member => member.user_id);
-    console.log('👥 팀 멤버 ID들:', memberIds);
-
-    // 팀 멤버들의 모든 메모 조회
+    // 해당 팀의 메모만 조회
     const teamMemos = await prisma.memo.findMany({
       where: {
-        user_id: { in: memberIds },
+        team_id: parseInt(teamId),
       },
       include: {
         user: {
@@ -67,7 +58,7 @@ router.get('/team/:teamId', authenticateToken, async (req, res) => {
     });
 
     console.log('📋 조회된 메모 개수:', teamMemos.length);
-    console.log('📝 메모 목록:', teamMemos.map(memo => ({ id: memo.id, content: memo.content, user_id: memo.user_id })));
+    console.log('📝 메모 목록:', teamMemos.map(memo => ({ id: memo.id, content: memo.content, user_id: memo.user_id, team_id: memo.team_id })));
 
     res.json({ memos: teamMemos });
   } catch (err) {
@@ -79,11 +70,29 @@ router.get('/team/:teamId', authenticateToken, async (req, res) => {
 // ✅ 개인 메모 생성
 router.post('/', authenticateToken, async (req, res) => {
   const userId = req.user.num;
-  const { content } = req.body;
+  const { content, teamId } = req.body;
+  
+  if (!teamId) {
+    return res.status(400).json({ error: '팀 ID가 필요합니다.' });
+  }
+  
   try {
+    // 사용자가 해당 팀의 멤버인지 확인
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        team_id: parseInt(teamId),
+        user_id: userId,
+      },
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ error: '해당 팀의 멤버가 아닙니다.' });
+    }
+
     const newMemo = await prisma.memo.create({
       data: {
         user_id: userId,
+        team_id: parseInt(teamId),
         content,
       }
     });

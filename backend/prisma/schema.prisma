@@ -27,6 +27,7 @@ model Team {
 
   TeamMembers TeamMember[]
   TeamGoals   TeamGoal[]
+  Memos       Memo[]
 }
 
 model TeamMember {
@@ -67,9 +68,11 @@ model SubGoal {
 model Memo {
   id           Int      @id @default(autoincrement())
   user_id      Int
+  team_id      Int
   content      String
   created_at   DateTime @default(now())
   completed_at DateTime?
 
   user         User     @relation(fields: [user_id], references: [num], onDelete: Cascade)
+  team         Team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
 }

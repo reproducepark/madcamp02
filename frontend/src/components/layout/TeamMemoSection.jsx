@@ -32,7 +32,7 @@ function TeamMemoSection({ teamId, teamName }) {
     if (!newMemoInput.trim() || !teamId) return;
 
     try {
-      await createMemo(newMemoInput.trim());
+      await createMemo(newMemoInput.trim(), teamId);
       setNewMemoInput('');
       await loadTeamMemos(); // 메모 목록 새로고침
     } catch (err) {
