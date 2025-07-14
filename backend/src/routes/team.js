@@ -165,14 +165,14 @@ router.post('/:teamId/members', authenticateToken, async (req, res) => {
   }
 });
 
-// 팀 멤버 삭제 (username 기준)
-router.delete('/:teamId/members/:username', authenticateToken, async (req, res) => {
+// 팀 멤버 삭제 (id 기준)
+router.delete('/:teamId/members/:userId', authenticateToken, async (req, res) => {
   const teamId = parseInt(req.params.teamId, 10);
-  const { username } = req.params;
+  const userId = parseInt(req.params.userId, 10);
 
   try {
     const userToRemove = await prisma.user.findUnique({
-      where: { username },
+      where: { id: userId },
     });
 
     if (!userToRemove) {
@@ -200,6 +200,7 @@ router.delete('/:teamId/members/:username', authenticateToken, async (req, res) 
     res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
+
 
 // 팀 삭제
 router.delete('/:teamId', authenticateToken, async (req, res) => {
