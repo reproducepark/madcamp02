@@ -18,6 +18,13 @@ function ScrumPage() {
   const [currentTeamId, setCurrentTeamId] = useState(null);
   const [currentTeamName, setCurrentTeamName] = useState(null);
   const [scrumGoals, setScrumGoals] = useState([]);
+  const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
+  const filteredGoals = scrumGoals.filter(goal => {
+    if (filter === 'COMPLETED') return goal.real_end_date !== null;
+    if (filter === 'INCOMPLETE') return goal.real_end_date === null;
+    return true;
+  });
+
   const [newGoalInput, setNewGoalInput] = useState('');
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
@@ -228,16 +235,38 @@ const handleDeleteGoal = async (goalId) => {
             <div className="todo-date">
               {currentTeamName ? `${currentTeamName} 팀 스크럼` : '팀을 선택해주세요'}
             </div>
+            <div className="goal-filter-buttons">
+              <button 
+                className={`filter-btn ${filter === 'INCOMPLETE' ? 'active' : ''}`}
+                onClick={() => setFilter('INCOMPLETE')}
+              >
+                미완
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'COMPLETED' ? 'active' : ''}`}
+                onClick={() => setFilter('COMPLETED')}
+              >
+                완료
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setFilter('ALL')}
+              >
+                모두
+              </button>
+            </div>
+
             <ul className="todo-goal-list">
-              {scrumGoals.map((goal) => (
-              <ScrumGoalItem
-                key={goal.id}
-                goal={goal}
-                onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
-                onDelete={handleDeleteGoal}
-              />
+              {filteredGoals.map((goal) => (
+                <ScrumGoalItem
+                  key={goal.id}
+                  goal={goal}
+                  onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
+                  onDelete={handleDeleteGoal}
+                />
               ))}
             </ul>
+
             <div className="todo-goal-input-group">
               <div className="date-input-container">
                 <input 
