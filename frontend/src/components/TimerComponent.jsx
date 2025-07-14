@@ -14,7 +14,7 @@ const TimerComponent = () => {
   const DURATION_IN_SECONDS = 60 * 60; // 60 minutes
   const timerRef = useRef(null);
 
-  useEffect(() => {
+    useEffect(() => {
     // 타이머 초기화
     if (progressBarRef.current) {
       timerRef.current = new ProgressBar.Circle(progressBarRef.current, {
@@ -48,8 +48,6 @@ const TimerComponent = () => {
       });
     }
 
-
-
     return () => {
       if (timerRef.current) {
         timerRef.current.destroy();
@@ -64,11 +62,15 @@ const TimerComponent = () => {
   };
 
   const updateKnobPosition = (degree) => {
-    const containerRadius = 100; // timer-container의 반지름
+    if (!progressBarRef.current) return;
+    
+    const rect = progressBarRef.current.getBoundingClientRect();
+    const containerRadius = rect.width / 2;
+    const knobSize = Math.max(16, Math.min(24, containerRadius / 5));
     const rotation = degree * (Math.PI / 180.0);
     const position = {
-      x: -Math.sin(rotation) * containerRadius + containerRadius,
-      y: -Math.cos(rotation) * containerRadius + containerRadius
+      x: -Math.sin(rotation) * containerRadius + containerRadius - knobSize / 2,
+      y: -Math.cos(rotation) * containerRadius + containerRadius - knobSize / 2
     };
     setKnobPosition(position);
   };
@@ -234,7 +236,9 @@ const TimerComponent = () => {
           <div 
             className="timer-bar-knob"
             style={{
-              transform: `translate(${knobPosition.x - 10}px, ${knobPosition.y - 10}px)`
+              transform: `translate(${knobPosition.x}px, ${knobPosition.y}px)`,
+              width: `${Math.max(16, Math.min(24, progressBarRef.current?.getBoundingClientRect().width / 5 || 20))}px`,
+              height: `${Math.max(16, Math.min(24, progressBarRef.current?.getBoundingClientRect().width / 5 || 20))}px`
             }}
           ></div>
           <div className="timer-time">{currentTime}</div>
