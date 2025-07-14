@@ -11,7 +11,10 @@ router.get('/:goalId/subgoals', authenticateToken, async (req, res) => {
 
   try {
     const subgoals = await prisma.subGoal.findMany({
-      where: { team_goal_id: parseInt(goalId) },
+      where: {
+        team_goal_id: parseInt(goalId),
+        user_id: req.user.id // ⭐️ 현재 로그인한 유저의 것만
+      },
       orderBy: { created_at: 'asc' },
       include: { user: true },
     });

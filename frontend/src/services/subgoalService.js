@@ -2,6 +2,7 @@ import { apiGet, apiPost, apiDelete, apiPatch } from './apiService';
 
 
 export const getSubGoals = (goalId) => {
+  console.log("🚀 getSubGoals called with goalId:", goalId);
   return apiGet(`/teamGoal/${goalId}/subgoals`);
 };
 
