@@ -50,10 +50,24 @@ function createOverlayWindow() {
     }
 
     console.log('Main: 새로운 오버레이 창 생성 시작');
+    
+    // 맥 전용 설정
+    const macSpecificOptions = process.platform === 'darwin' ? {
+        titleBarStyle: 'hidden',
+        vibrancy: 'under-window',
+        transparent: true,
+        backgroundColor: '#00000000',
+        hasShadow: false,
+        type: 'panel', // 맥에서 투명 패널로 설정
+    } : {
+        transparent: true,
+        backgroundColor: '#00000000',
+        hasShadow: false,
+    };
+    
     overlayWindow = new BrowserWindow({
         width: 200,
         height: 200,
-        transparent: true,
         frame: false,
         alwaysOnTop: true,
         skipTaskbar: true,
@@ -64,10 +78,7 @@ function createOverlayWindow() {
         closable: true, // 닫기 가능하도록 변경
         focusable: false,
         center: true,
-        backgroundColor: '#00000000', // 완전 투명 배경
-        hasShadow: false, // 창 그림자 제거
         opacity: 1.0, // 완전 불투명 (내용만)
-        titleBarStyle: 'hidden', // 맥 전용: 타이틀바 숨김
         show: false, // 처음에는 숨김
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
@@ -77,6 +88,7 @@ function createOverlayWindow() {
             enableRemoteModule: false,
             webSecurity: true,
         },
+        ...macSpecificOptions
     });
     console.log('Main: 새로운 오버레이 창 생성 완료, ID:', overlayWindow.id);
 
@@ -98,7 +110,20 @@ function createOverlayWindow() {
         if (process.platform === 'darwin') {
             // macOS에서 투명화를 위한 추가 설정
             overlayWindow.setVibrancy('under-window');
-            overlayWindow.setOpacity(0.5); // 약간의 투명도 설정
+            
+            // 맥에서 추가 투명화 설정
+            overlayWindow.setBackgroundColor('#00000000');
+            overlayWindow.setOpacity(1.0);
+            
+            // 맥에서 창 스타일 강제 설정
+            overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+            
+            // 맥에서 추가 투명화 시도
+            setTimeout(() => {
+                overlayWindow.setBackgroundColor('#00000000');
+                overlayWindow.setVibrancy('under-window');
+            }, 100);
+            
             console.log('Main: 맥 전용 투명화 설정 완료');
         }
         

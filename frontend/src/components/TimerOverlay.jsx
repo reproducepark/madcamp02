@@ -115,6 +115,32 @@ const TimerOverlay = () => {
       document.body.style.backdropFilter = 'none';
       document.documentElement.style.webkitBackdropFilter = 'none';
       document.documentElement.style.backdropFilter = 'none';
+      
+      // 맥에서 추가 투명화 설정
+      document.body.style.background = 'rgba(0, 0, 0, 0)';
+      document.documentElement.style.background = 'rgba(0, 0, 0, 0)';
+      document.body.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+      document.documentElement.style.backgroundColor = 'rgba(0, 0, 0, 0)';
+      
+      // 모든 요소의 배경 투명화
+      const allElements = document.querySelectorAll('*');
+      allElements.forEach(element => {
+        if (element.style) {
+          element.style.backgroundColor = 'transparent';
+          element.style.background = 'transparent';
+          element.style.webkitBackdropFilter = 'none';
+          element.style.backdropFilter = 'none';
+        }
+      });
+      
+      // 맥에서 추가 강제 투명화
+      setTimeout(() => {
+        document.body.style.background = 'rgba(0, 0, 0, 0) !important';
+        document.documentElement.style.background = 'rgba(0, 0, 0, 0) !important';
+        document.body.style.backgroundColor = 'rgba(0, 0, 0, 0) !important';
+        document.documentElement.style.backgroundColor = 'rgba(0, 0, 0, 0) !important';
+      }, 100);
+      
       console.log('TimerOverlay: 맥 전용 투명화 설정 완료');
     }
     
