@@ -1,10 +1,41 @@
 class TimerService {
   constructor() {
-    this.duration = 600; // 기본 10분
-    this.remaining = 600;
+    // localStorage에서 저장된 상태 복원
+    const savedState = this.loadState();
+    if (savedState) {
+      this.duration = savedState.duration;
+      this.remaining = savedState.remaining;
+      this.isRunning = false; // 페이지 이동 시에는 항상 중지 상태
+    } else {
+      this.duration = 600; // 기본 10분
+      this.remaining = 600;
+    }
     this.isRunning = false;
     this.intervalId = null;
     this.callbacks = new Set();
+  }
+
+  // 상태를 localStorage에 저장
+  saveState() {
+    try {
+      localStorage.setItem('timerState', JSON.stringify({
+        duration: this.duration,
+        remaining: this.remaining
+      }));
+    } catch (error) {
+      console.warn('타이머 상태 저장 실패:', error);
+    }
+  }
+
+  // localStorage에서 상태 복원
+  loadState() {
+    try {
+      const saved = localStorage.getItem('timerState');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.warn('타이머 상태 복원 실패:', error);
+      return null;
+    }
   }
 
   // 콜백 등록
@@ -31,6 +62,7 @@ class TimerService {
       this.duration = total;
       this.remaining = total;
       this.stop();
+      this.saveState();
       this.notify();
     }
   }
@@ -53,8 +85,10 @@ class TimerService {
       if (this.remaining <= 1) {
         this.stop();
         this.remaining = 0;
+        this.saveState();
       } else {
         this.remaining--;
+        this.saveState();
       }
       this.notify();
     }, 1000);
@@ -72,6 +106,7 @@ class TimerService {
       this.intervalId = null;
     }
     
+    this.saveState();
     this.notify();
   }
 
@@ -82,12 +117,14 @@ class TimerService {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    this.saveState();
   }
 
   // 타이머 리셋
   reset() {
     this.remaining = this.duration;
     this.stop();
+    this.saveState();
     this.notify();
   }
 

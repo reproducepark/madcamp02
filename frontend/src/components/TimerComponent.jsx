@@ -23,6 +23,19 @@ const TimerComponent = () => {
 
   // TimerService 구독
   useEffect(() => {
+    // 초기 상태 설정
+    const initialState = timerService.getState();
+    setDuration(initialState.duration);
+    setRemaining(initialState.remaining);
+    setIsRunning(initialState.isRunning);
+    setCurrentTime(formatTime(initialState.remaining));
+    
+    // 시간 입력 필드 초기화
+    const minutes = Math.floor(initialState.remaining / 60);
+    const seconds = initialState.remaining % 60;
+    setInputMinutes(minutes);
+    setInputSeconds(seconds);
+    
     const unsubscribe = timerService.subscribe((state) => {
       setIsRunning(state.isRunning);
       setDuration(state.duration);
