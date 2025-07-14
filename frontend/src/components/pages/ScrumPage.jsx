@@ -157,17 +157,17 @@ function ScrumPage({ onLogout }) {
 
   // 간트 차트 baseDate 업데이트
   useEffect(() => {
-    if (scrumGoals.length > 0) {
+    if (filteredGoals.length > 0) {
       // 가장 빠른 시작 날짜를 baseDate로 설정
-      const earliestStart = scrumGoals.reduce((earliest, goal) => {
+      const earliestStart = filteredGoals.reduce((earliest, goal) => {
         const startDate = goal.start_date;
         if (!startDate) return earliest;
         return startDate < earliest ? startDate : earliest;
-      }, scrumGoals[0].start_date || today);
+      }, filteredGoals[0].start_date || today);
       
       setGanttBaseDate(earliestStart);
     }
-  }, [scrumGoals, today]);
+  }, [filteredGoals, today]);
 
   // 팀 변경 이벤트 감지
   useEffect(() => {
@@ -272,7 +272,7 @@ const handleDeleteGoal = async (goalId) => {
               <div className="todo-schedule-title">팀 목표 일정</div>
               <div className="todo-schedule-content">
                 <ScrumGanttChart 
-                  goals={scrumGoals}
+                  goals={filteredGoals}
                   baseDate={ganttBaseDate}
                 />
               </div>
