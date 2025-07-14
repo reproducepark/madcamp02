@@ -20,7 +20,6 @@ function TopMenu() {
   const location = useLocation();
 
   const isScrumOrTodoPage = location.pathname.startsWith('/scrum') || location.pathname === '/todo';
-  const isTeamViewPage = location.pathname === '/scrum/teammate-todolist';
 
   const fetchTeams = async () => {
     try {
@@ -170,7 +169,7 @@ function TopMenu() {
                       <button
                         key={member.id}
                         className="dropdown-item"
-                        onClick={() => navigate('/scrum/teammate-todolist', {
+                        onClick={() => navigate('/todo', {
                           state: {
                             teamId: selectedTeam.id,
                             teamName: selectedTeam.name,
@@ -189,9 +188,9 @@ function TopMenu() {
               )}
             </div>
 
-            {isTeamViewPage && (
+            {/* {
               <button className="scrum-menu-button" onClick={() => navigate('/scrum')}>홈</button>
-            )}
+            } */}
           </div>
         )}
       </div>

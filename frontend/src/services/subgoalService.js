@@ -1,10 +1,9 @@
 import { apiGet, apiPost, apiDelete, apiPatch } from './apiService';
 
 
-export const getSubGoals = (goalId) => {
-  console.log("🚀 getSubGoals called with goalId:", goalId);
-  return apiGet(`/teamGoal/${goalId}/subgoals`);
-};
+export const getSubGoals = (goalId, userId) => {
+  return apiGet(`/teamGoal/${goalId}/subgoals?userId=${userId}`);
+}
 
 export const createSubGoal = (goalId, data) => {
   return apiPost(`/teamGoal/${goalId}/subgoal`, data);
