@@ -1,0 +1,29 @@
+.gantt-chart {
+  display: flex;
+  flex-direction: column;
+  margin: 16px 0;
+}
+.gantt-header, .gantt-row {
+  display: flex;
+}
+.gantt-cell {
+  width: 60px;
+  height: 32px;
+  border: 1px solid #ddd;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gantt-cell.header {
+  font-weight: bold;
+  background: #f0f0f0;
+}
+.gantt-cell.bar {
+  background: #b3d4fc;
+  border-color: #90b8e6;
+} 

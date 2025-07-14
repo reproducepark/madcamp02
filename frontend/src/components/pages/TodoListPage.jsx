@@ -10,8 +10,9 @@ import PersonalMemoSection from '../layout/PersonalMemoSection';
 import { getTeams, getTeamGoals } from '../../services/teamService';
 import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
+import GanttChart from '../layout/GanttChart';
 
-function TodoListPage() {
+function TodoListPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
   const [currentTeamId, setCurrentTeamId] = useState(null);
   const [currentTeamName, setCurrentTeamName] = useState('');
@@ -109,6 +110,9 @@ function TodoListPage() {
         return {
           id: goal.id,
           title: goal.content,
+          start_date: goal.start_date,
+          planned_end_date: goal.planned_end_date,
+          real_end_date: goal.real_end_date,
           todos: subRes.success ? subRes.data.subgoals.map(sg => ({
             id: sg.id,
             text: sg.content,
@@ -179,21 +183,100 @@ function TodoListPage() {
     }
   };
 
+  // duration 하드코딩
+  const durations = [
+    { start: '2025-07-03', end: '2025-07-09' },
+    { start: '2025-07-10', end: '2025-07-16' },
+    { start: '2025-07-17', end: '2025-07-23' },
+    { start: '2025-07-24', end: '2025-07-31' }, // 마지막 주차는 8일
+  ];
+
+  // 첫 번째 목표의 start_date가 속하는 duration의 시작일을 baseDate로 사용
+  let defaultBaseDate = durations[0].start;
+  if (goals.length > 0 && goals[0].start_date) {
+    const firstGoalDate = goals[0].start_date.slice(0, 10);
+    const found = durations.find(d => firstGoalDate >= d.start && firstGoalDate <= d.end);
+    if (found) defaultBaseDate = found.start;
+  }
+
+  // 슬라이더 상태
+  const [sliderDate, setSliderDate] = useState(defaultBaseDate);
+  // baseDate가 바뀌면 sliderDate도 동기화
+  useEffect(() => {
+    setSliderDate(defaultBaseDate);
+  }, [defaultBaseDate]);
+
+  // 현재 duration 구간 찾기
+  const currentDuration = durations.find(d => sliderDate >= d.start && sliderDate <= d.end) || durations[0];
+  // duration 내 날짜 배열 생성
+  const getDateArray = (start, end) => {
+    const arr = [];
+    let d = new Date(start);
+    const endDate = new Date(end);
+    while (d <= endDate) {
+      arr.push(d.toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+    }
+    return arr;
+  };
+  const dateArray = getDateArray(currentDuration.start, currentDuration.end);
+
+  // baseDate가 duration 범위 밖이면 슬라이더를 duration 시작일로 맞춤
+  useEffect(() => {
+    if (sliderDate < currentDuration.start || sliderDate > currentDuration.end) {
+      setSliderDate(currentDuration.start);
+    }
+    // eslint-disable-next-line
+  }, [currentDuration.start, currentDuration.end]);
+
   return (
-    <div className="todo-container">
-      <TopMenu />
-      <div className="todo-body">
+    <div className="app-wrapper">
+      <TopMenu onLogout={onLogout} />
+      <div className="container">
         <Sidebar />
-        <main className="todo-main">
-          {/* 왼쪽 영역 (3:1 비율의 3) */}
-          <div className="todo-left-section">
-            {/* 시간표 영역 (상단 절반) */}
-            <section className="todo-schedule-section">
-              <div className="todo-schedule-title">시간표</div>
-              <div className="todo-schedule-content">
-                시간표 컴포넌트가 들어갈 공간입니다
+        <main className="main-content">
+          <div className="todo-center-card">
+            <div className="todo-center-title">중앙 영역</div>
+            {/* 슬라이더 UI */}
+            <div className="gantt-slider-wrapper">
+              <input
+                type="range"
+                min={0}
+                max={dateArray.length - 1}
+                value={dateArray.findIndex(d => d === sliderDate)}
+                onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
+                step={1}
+                className="gantt-slider"
+                style={{ width: '100%' }}
+              />
+              <div className="gantt-slider-labels">
+                {dateArray.map((d, i) => {
+                  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                  const dateObj = new Date(d);
+                  return (
+                    <span key={d} className="gantt-slider-label">
+                      {dayNames[dateObj.getDay()]}
+                    </span>
+                  );
+                })}
               </div>
-            </section>
+            </div>
+            <GanttChart goals={goals
+              .sort((a, b) => {
+                const aStart = new Date(a.start_date).getTime();
+                const bStart = new Date(b.start_date).getTime();
+                if (aStart !== bStart) return aStart - bStart;
+                const aEnd = new Date(a.real_end_date || a.planned_end_date).getTime();
+                const bEnd = new Date(b.real_end_date || b.planned_end_date).getTime();
+                return aEnd - bEnd;
+              })
+              .map(goal => ({
+                id: goal.id,
+                content: goal.title,
+                start_date: goal.start_date,
+                planned_end_date: goal.planned_end_date,
+                real_end_date: goal.real_end_date,
+            }))} baseDate={defaultBaseDate} />
           </div>
 
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
@@ -226,21 +309,36 @@ function TodoListPage() {
             <Divider />
 
             <div className="todo-content">
-              {goalsWithFilteredTodos.map((goal, index) => (
-                <React.Fragment key={goal.id}>
-                  <GoalSection
-                    goalId={goal.id}
-                    title={goal.title}
-                    todos={goal.todos.map(todo => ({
-                      ...todo,
-                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
-                    }))}
-                    onActivate={setActiveGoalId}
-                    onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
-                  />
-                  {index < goalsWithFilteredTodos.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
+              {goals
+                .filter(goal => {
+                  const start = goal.start_date?.slice(0, 10);
+                  const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
+                  const result = start && end && sliderDate >= start && sliderDate <= end;
+                  console.log({
+                    goalId: goal.id,
+                    start,
+                    end,
+                    sliderDate,
+                    result
+                  });
+                  return result;
+                })
+                .map((goal, index) => (
+                  <React.Fragment key={goal.id}>
+                    <GoalSection
+                      goalId={goal.id}
+                      title={goal.title}
+                      todos={goal.todos.map(todo => ({
+                        ...todo,
+                        onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
+                      }))}
+                      onActivate={setActiveGoalId}
+                      onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
+                    />
+                    {index < goals.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+
               <Divider />
               <PersonalMemoSection
                 memos={memos}
@@ -281,6 +379,7 @@ function TodoListPage() {
         </main>
       </div>
 
+      {/* 모달 */}
       <Modal
         isOpen={modalState.isOpen}
         onClose={closeModal}

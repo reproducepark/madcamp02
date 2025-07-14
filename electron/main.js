@@ -6,16 +6,28 @@ let overlayWindow;
 
 const isDev = !app.isPackaged;
 
+// 프로덕션 환경에서 로깅 활성화
+if (!isDev) {
+    console.log('Production mode detected');
+    console.log('App path:', app.getAppPath());
+    console.log('Current directory:', __dirname);
+}
+
 function createMainWindow() {
+    console.log('Creating main window...');
+    
     mainWindow = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 1280,  // 16:10 비율에 맞는 크기
+        height: 800,  // 1280 * (10/16) = 800
         show: true,
+        resizable: true, // 창 크기 조정 허용
+        minWidth: 960,   // 최소 너비 (16:10 비율)
+        minHeight: 600,  // 최소 높이 (960 * (10/16) = 600)
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: true,  // Enables sandbox for better security
+            sandbox: false,  // 프로덕션에서 sandbox 비활성화
             enableRemoteModule: false,  // Prevents unnecessary remote access
             webSecurity: true,  // Enforces security policies
         },
@@ -25,18 +37,39 @@ function createMainWindow() {
         ? "http://localhost:5173"
         : `file://${path.join(__dirname, "../frontend/dist/index.html")}`;
 
+    console.log('Loading URL:', startURL);
+    console.log('File path:', path.join(__dirname, "../frontend/dist/index.html"));
+
     mainWindow.loadURL(startURL).catch((err) => {
         console.error("Failed to load URL:", err);
     });
     
     mainWindow.once('ready-to-show', () => {
+        console.log('Main window ready to show');
         mainWindow.show();
         mainWindow.focus(); // 👈 창을 강제로 포커스
     });
 
-    if (isDev) {
-        mainWindow.webContents.openDevTools();
-    }
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+        console.error('Failed to load:', errorCode, errorDescription, validatedURL);
+    });
+
+    mainWindow.webContents.on('did-finish-load', () => {
+        console.log('Main window finished loading');
+    });
+
+    // 16:10 비율 강제 유지
+    mainWindow.on('resize', () => {
+        const [width, height] = mainWindow.getSize();
+        const targetHeight = Math.round(width * (10/16));
+        
+        if (height !== targetHeight) {
+            mainWindow.setSize(width, targetHeight, false);
+        }
+    });
+
+    // 개발자 도구 열기 (개발/프로덕션 모두)
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
 function createOverlayWindow() {
@@ -69,7 +102,7 @@ function createOverlayWindow() {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: true,
+            sandbox: false,  // 프로덕션에서 sandbox 비활성화
             enableRemoteModule: false,
             webSecurity: true,
         }
@@ -78,6 +111,8 @@ function createOverlayWindow() {
     const overlayURL = isDev
         ? "http://localhost:5173/overlay"
         : `file://${path.join(__dirname, "../frontend/dist/overlay.html")}`;
+
+    console.log('Loading overlay URL:', overlayURL);
 
     overlayWindow.loadURL(overlayURL).catch((err) => {
         console.error("Failed to load overlay URL:", err);
@@ -171,18 +206,14 @@ ipcMain.handle('close-current-window', (event) => {
 
 // 타이머 상태 브로드캐스트
 ipcMain.handle('broadcast-timer-state', (event, state) => {
-    console.log('Main: 타이머 상태 브로드캐스트', state);
-    
     // 이벤트를 발생시킨 창을 제외하고 다른 창들에게 상태 전송
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
     
     if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow !== senderWindow) {
-        console.log('Main: 오버레이 창에 상태 전송');
         overlayWindow.webContents.send('timer-state-updated', state);
     }
     
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow !== senderWindow) {
-        console.log('Main: 메인 창에 상태 전송');
         mainWindow.webContents.send('timer-state-updated', state);
     }
 });

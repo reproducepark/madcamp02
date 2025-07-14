@@ -6,7 +6,7 @@ import TimerComponent from '../TimerComponent';
 import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
-function StretchingPage() {
+function StretchingPage({ onLogout }) {
   const [isStretchingEnabled, setIsStretchingEnabled] = useState(false);
 
   const handleStretchingToggle = (enabled) => {
@@ -15,7 +15,7 @@ function StretchingPage() {
 
   return (
     <div className="todo-container">
-      <TopMenu />
+      <TopMenu onLogout={onLogout} />
       <div className="todo-body">
         <Sidebar />
         <main className="todo-main">
