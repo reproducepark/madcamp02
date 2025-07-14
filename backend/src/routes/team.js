@@ -84,6 +84,52 @@ router.get('/myTeams', authenticateToken, async (req, res) => {
   }
 });
 
+// 팀 멤버 조회 API
+router.get('/:teamId/members', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+  const userNum = req.user.num;
+
+  try {
+    // 사용자가 해당 팀의 멤버인지 확인
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        team_id: teamId,
+        user_id: userNum,
+      },
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ message: "해당 팀의 멤버가 아닙니다." });
+    }
+
+    // 팀의 모든 멤버 조회
+    const teamMembers = await prisma.teamMember.findMany({
+      where: { team_id: teamId },
+      include: {
+        user: {
+          select: {
+            num: true,
+            name: true,
+            class_section: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: 'asc',
+        },
+      },
+    });
+
+    const members = teamMembers.map(member => member.user);
+
+    res.status(200).json({ members });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 // 팀 이름 변경 API
 router.put('/:teamId', authenticateToken, async (req, res) => {
   const teamId = parseInt(req.params.teamId, 10);

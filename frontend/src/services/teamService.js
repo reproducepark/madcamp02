@@ -56,6 +56,14 @@ export const removeTeamMember = (teamId, userId) => {
   return apiDelete(`/team/${teamId}/members/${userId}`);
 };
 
+/**
+ * 팀 멤버 조회
+ * @param {string} teamId - 팀 ID
+ * @returns {Promise<Object>} API 응답
+ */
+export const getTeamMembers = (teamId) => {
+  return apiGet(`/team/${teamId}/members`);
+};
 
 /**
  * 팀 목표 생성
