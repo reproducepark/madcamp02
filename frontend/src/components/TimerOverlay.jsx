@@ -12,6 +12,7 @@ const TimerOverlay = () => {
     remaining: 600,
     duration: 600
   });
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     // 초기 상태 설정
@@ -116,7 +117,11 @@ const TimerOverlay = () => {
 
   return (
     <div className="timer-overlay">
-      <div className="timer-overlay-container">
+      <div 
+        className={`timer-overlay-container ${timerState.isRunning && !isHovered ? 'transparent' : ''}`}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         {!timerState.isRunning && (
           <button 
             className="timer-overlay-close-btn"
