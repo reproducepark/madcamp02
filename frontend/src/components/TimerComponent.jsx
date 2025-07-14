@@ -11,8 +11,15 @@ const TimerComponent = () => {
   const [lastDegree, setLastDegree] = useState(0);
   const [knobPosition, setKnobPosition] = useState({ x: 0, y: 0 });
   
+  // 시간 입력 상태 추가
+  const [inputMinutes, setInputMinutes] = useState(10);
+  const [inputSeconds, setInputSeconds] = useState(0);
+  const [duration, setDuration] = useState(600); // 전체 시간(초)
+  const [remaining, setRemaining] = useState(600); // 남은 시간(초)
+  
   const DURATION_IN_SECONDS = 60 * 60; // 60 minutes
   const timerRef = useRef(null);
+  const intervalRef = useRef(null);
 
     useEffect(() => {
     // 타이머 초기화
@@ -35,17 +42,15 @@ const TimerComponent = () => {
         timerRef.current.svg.style.transform = 'scale(-1, 1)';
       }
       
-      // 초기 타이머 설정 (10분)
-      const initialTimerSeconds = 10 * 60;
-      const initialTimerDeg = (initialTimerSeconds / DURATION_IN_SECONDS) * 360;
+      // 초기 타이머 설정
+      const initialTimerDeg = (duration / DURATION_IN_SECONDS) * 360;
       const clampedDeg = Math.max(0, Math.min(360, initialTimerDeg));
       
-      timerRef.current.animate(clampedDeg / 360, () => {
-        setTimer(clampedDeg);
-        setLastDegree(clampedDeg);
-        updateKnobPosition(clampedDeg);
-        // 자동 시작하지 않음
-      });
+      timerRef.current.set(clampedDeg / 360);
+      setTimer(clampedDeg);
+      setLastDegree(clampedDeg);
+      updateKnobPosition(clampedDeg);
+      setCurrentTime(formatTime(duration));
     }
 
     return () => {
@@ -53,7 +58,7 @@ const TimerComponent = () => {
         timerRef.current.destroy();
       }
     };
-  }, []);
+  }, [duration]);
 
   const updateTimerTime = (timer, state) => {
     const valueSeconds = Math.round(timer.value() * DURATION_IN_SECONDS);
@@ -66,11 +71,12 @@ const TimerComponent = () => {
     
     const rect = progressBarRef.current.getBoundingClientRect();
     const containerRadius = rect.width / 2;
-    const knobSize = Math.max(16, Math.min(24, containerRadius / 5));
     const rotation = degree * (Math.PI / 180.0);
+    
+    // 원의 끝점에 정확히 위치하도록 계산
     const position = {
-      x: -Math.sin(rotation) * containerRadius + containerRadius - knobSize / 2,
-      y: -Math.cos(rotation) * containerRadius + containerRadius - knobSize / 2
+      x: -Math.sin(rotation) * containerRadius + containerRadius,
+      y: -Math.cos(rotation) * containerRadius + containerRadius
     };
     setKnobPosition(position);
   };
@@ -87,37 +93,106 @@ const TimerComponent = () => {
     }
   };
 
-  const startTimer = () => {
-    if (!timerRef.current) return;
+  // 시간 입력 핸들러
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const num = Math.max(0, parseInt(value) || 0);
+    if (name === 'minutes') setInputMinutes(num);
+    if (name === 'seconds') setInputSeconds(num);
     
-    // 카운트다운: 현재 값에서 0.0으로 줄어듦
-    const finishValue = 0.0;
-    const valueDiff = Math.abs(finishValue - timerRef.current.value());
-    const duration = DURATION_IN_SECONDS * 1000 * valueDiff;
-    
-    if (duration > 0) {
-      setIsRunning(true);
-      timerRef.current.animate(finishValue, { duration });
-      
-      if (timerRef.current.timeout) {
-        clearTimeout(timerRef.current.timeout);
+    // 실시간으로 타이머 업데이트 (타이머가 실행 중이 아닐 때만)
+    if (!isRunning) {
+      const total = (name === 'minutes' ? num : inputMinutes) * 60 + (name === 'seconds' ? num : inputSeconds);
+      if (total > 0) {
+        setDuration(total);
+        setRemaining(total);
+        setCurrentTime(formatTime(total));
+        
+        // 프로그레스 바 업데이트
+        const newDeg = (total / DURATION_IN_SECONDS) * 360;
+        setLastDegree(newDeg);
+        if (timerRef.current) {
+          timerRef.current.set(newDeg / 360);
+        }
+        updateKnobPosition(newDeg);
       }
-      
-      timerRef.current.timeout = setTimeout(() => {
-        setIsRunning(false);
-      }, duration);
     }
   };
 
-  const stopTimer = () => {
-    if (timerRef.current && timerRef.current.timeout) {
-      clearTimeout(timerRef.current.timeout);
+  // 시간 설정 버튼
+  const handleSetTime = () => {
+    const total = inputMinutes * 60 + inputSeconds;
+    if (total > 0) {
+      setDuration(total);
+      setRemaining(total);
+      setIsRunning(false);
+      clearInterval(intervalRef.current);
+      
+      // 프로그레스 바 업데이트
+      const newDeg = (total / DURATION_IN_SECONDS) * 360;
+      setLastDegree(newDeg);
+      if (timerRef.current) {
+        timerRef.current.set(newDeg / 360);
+      }
+      updateKnobPosition(newDeg);
+      setCurrentTime(formatTime(total));
     }
-    if (timerRef.current) {
-      timerRef.current.stop();
-    }
-    setIsRunning(false);
   };
+
+  // 타이머 시작/일시정지
+  const handleStartPause = () => {
+    if (isRunning) {
+      setIsRunning(false);
+      clearInterval(intervalRef.current);
+    } else {
+      setIsRunning(true);
+    }
+  };
+
+  // 리셋
+  const handleReset = () => {
+    setRemaining(duration);
+    setIsRunning(false);
+    clearInterval(intervalRef.current);
+    setCurrentTime(formatTime(duration));
+    
+    // 프로그레스 바 리셋
+    const newDeg = (duration / DURATION_IN_SECONDS) * 360;
+    setLastDegree(newDeg);
+    if (timerRef.current) {
+      timerRef.current.set(newDeg / 360);
+    }
+    updateKnobPosition(newDeg);
+  };
+
+  // 타이머 동작
+  useEffect(() => {
+    if (!isRunning) return;
+    intervalRef.current = setInterval(() => {
+      setRemaining(prev => {
+        if (prev <= 1) {
+          setIsRunning(false);
+          clearInterval(intervalRef.current);
+          return 0;
+        }
+        const newRemaining = prev - 1;
+        setCurrentTime(formatTime(newRemaining));
+        
+        // 프로그레스 바 업데이트
+        const newDeg = (newRemaining / DURATION_IN_SECONDS) * 360;
+        setLastDegree(newDeg);
+        if (timerRef.current) {
+          timerRef.current.set(newDeg / 360);
+        }
+        updateKnobPosition(newDeg);
+        
+        return newRemaining;
+      });
+    }, 1000);
+    return () => clearInterval(intervalRef.current);
+  }, [isRunning, duration]);
+
+
 
   const setTimer = (deg) => {
     if (!timerRef.current) return;
@@ -126,11 +201,25 @@ const TimerComponent = () => {
     // 각도가 작을수록 남은 시간이 적음 (0.0에 가까움)
     const newValue = deg / 360.0;
     timerRef.current.set(newValue);
+    
+    // 드래그할 때 시간 입력 필드도 업데이트 (타이머가 실행 중이 아닐 때만)
+    if (!isRunning) {
+      const newDuration = Math.round((deg / 360.0) * DURATION_IN_SECONDS);
+      const newMinutes = Math.floor(newDuration / 60);
+      const newSeconds = newDuration % 60;
+      
+      setInputMinutes(newMinutes);
+      setInputSeconds(newSeconds);
+      setDuration(newDuration);
+      setRemaining(newDuration);
+      setCurrentTime(formatTime(newDuration));
+    }
   };
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
-    stopTimer();
+    setIsRunning(false);
+    clearInterval(intervalRef.current);
     e.preventDefault();
   };
 
@@ -164,7 +253,6 @@ const TimerComponent = () => {
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    startTimer();
   };
 
 
@@ -236,24 +324,52 @@ const TimerComponent = () => {
           <div 
             className="timer-bar-knob"
             style={{
-              transform: `translate(${knobPosition.x}px, ${knobPosition.y}px)`,
-              width: `${Math.max(16, Math.min(24, progressBarRef.current?.getBoundingClientRect().width / 5 || 20))}px`,
-              height: `${Math.max(16, Math.min(24, progressBarRef.current?.getBoundingClientRect().width / 5 || 20))}px`
+              transform: `translate(${knobPosition.x - 10}px, ${knobPosition.y - 10}px)`,
+              width: '20px',
+              height: '20px'
             }}
           ></div>
-          <div className="timer-time">{currentTime}</div>
+        </div>
+      </div>
+      
+      {/* 시간 입력 및 컨트롤 */}
+      <div className="timer-input-section">
+        <div className="timer-input-container">
+          <input
+            type="number"
+            name="minutes"
+            min={0}
+            max={999}
+            value={inputMinutes}
+            onChange={handleInputChange}
+            className="timer-input"
+          />
+          <span className="timer-input-label">분</span>
+          <input
+            type="number"
+            name="seconds"
+            min={0}
+            max={59}
+            value={inputSeconds}
+            onChange={handleInputChange}
+            className="timer-input"
+          />
+          <span className="timer-input-label">초</span>
+
         </div>
       </div>
       
       <div className="timer-controls">
-        <button 
-          className="timer-play-pause-btn"
-          onClick={isRunning ? stopTimer : startTimer}
-          title={isRunning ? '일시정지' : '시작'}
+        <button
+          onClick={handleStartPause}
+          className={`timer-start-btn ${isRunning ? 'running' : ''}`}
         >
-          {isRunning ? '⏸️' : '▶️'}
+          {isRunning ? '일시정지' : '시작'}
         </button>
+
       </div>
+      
+
     </div>
   );
 };
