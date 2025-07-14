@@ -26,6 +26,9 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
   const weekDays = getWeekDays(baseDate);
   const weekStart = weekDays[0].time;
   const weekEnd = weekDays[6].time;
+  const outerRadius = 10; // px (gantt-bar border-radius)
+  const borderWidth = 2;  // px (gantt-bar border)
+  const innerRadius = outerRadius - borderWidth;
 
   return (
     <div className="gantt-chart">
@@ -60,7 +63,12 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
               >
                 <div
                   className="gantt-bar-progress"
-                  style={{ width: `${Math.round((goal.progress ?? 0) * 100)}%` }}
+                  style={{
+                    width: `${Math.round((goal.progress ?? 0) * 100)}%`,
+                    borderRadius: (goal.progress === 1)
+                      ? `${innerRadius}px`
+                      : `${innerRadius}px 0 0 ${innerRadius}px`
+                  }}
                 />
                 <span className="gantt-bar-label">{goal.content}</span>
               </div>

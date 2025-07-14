@@ -292,20 +292,14 @@ function TodoListPage({ onLogout }) {
             </div>
             <GanttChart
               goals={filteredGoals.map(goal => {
-                // const myTodos = goal.todos.filter(todo => String(todo.userId) === String(myUserId));
                 const myTodos = goal.todos; // 임시: 모든 todo를 내 것으로 간주
                 const completed = myTodos.filter(todo => todo.is_completed).length;
                 const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
-                // 진단용 로그
-                console.log('[GanttChart 진단]', {
-                  goalTitle: goal.title,
-                  myTodos,
-                  completed,
-                  progress,
-                  myUserId,
-                  todos: goal.todos
-                });
-                return { ...goal, progress };
+                return {
+                  ...goal,
+                  content: goal.title, // 추가!
+                  progress
+                };
               })}
               baseDate={defaultBaseDate}
             />
