@@ -117,12 +117,14 @@ const TimerOverlay = () => {
   return (
     <div className="timer-overlay">
       <div className="timer-overlay-container">
-        <button 
-          className="timer-overlay-close-btn"
-          onClick={handleClose}
-        >
-          ×
-        </button>
+        {!timerState.isRunning && (
+          <button 
+            className="timer-overlay-close-btn"
+            onClick={handleClose}
+          >
+            ×
+          </button>
+        )}
         
         <div 
           ref={progressBarRef}
@@ -136,9 +138,9 @@ const TimerOverlay = () => {
         <div className="timer-overlay-controls">
           <button
             onClick={handleToggle}
-            className={`timer-overlay-start-btn ${timerState.isRunning ? 'running' : ''}`}
+            className={`timer-overlay-btn ${timerState.isRunning ? 'stop' : 'start'}`}
           >
-            {timerState.isRunning ? '정지' : '시작'}
+            {timerState.isRunning ? '중지' : '시작'}
           </button>
         </div>
       </div>
