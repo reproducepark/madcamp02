@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import ScrumGoalItem from '../layout/ScrumGoalItem';
+import TeamMemoSection from '../layout/TeamMemoSection';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import { getTeams } from '../../services'; // getTeams import
@@ -151,9 +152,7 @@ const handleDeleteGoal = async (goalId) => {
     }
   };
 
-  const handleCreateScrum = () => {
-    showAlert('스크럼 생성', '새로운 스크럼이 생성되었습니다.');
-  };
+
 
   return (
     <div className="todo-container">
@@ -172,13 +171,10 @@ const handleDeleteGoal = async (goalId) => {
             </section>
 
             {/* 메모장 영역 (하단 절반) */}
-            <section className="todo-memo-section">
-              <div className="todo-memo-title">메모장</div>
-              <div className="todo-memo-content">필요한거 알아낸거 궁금한거</div>
-              <div className="todo-memo-btn-group">
-                <button className="todo-memo-btn" onClick={handleCreateScrum}>스크럼 생성</button>
-              </div>
-            </section>
+            <TeamMemoSection 
+              teamId={currentTeamId} 
+              teamName={currentTeamName} 
+            />
           </div>
 
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}

@@ -19,8 +19,11 @@ export const loginUser = async (id, password) => {
     const data = await response.json();
     
     if (response.ok) {
-      // 로그인 성공 시 토큰을 로컬 스토리지에 저장
+      // 로그인 성공 시 토큰과 사용자 정보를 로컬 스토리지에 저장
+      console.log('로그인 응답 데이터:', data);
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userInfo', JSON.stringify(data.user));
+      console.log('저장된 사용자 정보:', localStorage.getItem('userInfo'));
       return {
         success: true,
         data: data,
@@ -86,6 +89,7 @@ export const registerUser = async (id, password, name, class_section) => {
  */
 export const logoutUser = () => {
   localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
   // 추가적인 로그아웃 로직이 필요하다면 여기에 구현
   // 페이지를 강제로 리로드하여 모든 상태를 초기화
   window.location.href = '/#/login';
@@ -97,6 +101,15 @@ export const logoutUser = () => {
  */
 export const getAuthToken = () => {
   return localStorage.getItem('token');
+};
+
+/**
+ * 현재 로그인된 사용자 정보 조회
+ * @returns {Object|null} 사용자 정보 또는 null
+ */
+export const getCurrentUser = () => {
+  const userInfo = localStorage.getItem('userInfo');
+  return userInfo ? JSON.parse(userInfo) : null;
 };
 
 /**
