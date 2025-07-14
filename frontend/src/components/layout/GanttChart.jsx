@@ -44,8 +44,9 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
         const startIdx = weekDays.findIndex(wd => wd.time === clampedStart);
         const endIdx = weekDays.findIndex(wd => wd.time === clampedEnd);
         // bar width 계산
-        const barLeft = `${(startIdx / 7) * 100}%`;
-        const barWidth = `${((endIdx - startIdx + 1) / 7) * 100}%`;
+        const total = weekDays.length;
+        const barLeft = `${(startIdx / total) * 100}%`;
+        const barWidth = `${((endIdx - startIdx + 1) / total) * 100}%`;
         return (
           <div className="gantt-row" key={goal.id || idx}>
             {weekDays.map((_, i) => (
@@ -54,10 +55,14 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
             {/* bar를 한 번만 absolute로 렌더링 */}
             {startIdx >= 0 && endIdx >= startIdx && (
               <div
-                className={`gantt-bar${goal.isDanger ? ' red' : ''}`}
+                className="gantt-bar"
                 style={{ left: barLeft, width: barWidth }}
               >
-                {goal.content}
+                <div
+                  className="gantt-bar-progress"
+                  style={{ width: `${Math.round((goal.progress ?? 0) * 100)}%` }}
+                />
+                <span className="gantt-bar-label">{goal.content}</span>
               </div>
             )}
           </div>
