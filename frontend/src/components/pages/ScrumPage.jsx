@@ -19,11 +19,44 @@ function ScrumPage() {
   const [currentTeamName, setCurrentTeamName] = useState(null);
   const [scrumGoals, setScrumGoals] = useState([]);
   const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
-  const filteredGoals = scrumGoals.filter(goal => {
+const filteredGoals = scrumGoals
+  .filter(goal => {
     if (filter === 'COMPLETED') return goal.real_end_date !== null;
     if (filter === 'INCOMPLETE') return goal.real_end_date === null;
-    return true;
+    return true; // ALL
+  })
+  .sort((a, b) => {
+    if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
+      // 단일 필터인 경우
+      if (a.start_date !== b.start_date) {
+        return new Date(a.start_date) - new Date(b.start_date);
+      }
+      if (filter === 'COMPLETED') {
+        return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+      } else {
+        return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+      }
+    } else {
+      // ALL인 경우, 미완 -> 완료
+      const aIsDone = a.real_end_date !== null;
+      const bIsDone = b.real_end_date !== null;
+      if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
+
+      // 같은 상태라면 start_date
+      if (a.start_date !== b.start_date) {
+        return new Date(a.start_date) - new Date(b.start_date);
+      }
+
+      if (!aIsDone) {
+        // 미완 : planned_end_date 빠른 게 먼저
+        return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+      } else {
+        // 완료 : real_end_date 빠른 게 먼저
+        return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+      }
+    }
   });
+
 
   const [newGoalInput, setNewGoalInput] = useState('');
   const today = new Date().toISOString().split('T')[0];
