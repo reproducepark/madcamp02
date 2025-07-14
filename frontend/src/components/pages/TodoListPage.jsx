@@ -236,6 +236,7 @@ function TodoListPage() {
 
             <div className="todo-goal-input-group" ref={inputGroupRef}>
               <input
+                className="todo-goal-input"  // 🟢 ScrumPage 와 같은 class
                 placeholder={
                   activeGoalId === 'memo'
                     ? "개인 메모를 작성하세요"
@@ -245,10 +246,11 @@ function TodoListPage() {
                 }
                 value={newInput}
                 onChange={(e) => setNewInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
                 disabled={!activeGoalId}
               />
               <button
-                className="todo-goal-btn"
+                className="todo-goal-btn"  // 🟢 ScrumPage 와 같은 class
                 onClick={handleAdd}
                 disabled={!activeGoalId}
               >
