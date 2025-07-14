@@ -359,9 +359,34 @@ const TimerComponent = () => {
       <div className="timer-container">
         {/* 시계 인덱스 SVG */}
         <svg className="timer-index-svg" width="260" height="260" style={{position: 'absolute', top: '-30px', left: '-30px', pointerEvents: 'none'}}>
+          {/* 1분/5분 바 인덱스 */}
+          {[...Array(60)].map((_, i) => {
+            const angle = (i * 6 - 90) * (Math.PI / 180); // 0이 위로
+            const cx = 130;
+            const cy = 130;
+            const rOuter = 100; // 바깥쪽 끝 반지름을 더 줄임
+            const rInner = i % 5 === 0 ? 85 : 90; // 5분 단위는 더 길게, 1분 단위는 더 짧게
+            const x1 = cx + rInner * Math.cos(angle);
+            const y1 = cy + rInner * Math.sin(angle);
+            const x2 = cx + rOuter * Math.cos(angle);
+            const y2 = cy + rOuter * Math.sin(angle);
+            return (
+              <line
+                key={i}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke={'#222'}
+                strokeWidth={i % 5 === 0 ? 3 : 1}
+                opacity={i % 5 === 0 ? 0.8 : 0.5}
+              />
+            );
+          })}
+          {/* 5분 단위 숫자 인덱스 */}
           {[...Array(12)].map((_, i) => {
             const angle = (i * 30 - 90) * (Math.PI / 180); // 0시가 위로 오도록
-            const r = 115; // 숫자 반지름을 115로 줄임
+            const r = 120; // 숫자 반지름을 10만큼 늘림
             const cx = 130;
             const cy = 130;
             const x = cx + r * Math.cos(angle);
@@ -374,7 +399,7 @@ const TimerComponent = () => {
                 textAnchor="middle"
                 alignmentBaseline="middle"
                 fontSize="18"
-                fill="#888"
+                fill="#222"
                 fontWeight="bold"
                 style={{userSelect: 'none'}}
               >
