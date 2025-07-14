@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import WebcamComponent from '../WebcamComponent';
@@ -7,10 +7,16 @@ import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
 function StretchingPage({ onLogout }) {
-  const [isStretchingEnabled, setIsStretchingEnabled] = useState(false);
+  // localStorage에서 스트레칭 상태 불러오기
+  const [isStretchingEnabled, setIsStretchingEnabled] = useState(() => {
+    const saved = localStorage.getItem('stretchingEnabled');
+    return saved ? JSON.parse(saved) : false;
+  });
 
   const handleStretchingToggle = (enabled) => {
     setIsStretchingEnabled(enabled);
+    // localStorage에 상태 저장
+    localStorage.setItem('stretchingEnabled', JSON.stringify(enabled));
   };
 
   return (

@@ -173,6 +173,7 @@ function WebcamComponent() {
               value={inferenceInterval}
               onChange={(e) => dispatch({ type: 'SET_INFERENCE_INTERVAL', payload: Number(e.target.value) })}
             >
+              <option value={1/6}>10초</option>
               <option value={1}>1분</option>
               <option value={3}>3분</option>
               <option value={5}>5분</option>

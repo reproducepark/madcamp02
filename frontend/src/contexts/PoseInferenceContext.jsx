@@ -19,7 +19,7 @@ const ACTIONS = {
 const initialState = {
   // 설정
   isInferenceEnabled: false,
-  inferenceInterval: 3, // 분 단위
+  inferenceInterval: 1/6, // 10초 (1/6분)
   neckAngleCheck: false,
   facePositionCheck: false,
   
@@ -113,6 +113,12 @@ const PoseInferenceContext = createContext();
 export function PoseInferenceProvider({ children }) {
   const [state, dispatch] = useReducer(poseInferenceReducer, initialState);
   const intervalRef = useRef(null);
+  const stateRef = useRef(state);
+  
+  // stateRef를 최신 상태로 업데이트
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
 
   // 자세 교정이 필요한지 확인하는 함수
   const needsPostureCorrection = (analysis) => {
@@ -165,14 +171,15 @@ export function PoseInferenceProvider({ children }) {
       const intervalMs = state.inferenceInterval * 60 * 1000;
       
       intervalRef.current = setInterval(() => {
+        const currentState = stateRef.current;
         console.log('⏰ 전역 추론 인터벌 실행:', {
-          키포인트존재: !!state.keypoints,
-          추론주기: state.inferenceInterval,
-          인식상태: state.isRecognized
+          키포인트존재: !!currentState.keypoints,
+          추론주기: currentState.inferenceInterval,
+          인식상태: currentState.isRecognized
         });
         
-        if (state.keypoints) {
-          const analysis = analyzePose(state.keypoints, 640);
+        if (currentState.keypoints) {
+          const analysis = analyzePose(currentState.keypoints, 640);
           console.log('🔍 포즈 분석 완료:', {
             목각도: analysis.shoulderNeckAngle,
             얼굴하단: analysis.faceInLowerHalf,
@@ -180,17 +187,22 @@ export function PoseInferenceProvider({ children }) {
             유효성: analysis.isValid
           });
           
-          // 이전 분석 결과를 lastAnalysis로 이동
-          dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: state.currentAnalysis });
+          // 현재 분석을 이전 분석으로 저장하고 새 분석을 현재로 설정
+          const previousAnalysis = currentState.currentAnalysis;
+          console.log('📋 이전 분석 결과:', previousAnalysis);
+          
+          // 상태 업데이트
+          dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: previousAnalysis });
           dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: analysis });
           
           // 이전과 현재 모두 자세 교정이 필요한 경우 알림
-          const lastNeedsCorrection = needsPostureCorrection(state.currentAnalysis);
+          const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
           const currentNeedsCorrection = needsPostureCorrection(analysis);
           
           console.log('⚠️ 자세 교정 필요 여부:', {
-            이전: lastNeedsCorrection,
-            현재: currentNeedsCorrection,
+            이전분석: previousAnalysis,
+            이전교정필요: lastNeedsCorrection,
+            현재교정필요: currentNeedsCorrection,
             알림발송: lastNeedsCorrection && currentNeedsCorrection
           });
           
