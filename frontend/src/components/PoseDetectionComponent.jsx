@@ -274,7 +274,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
   }, [model, videoRef, onRecognitionChange]);
 
   if (loading) {
-    return <div className="pose-loading">포즈 인식 모델 로딩 중...</div>;
+    return <div className="pose-loading"></div>;
   }
 
   if (errorMessage) {

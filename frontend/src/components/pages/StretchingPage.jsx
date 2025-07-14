@@ -40,7 +40,9 @@ function StretchingPage() {
 
             <div className="todo-stretching-content">
               {isStretchingEnabled ? (
-                <WebcamComponent />
+                <div className="stretching-webcam-wrapper">
+                  <WebcamComponent />
+                </div>
               ) : (
                 <div className="stretching-disabled">
                   <p>스트레칭 기능을 활성화해주세요</p>
