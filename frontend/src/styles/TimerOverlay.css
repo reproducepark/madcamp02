@@ -36,16 +36,21 @@ body {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #ff4444, #cc0000);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
 }
 
 .timer-overlay-time {
-    color: white;
+    color: black;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
     font-family: 'Courier New', monospace;
+    position: absolute;
+    z-index: 10;
+    top: 55%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .timer-overlay-controls {
@@ -102,4 +107,21 @@ body {
 .timer-overlay-close-btn:hover {
     background: #cc0000;
     transform: scale(1.1);
+}
+
+/* ProgressBar.js 스타일 오버라이드 */
+.timer-overlay-disk .progressbar-text {
+    display: none !important;
+}
+
+.timer-overlay-disk svg {
+    transform: scale(-1, 1);
+}
+
+.timer-overlay-disk svg path:first-child {
+    stroke: #ffffff !important;
+}
+
+.timer-overlay-disk svg path:last-child {
+    stroke: #ff4444 !important;
 } 
