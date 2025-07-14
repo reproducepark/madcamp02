@@ -51,7 +51,11 @@ function StretchingPage() {
 
           {/* 타이머 섹션 (오른쪽 반) */}
           <section className="todo-timer-section">
-            <div className="todo-timer-title">타이머</div>
+            <div className="stretching-controls">
+              <div className="toggle-container">
+                <span className="toggle-label">타이머</span>
+              </div>
+            </div>
             <div className="todo-timer-content">
               <TimerComponent />
             </div>
