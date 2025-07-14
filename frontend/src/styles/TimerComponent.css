@@ -121,7 +121,7 @@
 }
 
 .timer-disk svg path:last-child {
-  stroke: #ffffff !important;
+  stroke: #ff4444 !important;
 }
 
 /* 반응형 디자인 */

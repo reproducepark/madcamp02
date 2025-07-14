@@ -18,13 +18,13 @@ const TimerComponent = () => {
     // 타이머 초기화
     if (progressBarRef.current) {
       timerRef.current = new ProgressBar.Circle(progressBarRef.current, {
-        color: '#ffffff',
+        color: '#ff4444',
         trailWidth: 40,
         trailColor: '#333333',
         strokeWidth: 37,
         duration: 1 * 1000,
-        from: { color: '#ffffff' },
-        to: { color: '#ffffff' },
+        from: { color: '#ff4444' },
+        to: { color: '#cc0000' },
         step: function(state, timer) {
           updateTimerTime(timer, state);
         }
@@ -88,7 +88,8 @@ const TimerComponent = () => {
   const startTimer = () => {
     if (!timerRef.current) return;
     
-    const finishValue = timerType === 'countdown' ? 0.0 : 1.0;
+    // 카운트다운: 현재 값에서 0.0으로 줄어듦
+    const finishValue = 0.0;
     const valueDiff = Math.abs(finishValue - timerRef.current.value());
     const duration = DURATION_IN_SECONDS * 1000 * valueDiff;
     
@@ -119,8 +120,9 @@ const TimerComponent = () => {
   const setTimer = (deg) => {
     if (!timerRef.current) return;
     
-    const startValue = timerType === 'countdown' ? 0.0 : 1.0;
-    const newValue = Math.abs(startValue - (deg / 360.0));
+    // 카운트다운에서는 각도가 클수록 남은 시간이 많음 (1.0에 가까움)
+    // 각도가 작을수록 남은 시간이 적음 (0.0에 가까움)
+    const newValue = deg / 360.0;
     timerRef.current.set(newValue);
   };
 
