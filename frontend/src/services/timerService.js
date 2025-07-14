@@ -13,6 +13,52 @@ class TimerService {
     this.isRunning = false;
     this.intervalId = null;
     this.callbacks = new Set();
+    
+    // Electron 환경에서 다른 창의 상태 변경을 감지
+    this.setupElectronSync();
+  }
+
+  // Electron 환경에서 상태 동기화 설정
+  setupElectronSync() {
+    if (window.electronAPI && window.electronAPI.onTimerStateUpdated) {
+      try {
+        window.electronAPI.onTimerStateUpdated((state) => {
+          console.log('TimerService: 다른 창에서 상태 업데이트 수신', state);
+          // 다른 창에서 온 상태로 동기화
+          this.syncState(state);
+        });
+      } catch (error) {
+        console.warn('Electron 동기화 설정 실패:', error);
+      }
+    }
+  }
+
+  // 외부 상태로 동기화 (다른 창에서 온 상태)
+  syncState(externalState) {
+    const wasRunning = this.isRunning;
+    
+    // 상태 업데이트
+    this.duration = externalState.duration;
+    this.remaining = externalState.remaining;
+    this.isRunning = externalState.isRunning;
+    
+    // 실행 상태가 변경된 경우 interval 관리
+    if (wasRunning && !this.isRunning) {
+      // 다른 창에서 중지된 경우
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
+    } else if (!wasRunning && this.isRunning) {
+      // 다른 창에서 시작된 경우
+      this.startInterval();
+    }
+    
+    // 로컬 상태 저장
+    this.saveState();
+    
+    // 구독자들에게 알림 (무한 루프 방지를 위해 외부 상태와 동일한 경우만)
+    this.notify(false); // false = 브로드캐스트하지 않음
   }
 
   // 상태를 localStorage에 저장
@@ -45,7 +91,7 @@ class TimerService {
   }
 
   // 모든 콜백 호출
-  notify() {
+  notify(broadcast = true) {
     const state = {
       duration: this.duration,
       remaining: this.remaining,
@@ -56,8 +102,8 @@ class TimerService {
       callback(state);
     });
     
-    // Electron 환경에서 다른 창에 상태 브로드캐스트
-    if (window.electronAPI && window.electronAPI.broadcastTimerState) {
+    // Electron 환경에서 다른 창에 상태 브로드캐스트 (broadcast가 true인 경우만)
+    if (broadcast && window.electronAPI && window.electronAPI.broadcastTimerState) {
       window.electronAPI.broadcastTimerState(state);
     }
   }
@@ -90,6 +136,16 @@ class TimerService {
     
     console.log('TimerService: 타이머 시작');
     this.isRunning = true;
+    this.startInterval();
+    this.notify();
+  }
+
+  // interval 시작 (별도 메서드로 분리)
+  startInterval() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+    }
+    
     this.intervalId = setInterval(() => {
       if (this.remaining <= 1) {
         this.stop();
@@ -101,14 +157,13 @@ class TimerService {
       }
       this.notify();
     }, 1000);
-    
-    this.notify();
   }
 
   // 타이머 일시정지
   pause() {
     if (!this.isRunning) return;
     
+    console.log('TimerService: 타이머 일시정지');
     this.isRunning = false;
     if (this.intervalId) {
       clearInterval(this.intervalId);
@@ -121,6 +176,7 @@ class TimerService {
 
   // 타이머 정지
   stop() {
+    console.log('TimerService: 타이머 정지');
     this.isRunning = false;
     if (this.intervalId) {
       clearInterval(this.intervalId);

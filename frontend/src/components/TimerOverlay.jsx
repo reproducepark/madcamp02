@@ -19,8 +19,9 @@ const TimerOverlay = () => {
     const initialState = timerService.getState();
     setTimerState(initialState);
 
-    // 타이머 상태 구독
+    // 타이머 상태 구독 (timerService가 이미 Electron 동기화를 처리함)
     const unsubscribe = timerService.subscribe((state) => {
+      console.log('TimerOverlay: 상태 업데이트 수신', state);
       setTimerState(state);
       
       // ProgressBar 업데이트
@@ -31,34 +32,8 @@ const TimerOverlay = () => {
       }
     });
 
-    // IPC를 통한 상태 업데이트 구독
-    let ipcUnsubscribe = null;
-    if (window.electronAPI && window.electronAPI.onTimerStateUpdated) {
-      try {
-        ipcUnsubscribe = window.electronAPI.onTimerStateUpdated((state) => {
-          setTimerState(state);
-          
-          // ProgressBar 업데이트
-          if (timerRef.current) {
-            const newDeg = (state.remaining / DURATION_IN_SECONDS) * 360;
-            const clampedDeg = Math.max(0, Math.min(360, newDeg));
-            timerRef.current.set(clampedDeg / 360);
-          }
-        });
-      } catch (error) {
-        console.error('IPC 구독 실패:', error);
-      }
-    }
-
     return () => {
       unsubscribe();
-      if (ipcUnsubscribe && typeof ipcUnsubscribe === 'function') {
-        try {
-          ipcUnsubscribe();
-        } catch (error) {
-          console.error('IPC 구독 해제 실패:', error);
-        }
-      }
     };
   }, []);
 
@@ -102,6 +77,7 @@ const TimerOverlay = () => {
   };
 
   const handleToggle = () => {
+    console.log('TimerOverlay: 토글 버튼 클릭');
     timerService.toggle();
   };
 

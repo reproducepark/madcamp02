@@ -138,10 +138,18 @@ ipcMain.handle('close-current-window', (event) => {
 
 // 타이머 상태 브로드캐스트
 ipcMain.handle('broadcast-timer-state', (event, state) => {
-    if (overlayWindow && !overlayWindow.isDestroyed()) {
+    console.log('Main: 타이머 상태 브로드캐스트', state);
+    
+    // 이벤트를 발생시킨 창을 제외하고 다른 창들에게 상태 전송
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    
+    if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow !== senderWindow) {
+        console.log('Main: 오버레이 창에 상태 전송');
         overlayWindow.webContents.send('timer-state-updated', state);
     }
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow !== senderWindow) {
+        console.log('Main: 메인 창에 상태 전송');
         mainWindow.webContents.send('timer-state-updated', state);
     }
 });

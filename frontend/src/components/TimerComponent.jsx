@@ -165,19 +165,8 @@ const TimerComponent = () => {
   const handleSetTime = () => {
     const total = inputMinutes * 60 + inputSeconds;
     if (total > 0) {
-      setDuration(total);
-      setRemaining(total);
-      setIsRunning(false);
-      clearInterval(intervalRef.current);
-      
-      // 프로그레스 바 업데이트
-      const newDeg = (total / DURATION_IN_SECONDS) * 360;
-      setLastDegree(newDeg);
-      if (timerRef.current) {
-        timerRef.current.set(newDeg / 360);
-      }
-      updateKnobPosition(newDeg);
-      setCurrentTime(formatTime(total));
+      // timerService를 통해 시간 설정 (동기화 자동 처리)
+      timerService.setTime(inputMinutes, inputSeconds);
     }
   };
 
@@ -227,12 +216,14 @@ const TimerComponent = () => {
       const newMinutes = Math.floor(newDuration / 60);
       const newSeconds = newDuration % 60;
       
+      // timerService를 통해 시간 설정 (동기화 자동 처리)
       timerService.setTime(newMinutes, newSeconds);
     }
   };
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
+    // 드래그 시작 시 타이머 일시정지 (동기화 자동 처리)
     timerService.pause();
     e.preventDefault();
   };
