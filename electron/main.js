@@ -8,9 +8,12 @@ const isDev = !app.isPackaged;
 
 function createMainWindow() {
     mainWindow = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 1280,  // 16:10 비율에 맞는 크기
+        height: 800,  // 1280 * (10/16) = 800
         show: true,
+        resizable: true, // 창 크기 조정 허용
+        minWidth: 960,   // 최소 너비 (16:10 비율)
+        minHeight: 600,  // 최소 높이 (960 * (10/16) = 600)
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
@@ -34,8 +37,18 @@ function createMainWindow() {
         mainWindow.focus(); // 👈 창을 강제로 포커스
     });
 
+    // 16:10 비율 강제 유지
+    mainWindow.on('resize', () => {
+        const [width, height] = mainWindow.getSize();
+        const targetHeight = Math.round(width * (10/16));
+        
+        if (height !== targetHeight) {
+            mainWindow.setSize(width, targetHeight, false);
+        }
+    });
+
     if (isDev) {
-        mainWindow.webContents.openDevTools();
+        mainWindow.webContents.openDevTools({ mode: 'detach' });
     }
 }
 
@@ -171,18 +184,14 @@ ipcMain.handle('close-current-window', (event) => {
 
 // 타이머 상태 브로드캐스트
 ipcMain.handle('broadcast-timer-state', (event, state) => {
-    console.log('Main: 타이머 상태 브로드캐스트', state);
-    
     // 이벤트를 발생시킨 창을 제외하고 다른 창들에게 상태 전송
     const senderWindow = BrowserWindow.fromWebContents(event.sender);
     
     if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow !== senderWindow) {
-        console.log('Main: 오버레이 창에 상태 전송');
         overlayWindow.webContents.send('timer-state-updated', state);
     }
     
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow !== senderWindow) {
-        console.log('Main: 메인 창에 상태 전송');
         mainWindow.webContents.send('timer-state-updated', state);
     }
 });
