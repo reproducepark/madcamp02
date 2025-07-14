@@ -180,6 +180,10 @@ function TodoListPage({ onLogout }) {
 
   // 슬라이더 상태
   const [sliderDate, setSliderDate] = useState(defaultBaseDate);
+  // baseDate가 바뀌면 sliderDate도 동기화
+  useEffect(() => {
+    setSliderDate(defaultBaseDate);
+  }, [defaultBaseDate]);
 
   // 현재 duration 구간 찾기
   const currentDuration = durations.find(d => sliderDate >= d.start && sliderDate <= d.end) || durations[0];
@@ -261,21 +265,35 @@ function TodoListPage({ onLogout }) {
             <Divider />
 
             <div className="todo-content">
-              {goals.map((goal, index) => (
-                <React.Fragment key={goal.id}>
-                  <GoalSection
-                    goalId={goal.id}
-                    title={goal.title}
-                    todos={goal.todos.map(todo => ({
-                      ...todo,
-                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
-                    }))}
-                    onActivate={setActiveGoalId}
-                    onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
-                  />
-                  {index < goals.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
+              {goals
+                .filter(goal => {
+                  const start = goal.start_date?.slice(0, 10);
+                  const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
+                  const result = start && end && sliderDate >= start && sliderDate <= end;
+                  console.log({
+                    goalId: goal.id,
+                    start,
+                    end,
+                    sliderDate,
+                    result
+                  });
+                  return result;
+                })
+                .map((goal, index) => (
+                  <React.Fragment key={goal.id}>
+                    <GoalSection
+                      goalId={goal.id}
+                      title={goal.title}
+                      todos={goal.todos.map(todo => ({
+                        ...todo,
+                        onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
+                      }))}
+                      onActivate={setActiveGoalId}
+                      onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
+                    />
+                    {index < goals.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
 
               <Divider />
               <PersonalMemoSection
