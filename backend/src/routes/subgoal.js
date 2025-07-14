@@ -8,10 +8,14 @@ const router = express.Router();
 // ✅ teamGoal의 subgoals 조회
 router.get('/:goalId/subgoals', authenticateToken, async (req, res) => {
   const { goalId } = req.params;
+  const userId = parseInt(req.query.userId) || req.user.id;  // 🌱 fallback
 
   try {
     const subgoals = await prisma.subGoal.findMany({
-      where: { team_goal_id: parseInt(goalId) },
+      where: {
+        team_goal_id: parseInt(goalId),
+        user_id: userId
+      },
       orderBy: { created_at: 'asc' },
       include: { user: true },
     });
@@ -22,6 +26,7 @@ router.get('/:goalId/subgoals', authenticateToken, async (req, res) => {
     res.status(500).json({ success: false, message: '서브목표를 불러오지 못했습니다.' });
   }
 });
+
 
 // ✅ teamGoal에 subgoal 생성
 router.post('/:goalId/subgoal', authenticateToken, async (req, res) => {

@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { jwtDecode } from "jwt-decode";
 import '../../styles/TodoListPage.css';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
@@ -72,6 +74,25 @@ function TodoListPage({ onLogout }) {
   const inputGroupRef = useRef();
   const inputRef = useRef(); // ✅ 추가
 
+  const location = useLocation();
+  const selectedUserId = location.state?.userId;
+  const selectedUserName = location.state?.userName;
+  const isTeammateView = !!selectedUserId;  // userId가 있으면 무조건 보기 전용
+
+  const token = localStorage.getItem('token');
+  let currentUserId = null;
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      currentUserId = decoded.id;  // 너희 JWT payload 에 id로 user id 들어있다고 가정
+      console.log("🔍 currentUserId:", currentUserId);
+    } catch (err) {
+      console.error("JWT 디코드 실패:", err);
+    }
+  }
+  const userId = selectedUserId ?? currentUserId;
+
+
    // ✅ activeGoalId 가 바뀔 때 input 에 자동 focus
   useEffect(() => {
     if (activeGoalId) {
@@ -139,10 +160,14 @@ function TodoListPage({ onLogout }) {
   // ✅ 팀 목표 + SubGoal 불러오기
   const loadTeamGoals = async () => {
     if (!currentTeamId) return;
-    const res = await getTeamGoals(currentTeamId);
+      const userId = selectedUserId ?? currentUserId; // 🏹 내꺼 or 팀원꺼
+      console.log("📌 getSubGoals에 userId 넘김:", userId);
+      
+      const res = await getTeamGoals(currentTeamId);
+
     if (res.success) {
       const goalsWithSubGoals = await Promise.all(res.data.goals.map(async goal => {
-        const subRes = await getSubGoals(goal.id);
+        const subRes = await getSubGoals(goal.id, userId); // 🔥 userId 넘김
         return {
           id: goal.id,
           title: goal.content,
@@ -163,7 +188,7 @@ function TodoListPage({ onLogout }) {
 
   useEffect(() => {
     loadTeamGoals();
-  }, [currentTeamId]);
+  }, [currentTeamId, selectedUserId]);
 
   // 🗒️ 개인 메모 불러오기
   useEffect(() => {
@@ -307,7 +332,11 @@ function TodoListPage({ onLogout }) {
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
           <aside className="todo-goal-aside">
             <div className="todo-date">
-              {currentTeamName ? `${currentTeamName} 팀` : '팀을 선택해주세요'}
+              {selectedUserName 
+                ? `${selectedUserName}님의 투두`
+                : currentTeamName 
+                  ? `${currentTeamName} 팀`
+                  : '팀을 선택해주세요'}
             </div>
 
             <div className="goal-filter-buttons">
@@ -334,6 +363,39 @@ function TodoListPage({ onLogout }) {
             <Divider />
 
             <div className="todo-content">
+
+
+              {goalsWithFilteredTodos
+                .filter(goal => {
+                  const start = goal.start_date?.slice(0, 10);
+                  const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
+                  const result = start && end && sliderDate >= start && sliderDate <= end;
+                  console.log({
+                    goalId: goal.id,
+                    start,
+                    end,
+                    sliderDate,
+                    result
+                  });
+                  return result;
+                })
+                .map((goal, index) => (
+                  <React.Fragment key={goal.id}>
+                    <GoalSection
+                      goalId={goal.id}
+                      title={goal.title}
+                      todos={goal.todos.map(todo => ({
+                        ...todo,
+                        onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
+                      }))}
+                      onActivate={setActiveGoalId}
+                      onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
+                    />
+                    {index < goalsWithFilteredTodos.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+
+{/* 
               {filteredGoals
                 .filter(goal => {
                   const start = goal.start_date?.slice(0, 10);
@@ -364,6 +426,28 @@ function TodoListPage({ onLogout }) {
                   </React.Fragment>
                 ))}
 
+
+
+
+              {goalsWithFilteredTodos.map((goal, index) => (
+                <React.Fragment key={goal.id}>
+                  <GoalSection
+                    goalId={goal.id}
+                    title={goal.title}
+                    isTeammateView={isTeammateView}
+                    todos={goal.todos.map(todo => ({
+                      ...todo,
+                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
+                    }))}
+                    onActivate={setActiveGoalId}
+                    onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
+                  />
+                  {index < goalsWithFilteredTodos.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+            */}
+           
+           
               <Divider />
               <PersonalMemoSection
                 memos={memos}
@@ -390,12 +474,12 @@ function TodoListPage({ onLogout }) {
                 value={newInput}
                 onChange={(e) => setNewInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
-                disabled={!activeGoalId}
+                disabled={!activeGoalId || isTeammateView}  // 🔥 여기!
               />
               <button
                 className="todo-goal-btn"  // 🟢 ScrumPage 와 같은 class
                 onClick={handleAdd}
-                disabled={!activeGoalId}
+                disabled={!activeGoalId || isTeammateView}  // 🔥 여기!
               >
                 등록
               </button>
