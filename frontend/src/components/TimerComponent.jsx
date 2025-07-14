@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ProgressBar from 'progressbar.js';
+import timerService from '../services/timerService';
 import '../styles/TimerComponent.css';
 
 const TimerComponent = () => {
@@ -19,9 +20,34 @@ const TimerComponent = () => {
   
   const DURATION_IN_SECONDS = 60 * 60; // 60 minutes
   const timerRef = useRef(null);
-  const intervalRef = useRef(null);
 
-    useEffect(() => {
+  // TimerService 구독
+  useEffect(() => {
+    const unsubscribe = timerService.subscribe((state) => {
+      setIsRunning(state.isRunning);
+      setDuration(state.duration);
+      setRemaining(state.remaining);
+      setCurrentTime(formatTime(state.remaining));
+      
+      // 시간 입력 필드 업데이트
+      const minutes = Math.floor(state.remaining / 60);
+      const seconds = state.remaining % 60;
+      setInputMinutes(minutes);
+      setInputSeconds(seconds);
+      
+      // 프로그레스 바 업데이트
+      const newDeg = (state.remaining / DURATION_IN_SECONDS) * 360;
+      setLastDegree(newDeg);
+      if (timerRef.current) {
+        timerRef.current.set(newDeg / 360);
+      }
+      updateKnobPosition(newDeg);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     // 타이머 초기화
     if (progressBarRef.current) {
       timerRef.current = new ProgressBar.Circle(progressBarRef.current, {
@@ -29,7 +55,7 @@ const TimerComponent = () => {
         trailWidth: 40,
         trailColor: '#333333',
         strokeWidth: 37,
-        duration: 1 * 1000,
+        duration: 0, // 애니메이션 없이 즉시 표시
         from: { color: '#ff4444' },
         to: { color: '#cc0000' },
         step: function(state, timer) {
@@ -42,15 +68,14 @@ const TimerComponent = () => {
         timerRef.current.svg.style.transform = 'scale(-1, 1)';
       }
       
-      // 초기 타이머 설정
-      const initialTimerDeg = (duration / DURATION_IN_SECONDS) * 360;
+      // 초기 상태 설정
+      const initialState = timerService.getState();
+      const initialTimerDeg = (initialState.remaining / DURATION_IN_SECONDS) * 360;
       const clampedDeg = Math.max(0, Math.min(360, initialTimerDeg));
       
       timerRef.current.set(clampedDeg / 360);
-      setTimer(clampedDeg);
       setLastDegree(clampedDeg);
       updateKnobPosition(clampedDeg);
-      setCurrentTime(formatTime(duration));
     }
 
     return () => {
@@ -58,7 +83,7 @@ const TimerComponent = () => {
         timerRef.current.destroy();
       }
     };
-  }, [duration]);
+  }, []);
 
   const updateTimerTime = (timer, state) => {
     const valueSeconds = Math.round(timer.value() * DURATION_IN_SECONDS);
@@ -104,17 +129,7 @@ const TimerComponent = () => {
     if (!isRunning) {
       const total = (name === 'minutes' ? num : inputMinutes) * 60 + (name === 'seconds' ? num : inputSeconds);
       if (total > 0) {
-        setDuration(total);
-        setRemaining(total);
-        setCurrentTime(formatTime(total));
-        
-        // 프로그레스 바 업데이트
-        const newDeg = (total / DURATION_IN_SECONDS) * 360;
-        setLastDegree(newDeg);
-        if (timerRef.current) {
-          timerRef.current.set(newDeg / 360);
-        }
-        updateKnobPosition(newDeg);
+        timerService.setTime(name === 'minutes' ? num : inputMinutes, name === 'seconds' ? num : inputSeconds);
       }
     }
   };
@@ -141,96 +156,16 @@ const TimerComponent = () => {
 
   // 타이머 시작/일시정지
   const handleStartPause = () => {
-    console.log('=== handleStartPause called ===');
-    console.log('Current isRunning:', isRunning);
-    console.log('Current remaining:', remaining);
-    console.log('Current duration:', duration);
-    
-    if (isRunning) {
-      console.log('Stopping timer...');
-      setIsRunning(false);
-      clearInterval(intervalRef.current);
-    } else {
-      console.log('Starting timer...');
-      setIsRunning(true);
-    }
+    timerService.toggle();
   };
 
   // 리셋
   const handleReset = () => {
     // 50분으로 설정
-    const resetMinutes = 50;
-    const resetSeconds = 0;
-    const resetDuration = resetMinutes * 60 + resetSeconds;
-    
-    setInputMinutes(resetMinutes);
-    setInputSeconds(resetSeconds);
-    setDuration(resetDuration);
-    setRemaining(resetDuration);
-    setIsRunning(false);
-    clearInterval(intervalRef.current);
-    setCurrentTime(formatTime(resetDuration));
-    
-    // 프로그레스 바 리셋
-    const newDeg = (resetDuration / DURATION_IN_SECONDS) * 360;
-    setLastDegree(newDeg);
-    if (timerRef.current) {
-      timerRef.current.set(newDeg / 360);
-    }
-    updateKnobPosition(newDeg);
+    timerService.setTime(50, 0);
   };
 
-  // 타이머 동작
-  useEffect(() => {
-    console.log('=== Timer useEffect triggered ===');
-    console.log('isRunning:', isRunning);
-    console.log('remaining:', remaining);
-    console.log('duration:', duration);
-    
-    if (!isRunning) {
-      console.log('Timer not running, returning early');
-      return;
-    }
-    
-    console.log('Setting up interval...');
-    intervalRef.current = setInterval(() => {
-      console.log('=== Interval tick ===');
-      setRemaining(prev => {
-        console.log('setRemaining called with prev:', prev);
-        if (prev <= 1) {
-          console.log('Timer finished!');
-          setIsRunning(false);
-          clearInterval(intervalRef.current);
-          return 0;
-        }
-        const newRemaining = prev - 1;
-        console.log('New remaining:', newRemaining);
-        setCurrentTime(formatTime(newRemaining));
-        
-        // 시간 입력 필드도 업데이트
-        const newMinutes = Math.floor(newRemaining / 60);
-        const newSeconds = newRemaining % 60;
-        setInputMinutes(newMinutes);
-        setInputSeconds(newSeconds);
-        
-        // 프로그레스 바 업데이트
-        const newDeg = (newRemaining / DURATION_IN_SECONDS) * 360;
-        setLastDegree(newDeg);
-        if (timerRef.current) {
-          timerRef.current.set(newDeg / 360);
-        }
-        updateKnobPosition(newDeg);
-        
-        return newRemaining;
-      });
-    }, 1000);
-    
-    console.log('Interval set up with ID:', intervalRef.current);
-    return () => {
-      console.log('Cleaning up interval:', intervalRef.current);
-      clearInterval(intervalRef.current);
-    };
-  }, [isRunning]);
+
 
 
 
@@ -248,18 +183,13 @@ const TimerComponent = () => {
       const newMinutes = Math.floor(newDuration / 60);
       const newSeconds = newDuration % 60;
       
-      setInputMinutes(newMinutes);
-      setInputSeconds(newSeconds);
-      setDuration(newDuration);
-      setRemaining(newDuration);
-      setCurrentTime(formatTime(newDuration));
+      timerService.setTime(newMinutes, newSeconds);
     }
   };
 
   const handleMouseDown = (e) => {
     setIsDragging(true);
-    setIsRunning(false);
-    clearInterval(intervalRef.current);
+    timerService.pause();
     e.preventDefault();
   };
 
