@@ -1,29 +1,71 @@
 .gantt-chart {
-  display: flex;
-  flex-direction: column;
-  margin: 16px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  background: #fff;
 }
-.gantt-header, .gantt-row {
+
+.gantt-header {
+  background: #18344a;
+  color: #fff;
+  font-weight: bold;
   display: flex;
 }
+
+.gantt-cell.header {
+  padding: 12px 0;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+}
+
+.gantt-row {
+  display: flex;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+}
+
 .gantt-cell {
-  width: 60px;
-  height: 32px;
-  border: 1px solid #ddd;
+  flex: 1;
+  min-width: 60px;
+  height: 44px;
+  border-right: 1px solid #f0f0f0;
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
+  position: relative;
+}
+
+.gantt-bar {
+  position: absolute;
+  left: 0; top: 8px; bottom: 8px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #3ad29f 80%, #2ec4b6 100%);
+  color: #fff;
+  font-weight: 500;
   font-size: 14px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-.gantt-cell.header {
-  font-weight: bold;
-  background: #f0f0f0;
+
+.gantt-bar.red {
+  background: repeating-linear-gradient(
+    135deg, #ff6b6b 0 10px, #fff0 10px 20px
+  );
+  color: #fff;
 }
-.gantt-cell.bar {
-  background: #b3d4fc;
-  border-color: #90b8e6;
+
+.gantt-overlay {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+  background: rgba(255,0,0,0.08);
+  z-index: 1;
+  pointer-events: none;
+  border-radius: 8px;
 } 

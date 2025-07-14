@@ -177,20 +177,102 @@
     border-radius: 4px; /* 적당한 라운딩 추가 */
   }
 
+/* 간트 차트와 슬라이더 스타일 */
 .gantt-slider-wrapper {
-  margin-bottom: 12px;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 42px; /* 슬라이더 양쪽에 패딩을 주어 셀 중앙에 맞춤 */
+  box-sizing: border-box; /* 패딩이 전체 너비에 포함되도록 */
 }
+
 .gantt-slider-labels {
   display: flex;
   justify-content: space-between;
-  font-size: 12px;
+  font-size: 11px;
+  color: #666;
   margin-top: 2px;
+  padding: 0 30px; /* 라벨도 슬라이더와 동일한 패딩 적용 */
+  box-sizing: border-box;
 }
+
 .gantt-slider-label {
   width: 24px;
   text-align: center;
+  font-weight: 500;
 }
+
 .gantt-slider {
   width: 100%;
+  height: 4px; /* 얇은 선으로 만들기 */
+  background: #e0e0e0;
+  outline: none;
+  border-radius: 2px;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+/* 슬라이더 썸 스타일 */
+.gantt-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 16px solid #4CAF50;
+  border-radius: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.gantt-slider::-moz-range-thumb {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 16px solid #4CAF50;
+  border-radius: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* 슬라이더 트랙 스타일 */
+.gantt-slider::-webkit-slider-track {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+.gantt-slider::-moz-range-track {
+  height: 4px;
+  background: #e0e0e0;
+  border-radius: 2px;
+}
+
+/* 호버 효과 */
+.gantt-slider:hover::-webkit-slider-thumb {
+  border-top-color: #45a049;
+  transform: scale(1.1);
+}
+
+.gantt-slider:hover::-moz-range-thumb {
+  border-top-color: #45a049;
+  transform: scale(1.1);
+}
+
+/* 포커스 효과 */
+.gantt-slider:focus {
+  outline: none;
+}
+
+.gantt-slider:focus::-webkit-slider-thumb {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 0 3px rgba(76, 175, 80, 0.3));
+}
+
+.gantt-slider:focus::-moz-range-thumb {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)) drop-shadow(0 0 0 3px rgba(76, 175, 80, 0.3));
 }

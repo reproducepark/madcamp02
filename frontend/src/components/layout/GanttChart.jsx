@@ -39,20 +39,27 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
         // 주 범위와 겹치는 경우만 표시
         if (rawEnd < weekStart || rawStart > weekEnd) return null;
         // 주 범위 내로 clamp
-        const clampedStart = clampDateToWeek(goal.start_date, weekDays[0].date, weekDays[6].date);
-        const clampedEnd = clampDateToWeek(goal.real_end_date || goal.planned_end_date, weekDays[0].date, weekDays[6].date);
+        const clampedStart = Math.max(rawStart, weekStart);
+        const clampedEnd = Math.min(rawEnd, weekEnd);
         const startIdx = weekDays.findIndex(wd => wd.time === clampedStart);
         const endIdx = weekDays.findIndex(wd => wd.time === clampedEnd);
+        // bar width 계산
+        const barLeft = `${(startIdx / 7) * 100}%`;
+        const barWidth = `${((endIdx - startIdx + 1) / 7) * 100}%`;
         return (
           <div className="gantt-row" key={goal.id || idx}>
             {weekDays.map((_, i) => (
-              <div
-                key={i}
-                className={`gantt-cell${i >= startIdx && i <= endIdx ? ' bar' : ''}`}
-              >
-                {i === startIdx ? goal.content : ''}
-              </div>
+              <div key={i} className="gantt-cell" />
             ))}
+            {/* bar를 한 번만 absolute로 렌더링 */}
+            {startIdx >= 0 && endIdx >= startIdx && (
+              <div
+                className={`gantt-bar${goal.isDanger ? ' red' : ''}`}
+                style={{ left: barLeft, width: barWidth }}
+              >
+                {goal.content}
+              </div>
+            )}
           </div>
         );
       })}

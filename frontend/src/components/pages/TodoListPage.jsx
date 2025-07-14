@@ -285,17 +285,6 @@ function TodoListPage({ onLogout }) {
                 className="gantt-slider"
                 style={{ width: '100%' }}
               />
-              <div className="gantt-slider-labels">
-                {dateArray.map((d, i) => {
-                  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
-                  const dateObj = new Date(d);
-                  return (
-                    <span key={d} className="gantt-slider-label">
-                      {dayNames[dateObj.getDay()]}
-                    </span>
-                  );
-                })}
-              </div>
             </div>
             <GanttChart goals={filteredGoals
               .sort((a, b) => {
