@@ -19,8 +19,7 @@ function TopMenu() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isScrumPage = location.pathname.startsWith('/scrum');
-  const isTodoPage = location.pathname === '/todo';
+  const isScrumOrTodoPage = location.pathname.startsWith('/scrum') || location.pathname === '/todo';
   const isTeamViewPage = location.pathname === '/scrum/teammate-todolist';
 
   const fetchTeams = async () => {
@@ -82,12 +81,12 @@ function TopMenu() {
   };
 
   const handleTeamCreated = () => {
-    fetchTeams(); // 팀 생성 후 바로 최신화
+    fetchTeams();
     closeCreateModal();
   };
 
   const handleTeamUpdated = () => {
-    fetchTeams(); // 팀 이름 변경, 멤버 추가/삭제 시 갱신
+    fetchTeams();
   };
 
   const handleTeamDeleted = () => {
@@ -105,21 +104,19 @@ function TopMenu() {
       </div>
 
       <div className="top-menu-center">
-        {(isScrumPage || isTodoPage) && (
+        {isScrumOrTodoPage && (
           <div className="scrum-menu">
             <div className="team-management-container">
               <button className="scrum-menu-button" onClick={() => {
                 setIsDropdownOpen(!isDropdownOpen);
                 setShowTeammateDropdown(false);
               }}>
-                {isTodoPage ? '팀 선택' : '팀 생성/관리'}
+                팀 생성/관리
               </button>
 
               {isDropdownOpen && (
                 <div className="dropdown-menu">
-                  {!isTodoPage && (
-                    <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
-                  )}
+                  <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
                   {teams.length > 0 && teams.map(team => (
                     <div key={team.id} className="dropdown-item-container">
                       <span
@@ -142,59 +139,55 @@ function TopMenu() {
                         {team.name}
                       </span>
 
-                      {!isTodoPage && (
-                        <button
-                          className="dropdown-item-setting-btn"
-                          onClick={() => {
-                            localStorage.setItem('selectedTeam', JSON.stringify(team));
-                            setSelectedTeam(team);
-                            console.log("⚙️ 팀 설정 진입:", team);
-                            openManageModal();
-                          }}
-                        >
-                          설정
-                        </button>
-                      )}
+                      <button
+                        className="dropdown-item-setting-btn"
+                        onClick={() => {
+                          localStorage.setItem('selectedTeam', JSON.stringify(team));
+                          setSelectedTeam(team);
+                          console.log("⚙️ 팀 설정 진입:", team);
+                          openManageModal();
+                        }}
+                      >
+                        설정
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
 
-            {isScrumPage && (
-              <div className="team-management-container">
-                <button className="scrum-menu-button" onClick={() => {
-                  setShowTeammateDropdown(!showTeammateDropdown);
-                  setIsDropdownOpen(false);
-                }}>
-                  팀원
-                </button>
-                {showTeammateDropdown && (
-                  <div className="dropdown-menu">
-                    {teammates.length > 0 ? (
-                      teammates.map(member => (
-                        <button
-                          key={member.id}
-                          className="dropdown-item"
-                          onClick={() => navigate('/scrum/teammate-todolist', {
-                            state: {
-                              teamId: selectedTeam.id,
-                              teamName: selectedTeam.name,
-                              userId: member.id,
-                              userName: member.name,
-                            }
-                          })}
-                        >
-                          {member.name}
-                        </button>
-                      ))
-                    ) : (
-                      <p className="dropdown-message">팀원이 없습니다.</p>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+            <div className="team-management-container">
+              <button className="scrum-menu-button" onClick={() => {
+                setShowTeammateDropdown(!showTeammateDropdown);
+                setIsDropdownOpen(false);
+              }}>
+                팀원
+              </button>
+              {showTeammateDropdown && (
+                <div className="dropdown-menu">
+                  {teammates.length > 0 ? (
+                    teammates.map(member => (
+                      <button
+                        key={member.id}
+                        className="dropdown-item"
+                        onClick={() => navigate('/scrum/teammate-todolist', {
+                          state: {
+                            teamId: selectedTeam.id,
+                            teamName: selectedTeam.name,
+                            userId: member.id,
+                            userName: member.name,
+                          }
+                        })}
+                      >
+                        {member.name}
+                      </button>
+                    ))
+                  ) : (
+                    <p className="dropdown-message">팀원이 없습니다.</p>
+                  )}
+                </div>
+              )}
+            </div>
 
             {isTeamViewPage && (
               <button className="scrum-menu-button" onClick={() => navigate('/scrum')}>홈</button>

@@ -13,16 +13,37 @@ import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteS
 
 function TodoListPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
-
   const [currentTeamId, setCurrentTeamId] = useState(null);
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [goals, setGoals] = useState([]);
+  const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
+
+  const goalsWithFilteredTodos = goals.map(goal => ({
+    ...goal,
+    todos: goal.todos.filter(todo => {
+      if (filter === 'COMPLETED') return todo.is_completed;
+      if (filter === 'INCOMPLETE') return !todo.is_completed;
+      return true;
+    })
+  }));
+
   const [activeGoalId, setActiveGoalId] = useState(null);
   const [newInput, setNewInput] = useState('');
   const [memos, setMemos] = useState([]);
 
   const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
   const inputGroupRef = useRef();
+  const inputRef = useRef(); // ✅ 추가
+
+   // ✅ activeGoalId 가 바뀔 때 input 에 자동 focus
+  useEffect(() => {
+    if (activeGoalId) {
+      setNewInput(''); // ✅ 선택이 바뀔 때 입력창 초기화
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [activeGoalId]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -159,23 +180,53 @@ function TodoListPage() {
   };
 
   return (
-    <div className="app-wrapper">
+    <div className="todo-container">
       <TopMenu />
-      <div className="container">
+      <div className="todo-body">
         <Sidebar />
-        <main className="main-content">
-          <div className="todo-center-card">
-            <div className="todo-center-title">중앙 영역</div>
+        <main className="todo-main">
+          {/* 왼쪽 영역 (3:1 비율의 3) */}
+          <div className="todo-left-section">
+            {/* 시간표 영역 (상단 절반) */}
+            <section className="todo-schedule-section">
+              <div className="todo-schedule-title">시간표</div>
+              <div className="todo-schedule-content">
+                시간표 컴포넌트가 들어갈 공간입니다
+              </div>
+            </section>
           </div>
 
-          <div className="todo-card">
+          {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
+          <aside className="todo-goal-aside">
             <div className="todo-date">
               {currentTeamName ? `${currentTeamName} 팀` : '팀을 선택해주세요'}
             </div>
+
+            <div className="goal-filter-buttons">
+              <button 
+                className={`filter-btn ${filter === 'INCOMPLETE' ? 'active' : ''}`}
+                onClick={() => setFilter('INCOMPLETE')}
+              >
+                미완
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'COMPLETED' ? 'active' : ''}`}
+                onClick={() => setFilter('COMPLETED')}
+              >
+                완료
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setFilter('ALL')}
+              >
+                모두
+              </button>
+            </div>
+
             <Divider />
 
             <div className="todo-content">
-              {goals.map((goal, index) => (
+              {goalsWithFilteredTodos.map((goal, index) => (
                 <React.Fragment key={goal.id}>
                   <GoalSection
                     goalId={goal.id}
@@ -187,10 +238,9 @@ function TodoListPage() {
                     onActivate={setActiveGoalId}
                     onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
                   />
-                  {index < goals.length - 1 && <Divider />}
+                  {index < goalsWithFilteredTodos.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
-
               <Divider />
               <PersonalMemoSection
                 memos={memos}
@@ -205,6 +255,8 @@ function TodoListPage() {
 
             <div className="todo-goal-input-group" ref={inputGroupRef}>
               <input
+                ref={inputRef}  // ✅ focus 대상
+                className="todo-goal-input"  // 🟢 ScrumPage 와 같은 class
                 placeholder={
                   activeGoalId === 'memo'
                     ? "개인 메모를 작성하세요"
@@ -214,17 +266,18 @@ function TodoListPage() {
                 }
                 value={newInput}
                 onChange={(e) => setNewInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
                 disabled={!activeGoalId}
               />
               <button
-                className="todo-goal-btn"
+                className="todo-goal-btn"  // 🟢 ScrumPage 와 같은 class
                 onClick={handleAdd}
                 disabled={!activeGoalId}
               >
                 등록
               </button>
             </div>
-          </div>
+          </aside>
         </main>
       </div>
 
