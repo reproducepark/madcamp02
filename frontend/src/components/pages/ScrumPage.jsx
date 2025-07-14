@@ -122,9 +122,16 @@ function ScrumPage() {
     return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
 
-const handleToggleGoal = async (goalId, currentCompleted) => {
+const handleToggleGoal = async (goalId, currentCompleted, goalContent) => {
   try {
     if (currentCompleted) {
+      const confirmed = await showConfirm(
+        '완료 취소',
+        `"${goalContent}" 완료를 취소하시겠습니까?`,
+        '확인',
+        '취소'
+      );
+      if (!confirmed) return; // 사용자가 취소하면 여기서 중단
       await uncompleteTeamGoal(goalId);
     } else {
       await completeTeamGoal(goalId);
@@ -226,7 +233,7 @@ const handleDeleteGoal = async (goalId) => {
               <ScrumGoalItem
                 key={goal.id}
                 goal={goal}
-                onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null)}
+                onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
                 onDelete={handleDeleteGoal}
               />
               ))}
