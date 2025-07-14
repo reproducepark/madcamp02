@@ -8,23 +8,20 @@ function TeamMemoSection({ teamId, teamName }) {
   const [newMemoInput, setNewMemoInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const currentUser = getCurrentUser();
-  
-  // 디버깅: localStorage 확인
-  console.log('localStorage userInfo:', localStorage.getItem('userInfo'));
-  console.log('getCurrentUser 결과:', currentUser);
 
   // 팀 메모 로드
   const loadTeamMemos = async () => {
     if (!teamId) return;
     
+    console.log('🔄 팀 메모 로딩 시작 - 팀 ID:', teamId, '팀 이름:', teamName);
     setIsLoading(true);
     try {
       const response = await getTeamMemos(teamId);
-      console.log('팀 메모 응답:', response);
-      console.log('현재 사용자:', currentUser);
+      console.log('📋 팀 메모 응답:', response);
+      console.log('👤 현재 사용자:', currentUser);
       setMemos(response.data.memos || []);
     } catch (err) {
-      console.error('팀 메모 로딩 실패:', err);
+      console.error('❌ 팀 메모 로딩 실패:', err);
     } finally {
       setIsLoading(false);
     }
@@ -55,6 +52,7 @@ function TeamMemoSection({ teamId, teamName }) {
 
   // 팀이 변경될 때마다 메모 로드
   useEffect(() => {
+    console.log('🔄 팀 변경 감지 - 팀 ID:', teamId, '팀 이름:', teamName);
     loadTeamMemos();
   }, [teamId]);
 
@@ -71,27 +69,20 @@ function TeamMemoSection({ teamId, teamName }) {
           <div className="memo-empty">아직 메모가 없습니다.</div>
         ) : (
           <div className="memo-list">
-            {memos.map((memo) => {
-              console.log('메모 데이터:', memo);
-              console.log('메모 작성자 ID:', memo.user_id);
-              console.log('현재 사용자 ID:', currentUser?.num);
-              console.log('삭제 버튼 표시 여부:', currentUser && memo.user_id === currentUser.num);
-              
-              return (
-                <div key={memo.id} className="memo-item">
-                  <div className="memo-content">{memo.content}</div>
-                  {currentUser && memo.user_id === currentUser.num && (
-                    <button 
-                      className="memo-delete-btn"
-                      onClick={() => handleDeleteMemo(memo.id)}
-                      title="삭제"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-              );
-            })}
+            {memos.map((memo) => (
+              <div key={memo.id} className="memo-item">
+                <div className="memo-content">{memo.content}</div>
+                {currentUser && memo.user_id === currentUser.num && (
+                  <button 
+                    className="memo-delete-btn"
+                    onClick={() => handleDeleteMemo(memo.id)}
+                    title="삭제"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>
