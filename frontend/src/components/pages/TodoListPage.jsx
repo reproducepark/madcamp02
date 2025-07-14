@@ -33,6 +33,17 @@ function TodoListPage() {
 
   const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
   const inputGroupRef = useRef();
+  const inputRef = useRef(); // ✅ 추가
+
+   // ✅ activeGoalId 가 바뀔 때 input 에 자동 focus
+  useEffect(() => {
+    if (activeGoalId) {
+      setNewInput(''); // ✅ 선택이 바뀔 때 입력창 초기화
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }
+  }, [activeGoalId]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -244,6 +255,7 @@ function TodoListPage() {
 
             <div className="todo-goal-input-group" ref={inputGroupRef}>
               <input
+                ref={inputRef}  // ✅ focus 대상
                 className="todo-goal-input"  // 🟢 ScrumPage 와 같은 class
                 placeholder={
                   activeGoalId === 'memo'
