@@ -6,7 +6,7 @@ import { apiRequest, apiPost, apiGet, apiPut, apiDelete, apiPatch } from './apiS
  * @returns {Promise<Object>} API 응답
  */
 export const createTeam = (teamName) => {
-  return apiPost('/team/createTeam', { name: teamName });
+  return apiPost('/api/team/createTeam', { name: teamName });
 };
 
 /**
@@ -14,7 +14,7 @@ export const createTeam = (teamName) => {
  * @returns {Promise<Object>} API 응답
  */
 export const getTeams = () => {
-  return apiGet('/team/myTeams');
+  return apiGet('/api/team/myTeams');
 };
 
 /**
@@ -24,7 +24,7 @@ export const getTeams = () => {
  * @returns {Promise<Object>} API 응답
  */
 export const updateTeam = (teamId, newName) => {
-  return apiPut(`/team/${teamId}`, { name: newName });
+  return apiPut(`/api/team/${teamId}`, { name: newName });
 };
 
 /**
@@ -33,7 +33,7 @@ export const updateTeam = (teamId, newName) => {
  * @returns {Promise<Object>} API 응답
  */
 export const deleteTeam = (teamId) => {
-  return apiDelete(`/team/${teamId}`);
+  return apiDelete(`/api/team/${teamId}`);
 };
 
 /**
@@ -43,7 +43,7 @@ export const deleteTeam = (teamId) => {
  * @returns {Promise<Object>} API 응답
  */
 export const addTeamMember = (teamId, username) => {
-  return apiPost(`/team/${teamId}/members`, { username });
+  return apiPost(`/api/team/${teamId}/members`, { username });
 };
 
 /**
@@ -53,7 +53,7 @@ export const addTeamMember = (teamId, username) => {
  * @returns {Promise<Object>} API 응답
  */
 export const removeTeamMember = (teamId, userId) => {
-  return apiDelete(`/team/${teamId}/members/${userId}`);
+  return apiDelete(`/api/team/${teamId}/members/${userId}`);
 };
 
 /**
@@ -62,7 +62,7 @@ export const removeTeamMember = (teamId, userId) => {
  * @returns {Promise<Object>} API 응답
  */
 export const getTeamMembers = (teamId) => {
-  return apiGet(`/team/${teamId}/members`);
+  return apiGet(`/api/team/${teamId}/members`);
 };
 
 /**
@@ -73,25 +73,25 @@ export const getTeamMembers = (teamId) => {
  */
 export const createTeamGoal = (teamId, goalData) => {
   console.log('🛠 Sending POST to /api/team/${teamId}/goal', goalData)
-  return apiPost(`/team/${teamId}/goal`, goalData);
+  return apiPost(`/api/team/${teamId}/goal`, goalData);
 };
 
 // 팀 목표 목록 조회
 export const getTeamGoals = (teamId) => {
-  return apiGet(`/team/${teamId}/goals`);
+  return apiGet(`/api/team/${teamId}/goals`);
 };
 
 // 팀 목표 삭제
 export const deleteTeamGoal = (goalId) => {
-  return apiDelete(`/team/goal/${goalId}`);
+  return apiDelete(`/api/team/goal/${goalId}`);
 };
 
 // 팀 목표 완료
 export const completeTeamGoal = (goalId) => {
-  return apiPatch(`/team/goal/${goalId}/complete`);
+  return apiPatch(`/api/team/goal/${goalId}/complete`);
 };
 
 // 팀 목표 완료 취소
 export const uncompleteTeamGoal = (goalId) => {
-  return apiPatch(`/team/goal/${goalId}/uncomplete`);
+  return apiPatch(`/api/team/goal/${goalId}/uncomplete`);
 };

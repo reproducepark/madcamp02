@@ -1,4 +1,17 @@
-const API_URL = import.meta.env.VITE_API_URL || '';
+// API URL 설정 - 개발/프로덕션 환경에 따라 다르게 설정
+const getApiUrl = () => {
+  if (import.meta.env.DEV) {
+    // 개발 환경에서는 Vite proxy 사용
+    return '';
+  } else {
+    // 프로덕션 환경에서는 실제 서버 URL 사용
+    return import.meta.env.VITE_API_URL || 'http://localhost:3001';
+  }
+};
+
+const API_URL = getApiUrl();
+console.log('AuthService: API_URL 설정됨:', API_URL);
+console.log('AuthService: 현재 환경:', import.meta.env.DEV ? '개발' : '프로덕션');
 
 /**
  * 사용자 로그인 API
@@ -8,8 +21,10 @@ const API_URL = import.meta.env.VITE_API_URL || '';
  */
 export const loginUser = async (username, password) => {
   console.log('AuthService: loginUser() 시작', { username: username ? '존재함' : '없음' });
+  const loginUrl = `${API_URL}/api/auth/login`;
+  console.log('AuthService: 로그인 요청 URL:', loginUrl);
   try {
-    const response = await fetch(`/api/auth/login`, {
+    const response = await fetch(loginUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +76,7 @@ export const loginUser = async (username, password) => {
  */
 export const registerUser = async (username, password, name, class_section) => {
   try {
-    const response = await fetch(`/api/auth/signup`, {
+    const response = await fetch(`${API_URL}/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

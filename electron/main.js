@@ -6,7 +6,16 @@ let overlayWindow;
 
 const isDev = !app.isPackaged;
 
+// 프로덕션 환경에서 로깅 활성화
+if (!isDev) {
+    console.log('Production mode detected');
+    console.log('App path:', app.getAppPath());
+    console.log('Current directory:', __dirname);
+}
+
 function createMainWindow() {
+    console.log('Creating main window...');
+    
     mainWindow = new BrowserWindow({
         width: 1280,  // 16:10 비율에 맞는 크기
         height: 800,  // 1280 * (10/16) = 800
@@ -18,7 +27,7 @@ function createMainWindow() {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: true,  // Enables sandbox for better security
+            sandbox: false,  // 프로덕션에서 sandbox 비활성화
             enableRemoteModule: false,  // Prevents unnecessary remote access
             webSecurity: true,  // Enforces security policies
         },
@@ -28,13 +37,25 @@ function createMainWindow() {
         ? "http://localhost:5173"
         : `file://${path.join(__dirname, "../frontend/dist/index.html")}`;
 
+    console.log('Loading URL:', startURL);
+    console.log('File path:', path.join(__dirname, "../frontend/dist/index.html"));
+
     mainWindow.loadURL(startURL).catch((err) => {
         console.error("Failed to load URL:", err);
     });
     
     mainWindow.once('ready-to-show', () => {
+        console.log('Main window ready to show');
         mainWindow.show();
         mainWindow.focus(); // 👈 창을 강제로 포커스
+    });
+
+    mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription, validatedURL) => {
+        console.error('Failed to load:', errorCode, errorDescription, validatedURL);
+    });
+
+    mainWindow.webContents.on('did-finish-load', () => {
+        console.log('Main window finished loading');
     });
 
     // 16:10 비율 강제 유지
@@ -47,9 +68,8 @@ function createMainWindow() {
         }
     });
 
-    if (isDev) {
-        mainWindow.webContents.openDevTools({ mode: 'detach' });
-    }
+    // 개발자 도구 열기 (개발/프로덕션 모두)
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
 function createOverlayWindow() {
@@ -82,7 +102,7 @@ function createOverlayWindow() {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
             nodeIntegration: false,
-            sandbox: true,
+            sandbox: false,  // 프로덕션에서 sandbox 비활성화
             enableRemoteModule: false,
             webSecurity: true,
         }
@@ -91,6 +111,8 @@ function createOverlayWindow() {
     const overlayURL = isDev
         ? "http://localhost:5173/overlay"
         : `file://${path.join(__dirname, "../frontend/dist/overlay.html")}`;
+
+    console.log('Loading overlay URL:', overlayURL);
 
     overlayWindow.loadURL(overlayURL).catch((err) => {
         console.error("Failed to load overlay URL:", err);
