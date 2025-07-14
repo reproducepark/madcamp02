@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
 
 let mainWindow;
+let overlayWindow;
 
 const isDev = !app.isPackaged;
 
@@ -37,6 +38,121 @@ function createMainWindow() {
         mainWindow.webContents.openDevTools();
     }
 }
+
+function createOverlayWindow() {
+    console.log('Main: createOverlayWindow 호출됨');
+    
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        console.log('Main: 기존 오버레이 창에 포커스');
+        overlayWindow.focus();
+        return;
+    }
+
+    console.log('Main: 새로운 오버레이 창 생성 시작');
+    
+    overlayWindow = new BrowserWindow({
+        width: 150,
+        height: 150,
+        frame: false,
+        transparent: true,
+        alwaysOnTop: true,
+        skipTaskbar: true,
+        resizable: false,
+        movable: true,
+        minimizable: false,
+        maximizable: false,
+        closable: true,
+        focusable: false,
+        center: true,
+        show: false,
+        webPreferences: {
+            preload: path.join(__dirname, "preload.js"),
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true,
+            enableRemoteModule: false,
+            webSecurity: true,
+        }
+    });
+
+    const overlayURL = isDev
+        ? "http://localhost:5173/overlay"
+        : `file://${path.join(__dirname, "../frontend/dist/overlay.html")}`;
+
+    overlayWindow.loadURL(overlayURL).catch((err) => {
+        console.error("Failed to load overlay URL:", err);
+    });
+
+    overlayWindow.once('ready-to-show', () => {
+        overlayWindow.center();
+        overlayWindow.show();
+        console.log('Main: 오버레이 창 표시 완료');
+    });
+
+    overlayWindow.on('closed', () => {
+        console.log('Main: 오버레이 창이 닫힘');
+        overlayWindow = null;
+        if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('overlay-window-closed');
+        }
+    });
+
+    if (isDev) {
+        overlayWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+}
+
+function closeOverlayWindow() {
+    console.log('Main: closeOverlayWindow 호출됨');
+    
+    if (overlayWindow && !overlayWindow.isDestroyed()) {
+        console.log('Main: 오버레이 창 닫기 시도');
+        overlayWindow.close();
+        overlayWindow = null;
+        console.log('Main: 오버레이 창 닫기 완료');
+    }
+}
+
+// IPC 핸들러 등록
+ipcMain.handle('open-overlay-window', () => {
+    console.log('Main: open-overlay-window IPC 호출됨');
+    createOverlayWindow();
+});
+
+ipcMain.handle('close-overlay-window', () => {
+    console.log('Main: close-overlay-window IPC 호출됨');
+    closeOverlayWindow();
+    return true;
+});
+
+ipcMain.handle('close-current-window', (event) => {
+    console.log('Main: close-current-window IPC 호출됨');
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (window) {
+        console.log('Main: 현재 창 닫기 시도');
+        window.close();
+        return true;
+    }
+    return false;
+});
+
+// 타이머 상태 브로드캐스트
+ipcMain.handle('broadcast-timer-state', (event, state) => {
+    console.log('Main: 타이머 상태 브로드캐스트', state);
+    
+    // 이벤트를 발생시킨 창을 제외하고 다른 창들에게 상태 전송
+    const senderWindow = BrowserWindow.fromWebContents(event.sender);
+    
+    if (overlayWindow && !overlayWindow.isDestroyed() && overlayWindow !== senderWindow) {
+        console.log('Main: 오버레이 창에 상태 전송');
+        overlayWindow.webContents.send('timer-state-updated', state);
+    }
+    
+    if (mainWindow && !mainWindow.isDestroyed() && mainWindow !== senderWindow) {
+        console.log('Main: 메인 창에 상태 전송');
+        mainWindow.webContents.send('timer-state-updated', state);
+    }
+});
 
 app.on("ready", createMainWindow);
 

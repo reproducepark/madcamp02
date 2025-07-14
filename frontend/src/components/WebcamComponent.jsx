@@ -71,7 +71,7 @@ function WebcamComponent() {
 
 
   return (
-    <div className="webcam-container">
+    <div>
       
       <div className="webcam-video-container">
         {error ? (

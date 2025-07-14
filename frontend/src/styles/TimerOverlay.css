@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0); /* 투명 배경 */
+    overflow: hidden;
+}
+
+.timer-overlay {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    user-select: none;
+}
+
+.timer-overlay-container {
+    width: 100px;
+    height: 100px;
+    background-color: transparent;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    app-region: drag;
+    cursor: move;
+    transition: opacity 0.1s ease;
+}
+
+.timer-overlay-container.transparent {
+    opacity: 0.5;
+}
+
+.timer-overlay-disk {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.timer-overlay-time {
+    color: black;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    font-family: 'Arial', sans-serif;
+    position: absolute;
+    z-index: 10;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.timer-overlay-controls {
+    display: flex;
+    gap: 4px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+}
+
+.timer-overlay-btn {
+    background: #fff;
+    color: #333;
+    border: 2px solid #333;
+    border-radius: 16px;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    app-region: no-drag;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-overlay-btn.start {
+    background: #fff;
+    color: #333;
+    border-color: #333;
+}
+
+.timer-overlay-btn.stop {
+    background: #d32f2f;
+    color: #fff;
+    border-color: #d32f2f;
+}
+
+.timer-overlay-btn:hover {
+    transform: scale(1.05);
+}
+
+.timer-overlay-btn.start:hover {
+    background: #f5f5f5;
+}
+
+.timer-overlay-btn.stop:hover {
+    background: #b71c1c;
+}
+
+.timer-overlay-close-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 20px;
+    height: 20px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    app-region: no-drag;
+    transition: all 0.2s;
+    z-index: 30;
+}
+
+.timer-overlay-close-btn:hover {
+    background: #cc0000;
+    transform: scale(1.1);
+}
+
+/* ProgressBar.js 스타일 오버라이드 */
+.timer-overlay-disk .progressbar-text {
+    display: none !important;
+}
+
+.timer-overlay-disk svg {
+    transform: scale(-1, 1);
+}
+
+.timer-overlay-disk svg path:first-child {
+    stroke: #ffffff !important;
+}
+
+.timer-overlay-disk svg path:last-child {
+    stroke: #ff4444 !important;
+} 

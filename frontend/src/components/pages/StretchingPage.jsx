@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import WebcamComponent from '../WebcamComponent';
+import TimerComponent from '../TimerComponent';
 import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
@@ -39,7 +40,9 @@ function StretchingPage() {
 
             <div className="todo-stretching-content">
               {isStretchingEnabled ? (
-                <WebcamComponent />
+                <div className="stretching-webcam-wrapper">
+                  <WebcamComponent />
+                </div>
               ) : (
                 <div className="stretching-disabled">
                   <p>스트레칭 기능을 활성화해주세요</p>
@@ -50,9 +53,13 @@ function StretchingPage() {
 
           {/* 타이머 섹션 (오른쪽 반) */}
           <section className="todo-timer-section">
-            <div className="todo-timer-title">타이머</div>
+            <div className="stretching-controls">
+              <div className="toggle-container">
+                <span className="toggle-label">타이머</span>
+              </div>
+            </div>
             <div className="todo-timer-content">
-              타이머 컴포넌트가 들어갈 공간입니다
+              <TimerComponent />
             </div>
           </section>
         </main>

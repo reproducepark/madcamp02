@@ -1,0 +1,246 @@
+.timer-component {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  background: transparent;
+}
+
+.timer-index-layer {
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 260px;
+  height: 260px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.timer-index-svg {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.timer-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  z-index: 1;
+}
+
+.timer-disk {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  z-index: 3;
+}
+
+
+
+.timer-bar-end {
+  position: absolute;
+  width: 4px;
+  height: 45%;
+  background: #f8f8f8;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+}
+
+.timer-bar-knob {
+  position: absolute;
+  background-color: #ffffff;
+  border: 2px solid #ddd;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0px 2px 8px 0px rgba(0,0,0,0.2);
+  z-index: 100;
+  top: 0;
+  left: 0;
+  min-width: 16px;
+  min-height: 16px;
+}
+
+
+
+.timer-input-section {
+  margin: 20px 0;
+}
+
+.timer-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f4f4f4;
+  border-radius: 16px;
+  padding: 8px 16px;
+}
+
+.timer-input {
+  width: 48px;
+  font-size: 20px;
+  border: none;
+  background: transparent;
+  text-align: right;
+  outline: none;
+  color: #222;
+  font-weight: bold;
+}
+
+.timer-input-label {
+  font-size: 18px;
+  color: #888;
+}
+
+
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin: 20px 0 4px 0;
+}
+
+.timer-start-btn {
+  background: #fff;
+  color: #d32f2f;
+  border: 2px solid #d32f2f;
+  border-radius: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 6px 32px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timer-start-btn.running {
+  background: #d32f2f;
+  color: #fff;
+}
+
+.timer-start-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 12px rgba(0,0,0,0.15);
+}
+
+.timer-reset-btn {
+  background: #fff;
+  color: #888;
+  border: 2px solid #bbb;
+  border-radius: 20px;
+  font-size: 22px;
+  font-weight: bold;
+  padding: 6px 32px;
+  cursor: not-allowed;
+  transition: all 0.2s;
+  opacity: 0.5;
+}
+
+.timer-reset-btn.active {
+  background: #2196f3;
+  color: #fff;
+  border-color: #2196f3;
+  cursor: pointer;
+  opacity: 1;
+}
+
+.timer-reset-btn.active:hover {
+  background: #1976d2;
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.timer-overlay-btn {
+  background: #fff;
+  color: #9c27b0;
+  border: 2px solid #9c27b0;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 6px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timer-overlay-btn.active {
+  background: #9c27b0;
+  color: #fff;
+}
+
+.timer-overlay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 12px rgba(156, 39, 176, 0.3);
+}
+
+
+
+
+
+/* ProgressBar.js 스타일 오버라이드 */
+.timer-disk .progressbar-text {
+  display: none !important;
+}
+
+.timer-disk svg {
+  transform: scale(-1, 1);
+}
+
+.timer-disk svg path:first-child {
+  stroke: #ffffff !important;
+}
+
+.timer-disk svg path:last-child {
+  stroke: #ff4444 !important;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .timer-container {
+    width: 150px;
+    height: 150px;
+  }
+  
+
+  
+  .timer-controls {
+    gap: 10px;
+  }
+  
+  .timer-start-btn {
+    font-size: 18px;
+    padding: 4px 24px;
+  }
+  
+  .timer-reset-btn {
+    font-size: 18px;
+    padding: 4px 24px;
+  }
+  
+  .timer-overlay-btn {
+    font-size: 16px;
+    padding: 4px 20px;
+  }
+  
+
+  
+  .timer-input {
+    width: 40px;
+    font-size: 18px;
+  }
+  
+  .timer-input-label {
+    font-size: 16px;
+  }
+} 
