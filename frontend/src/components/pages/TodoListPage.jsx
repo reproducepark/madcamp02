@@ -265,6 +265,10 @@ function TodoListPage({ onLogout }) {
     // eslint-disable-next-line
   }, [currentDuration.start, currentDuration.end]);
 
+  // 내 userId 가져오기
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+  const myUserId = userInfo?.id;
+
   return (
     <div className="app-wrapper">
       <TopMenu onLogout={onLogout} />
@@ -286,22 +290,25 @@ function TodoListPage({ onLogout }) {
                 style={{ width: '100%' }}
               />
             </div>
-            <GanttChart goals={filteredGoals
-              .sort((a, b) => {
-                const aStart = new Date(a.start_date).getTime();
-                const bStart = new Date(b.start_date).getTime();
-                if (aStart !== bStart) return aStart - bStart;
-                const aEnd = new Date(a.real_end_date || a.planned_end_date).getTime();
-                const bEnd = new Date(b.real_end_date || b.planned_end_date).getTime();
-                return aEnd - bEnd;
-              })
-              .map(goal => ({
-                id: goal.id,
-                content: goal.title,
-                start_date: goal.start_date,
-                planned_end_date: goal.planned_end_date,
-                real_end_date: goal.real_end_date,
-            }))} baseDate={defaultBaseDate} />
+            <GanttChart
+              goals={filteredGoals.map(goal => {
+                // const myTodos = goal.todos.filter(todo => String(todo.userId) === String(myUserId));
+                const myTodos = goal.todos; // 임시: 모든 todo를 내 것으로 간주
+                const completed = myTodos.filter(todo => todo.is_completed).length;
+                const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
+                // 진단용 로그
+                console.log('[GanttChart 진단]', {
+                  goalTitle: goal.title,
+                  myTodos,
+                  completed,
+                  progress,
+                  myUserId,
+                  todos: goal.todos
+                });
+                return { ...goal, progress };
+              })}
+              baseDate={defaultBaseDate}
+            />
           </div>
 
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
