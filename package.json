@@ -9,7 +9,10 @@
     "backend": "npm run dev --prefix backend",
     "frontend": "npm run dev --prefix frontend",
     "build": "npm run build --prefix frontend",
-    "start": "concurrently \"npm run frontend\" \"wait-on http://localhost:5173 && electron .\""
+    "start": "concurrently \"npm run frontend\" \"wait-on http://localhost:5173 && electron .\"",
+    "build-mac": "npm run build && npx electron-builder --mac",
+    "build-win": "npm run build && npx electron-builder --win",
+    "build-linux": "npm run build && npx electron-builder --linux"
   },
   "build": {
     "appId": "com.example.project",

@@ -6,7 +6,7 @@ import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import '../../styles/Auth.css';
 
-function LoginPage() {
+function LoginPage({ onLoginSuccess }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +45,10 @@ function LoginPage() {
       const result = await loginUser(username, password);
       
       if (result.success) {
+        // 부모 컴포넌트에 로그인 성공 알림
+        if (onLoginSuccess) {
+          onLoginSuccess();
+        }
         navigate('/todo'); // Redirect to a protected route
       } else {
         await showAlert('오류', result.message);

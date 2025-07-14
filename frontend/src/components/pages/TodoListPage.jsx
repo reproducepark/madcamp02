@@ -11,7 +11,7 @@ import { getTeams, getTeamGoals } from '../../services/teamService';
 import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 
-function TodoListPage() {
+function TodoListPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
 
   const [currentTeamId, setCurrentTeamId] = useState(null);
@@ -160,7 +160,7 @@ function TodoListPage() {
 
   return (
     <div className="app-wrapper">
-      <TopMenu />
+      <TopMenu onLogout={onLogout} />
       <div className="container">
         <Sidebar />
         <main className="main-content">
@@ -203,31 +203,25 @@ function TodoListPage() {
               />
             </div>
 
-            <div className="todo-goal-input-group" ref={inputGroupRef}>
-              <input
-                placeholder={
-                  activeGoalId === 'memo'
-                    ? "개인 메모를 작성하세요"
-                    : activeGoalId
-                      ? `${activeGoalName}에 할 일을 추가합니다`
-                      : "목표를 선택해 주세요."
-                }
-                value={newInput}
-                onChange={(e) => setNewInput(e.target.value)}
-                disabled={!activeGoalId}
-              />
-              <button
-                className="todo-goal-btn"
-                onClick={handleAdd}
-                disabled={!activeGoalId}
-              >
-                등록
-              </button>
-            </div>
+            {/* 입력 그룹 */}
+            {activeGoalId && (
+              <div className="input-group" ref={inputGroupRef}>
+                <input
+                  type="text"
+                  value={newInput}
+                  onChange={(e) => setNewInput(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleAdd()}
+                  placeholder={`${activeGoalName || '메모'}에 추가할 내용을 입력하세요`}
+                  autoFocus
+                />
+                <button onClick={handleAdd}>추가</button>
+              </div>
+            )}
           </div>
         </main>
       </div>
 
+      {/* 모달 */}
       <Modal
         isOpen={modalState.isOpen}
         onClose={closeModal}

@@ -7,7 +7,7 @@ import Divider from '../layout/Divider';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 
-function TeammateTodoListPage() { // 컴포넌트 이름 변경
+function TeammateTodoListPage({ onLogout }) { // 컴포넌트 이름 변경
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
   
   // 더미 데이터 - 실제로는 선택된 팀원의 데이터를 불러와야 함
@@ -66,7 +66,7 @@ function TeammateTodoListPage() { // 컴포넌트 이름 변경
 
   return (
     <div className="app-wrapper">
-      <TopMenu />
+      <TopMenu onLogout={onLogout} />
       <div className="container">
         <Sidebar />
         <main className="main-content">

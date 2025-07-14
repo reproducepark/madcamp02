@@ -10,7 +10,7 @@ import { getTeams } from '../../services'; // getTeams import
 import '../../styles/ScrumPage.css';
 import { createTeamGoal, getTeamGoals, deleteTeamGoal, completeTeamGoal, uncompleteTeamGoal } from '../../services/teamService';
 
-function ScrumPage() {
+function ScrumPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
   const location = useLocation();
   const { teamId: navigatedTeamId, teamName: navigatedTeamName } = location.state || {};
@@ -242,7 +242,7 @@ const handleDeleteGoal = async (goalId) => {
 
   return (
     <div className="todo-container">
-      <TopMenu />
+      <TopMenu onLogout={onLogout} />
       <div className="todo-body">
         <Sidebar />
         <main className="todo-main">

@@ -6,7 +6,7 @@ import TeamCreateModal from '../Modal/TeamCreateModal';
 import TeamManageModal from '../Modal/TeamManageModal';
 import './TopMenu.css';
 
-function TopMenu() {
+function TopMenu({ onLogout }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [showTeammateDropdown, setShowTeammateDropdown] = useState(false);
@@ -78,7 +78,11 @@ function TopMenu() {
   }, [teams]);
 
   const handleLogout = () => {
-    logoutUser();
+    if (onLogout) {
+      onLogout();
+    } else {
+      logoutUser();
+    }
   };
 
   const handleTeamCreated = () => {
