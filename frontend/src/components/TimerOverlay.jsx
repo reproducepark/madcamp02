@@ -9,9 +9,8 @@ const TimerOverlay = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [remaining, setRemaining] = useState(600);
   const [duration, setDuration] = useState(600);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   
+  const DURATION_IN_SECONDS = 60 * 60; // 60 minutes (1시간)
   const timerRef = useRef(null);
 
   // TimerService 구독 및 IPC 상태 동기화
@@ -63,7 +62,7 @@ const TimerOverlay = () => {
           setCurrentTime(formatTime(state.remaining));
           
           // 프로그레스 바 업데이트
-          const newDeg = (state.remaining / state.duration) * 360;
+          const newDeg = (state.remaining / DURATION_IN_SECONDS) * 360;
           if (timerRef.current) {
             timerRef.current.set(newDeg / 360);
           }
@@ -82,7 +81,7 @@ const TimerOverlay = () => {
       setCurrentTime(formatTime(state.remaining));
       
       // 프로그레스 바 업데이트
-      const newDeg = (state.remaining / state.duration) * 360;
+      const newDeg = (state.remaining / DURATION_IN_SECONDS) * 360;
       if (timerRef.current) {
         timerRef.current.set(newDeg / 360);
       }
@@ -99,29 +98,6 @@ const TimerOverlay = () => {
       localUnsubscribe();
     };
   }, []);
-
-  // 전역 마우스 이벤트 처리
-  useEffect(() => {
-    const handleGlobalMouseMove = (e) => {
-      if (isDragging && window.electronAPI) {
-        e.preventDefault();
-      }
-    };
-
-    const handleGlobalMouseUp = () => {
-      setIsDragging(false);
-    };
-
-    if (isDragging) {
-      document.addEventListener('mousemove', handleGlobalMouseMove);
-      document.addEventListener('mouseup', handleGlobalMouseUp);
-    }
-
-    return () => {
-      document.removeEventListener('mousemove', handleGlobalMouseMove);
-      document.removeEventListener('mouseup', handleGlobalMouseUp);
-    };
-  }, [isDragging]);
 
   // 창 배경 투명화
   useEffect(() => {
@@ -150,12 +126,12 @@ const TimerOverlay = () => {
     if (progressBarRef.current) {
       timerRef.current = new ProgressBar.Circle(progressBarRef.current, {
         color: '#ff4444',
-        trailWidth: 20,
-        trailColor: 'rgba(255, 255, 255, 0.2)',
-        strokeWidth: 18,
+        trailWidth: 40,
+        trailColor: '#ffffff',
+        strokeWidth: 40,
         duration: 0, // 애니메이션 없이 즉시 표시
         from: { color: '#ff4444' },
-        to: { color: '#ff0000' }
+        to: { color: '#cc0000' }
       });
       
       // SVG 스케일 조정
@@ -165,7 +141,7 @@ const TimerOverlay = () => {
       
       // 초기 상태 설정
       const initialState = timerService.getState();
-      const initialTimerDeg = (initialState.remaining / initialState.duration) * 360;
+      const initialTimerDeg = (initialState.remaining / DURATION_IN_SECONDS) * 360;
       const clampedDeg = Math.max(0, Math.min(360, initialTimerDeg));
       
       timerRef.current.set(clampedDeg / 360);
@@ -190,27 +166,9 @@ const TimerOverlay = () => {
     }
   };
 
-  // 드래그 이벤트 핸들러
-  const handleMouseDown = (e) => {
-    if (window.electronAPI) {
-      setIsDragging(true);
-      const rect = e.currentTarget.getBoundingClientRect();
-      setDragOffset({
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      });
-      e.preventDefault();
-    }
-  };
-
-  const handleMouseMove = (e) => {
-    if (isDragging && window.electronAPI) {
-      e.preventDefault();
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  // 타이머 시작/일시정지
+  const handleStartPause = () => {
+    timerService.toggle();
   };
 
   // 오버레이 창 닫기
@@ -237,13 +195,7 @@ const TimerOverlay = () => {
 
   return (
     <div className="timer-overlay">
-      <div 
-        className="timer-overlay-container"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
+      <div className="timer-overlay-container">
         <button 
           className="timer-overlay-close-btn"
           onClick={handleClose}
@@ -251,16 +203,26 @@ const TimerOverlay = () => {
         >
           ×
         </button>
+        
+
+        
         <div 
           ref={progressBarRef}
           className="timer-overlay-disk"
         >
         </div>
+        
         <div className="timer-overlay-time">
           {currentTime}
         </div>
-        <div className={`timer-overlay-status ${isRunning ? 'running' : 'paused'}`}>
-          {isRunning ? '실행 중' : '일시정지'}
+        
+        <div className="timer-overlay-controls">
+          <button
+            onClick={handleStartPause}
+            className={`timer-overlay-start-btn ${isRunning ? 'running' : ''}`}
+          >
+            {isRunning ? '정지' : '시작'}
+          </button>
         </div>
       </div>
     </div>

@@ -49,44 +49,85 @@ html {
   border-radius: 15px;
   padding: 20px;
   pointer-events: auto;
-  cursor: move;
   user-select: none;
   -webkit-user-select: none;
   -webkit-app-region: drag;
 }
 
+
+
+/* 타이머 디스크 */
 .timer-overlay-disk {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  z-index: 2;
+  -webkit-app-region: no-drag;
+}
+
+.timer-bar-end {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  background: #ff4444;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 6px rgba(255, 68, 68, 0.6);
+  z-index: 3;
 }
 
 .timer-overlay-time {
-  font-size: 24px;
+  font-size: 20px;
   font-weight: bold;
   color: #ffffff;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6);
-  margin-bottom: 6px;
+  margin-bottom: 12px;
   font-family: 'Courier New', monospace;
+  -webkit-app-region: no-drag;
 }
 
-.timer-overlay-status {
+/* 타이머 컨트롤 */
+.timer-overlay-controls {
+  display: flex;
+  gap: 10px;
+  -webkit-app-region: no-drag;
+}
+
+.timer-overlay-start-btn {
+  padding: 6px 12px;
+  background: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
   font-size: 12px;
-  color: #ffffff;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.6);
-  font-weight: 500;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.timer-overlay-status.running {
-  color: #4caf50;
-  text-shadow: 0 1px 4px rgba(76, 175, 80, 0.8), 0 0 10px rgba(76, 175, 80, 0.6);
+.timer-overlay-start-btn:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
-.timer-overlay-status.paused {
-  color: #ff9800;
-  text-shadow: 0 1px 4px rgba(255, 152, 0, 0.8), 0 0 10px rgba(255, 152, 0, 0.6);
+.timer-overlay-start-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.timer-overlay-start-btn.running {
+  background: #f44336;
+}
+
+.timer-overlay-start-btn.running:hover {
+  background: #d32f2f;
 }
 
 .timer-overlay-close-btn {
@@ -142,7 +183,7 @@ html {
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .timer-overlay-container {
-    padding: 20px;
+    padding: 15px;
   }
   
   .timer-overlay-disk {
@@ -151,10 +192,11 @@ html {
   }
   
   .timer-overlay-time {
-    font-size: 28px;
+    font-size: 18px;
   }
   
-  .timer-overlay-status {
-    font-size: 12px;
+  .timer-overlay-start-btn {
+    font-size: 11px;
+    padding: 5px 10px;
   }
 } 

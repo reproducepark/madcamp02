@@ -68,8 +68,6 @@ function createOverlayWindow() {
         hasShadow: false, // 창 그림자 제거
         opacity: 1.0, // 완전 불투명 (내용만)
         titleBarStyle: 'hidden', // 맥 전용: 타이틀바 숨김
-        vibrancy: 'under-window', // 맥 전용: 비브랜시 효과
-        visualEffectState: 'active', // 맥 전용: 비주얼 효과 활성화
         show: false, // 처음에는 숨김
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
@@ -98,8 +96,9 @@ function createOverlayWindow() {
         
         // 맥 전용 추가 설정
         if (process.platform === 'darwin') {
+            // macOS에서 투명화를 위한 추가 설정
             overlayWindow.setVibrancy('under-window');
-            overlayWindow.setVisualEffectState('active');
+            overlayWindow.setOpacity(0.5); // 약간의 투명도 설정
             console.log('Main: 맥 전용 투명화 설정 완료');
         }
         

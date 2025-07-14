@@ -117,8 +117,8 @@ const TimerComponent = () => {
       timerRef.current = new ProgressBar.Circle(progressBarRef.current, {
         color: '#ff4444',
         trailWidth: 40,
-        trailColor: '#333333',
-        strokeWidth: 37,
+        trailColor: '#ffffff',
+        strokeWidth: 40,
         duration: 0, // 애니메이션 없이 즉시 표시
         from: { color: '#ff4444' },
         to: { color: '#cc0000' },
@@ -357,15 +357,16 @@ const TimerComponent = () => {
   return (
     <div className="timer-component">
       <div className="timer-container">
-        {/* 시계 인덱스 SVG */}
-        <svg className="timer-index-svg" width="260" height="260" style={{position: 'absolute', top: '-30px', left: '-30px', pointerEvents: 'none'}}>
+        {/* 시계 인덱스 SVG - 별도 레이어로 분리 */}
+        <div className="timer-index-layer">
+          <svg className="timer-index-svg" width="260" height="260">
           {/* 1분/5분 바 인덱스 */}
           {[...Array(60)].map((_, i) => {
             const angle = (i * 6 - 90) * (Math.PI / 180); // 0이 위로
             const cx = 130;
             const cy = 130;
-            const rOuter = 100; // 바깥쪽 끝 반지름을 더 줄임
-            const rInner = i % 5 === 0 ? 85 : 90; // 5분 단위는 더 길게, 1분 단위는 더 짧게
+            const rOuter = i % 5 === 0 ? 110 : 105; // 바깥쪽 끝 반지름을 더 줄임
+            const rInner = i % 5 === 0 ? 100 : 100; // 5분 단위는 더 길게, 1분 단위는 더 짧게
             const x1 = cx + rInner * Math.cos(angle);
             const y1 = cy + rInner * Math.sin(angle);
             const x2 = cx + rOuter * Math.cos(angle);
@@ -383,10 +384,10 @@ const TimerComponent = () => {
               />
             );
           })}
-          {/* 5분 단위 숫자 인덱스 */}
-          {[...Array(12)].map((_, i) => {
+          {/* 5분 단위 숫자 인덱스 - 숨김 처리 */}
+          {/* {[...Array(12)].map((_, i) => {
             const angle = (i * 30 - 90) * (Math.PI / 180); // 0시가 위로 오도록
-            const r = 120; // 숫자 반지름을 10만큼 늘림
+            const r = 122; // 숫자 반지름을 10만큼 늘림
             const cx = 130;
             const cy = 130;
             const x = cx + r * Math.cos(angle);
@@ -406,8 +407,9 @@ const TimerComponent = () => {
                 {i === 0 ? '0' : 60 - i * 5}
               </text>
             );
-          })}
-        </svg>
+          })} */}
+          </svg>
+        </div>
         <div 
           ref={progressBarRef}
           className="timer-disk"
