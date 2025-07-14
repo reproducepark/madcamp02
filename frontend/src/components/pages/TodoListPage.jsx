@@ -10,6 +10,7 @@ import PersonalMemoSection from '../layout/PersonalMemoSection';
 import { getTeams, getTeamGoals } from '../../services/teamService';
 import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
+import GanttChart from '../layout/GanttChart';
 
 function TodoListPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
@@ -88,6 +89,9 @@ function TodoListPage({ onLogout }) {
         return {
           id: goal.id,
           title: goal.content,
+          start_date: goal.start_date,
+          planned_end_date: goal.planned_end_date,
+          real_end_date: goal.real_end_date,
           todos: subRes.success ? subRes.data.subgoals.map(sg => ({
             id: sg.id,
             text: sg.content,
@@ -166,6 +170,23 @@ function TodoListPage({ onLogout }) {
         <main className="main-content">
           <div className="todo-center-card">
             <div className="todo-center-title">중앙 영역</div>
+            <GanttChart goals={goals
+              .slice()
+              .sort((a, b) => {
+                const aStart = new Date(a.start_date).getTime();
+                const bStart = new Date(b.start_date).getTime();
+                if (aStart !== bStart) return aStart - bStart;
+                const aEnd = new Date(a.real_end_date || a.planned_end_date).getTime();
+                const bEnd = new Date(b.real_end_date || b.planned_end_date).getTime();
+                return aEnd - bEnd;
+              })
+              .map(goal => ({
+                id: goal.id,
+                content: goal.title,
+                start_date: goal.start_date,
+                planned_end_date: goal.planned_end_date,
+                real_end_date: goal.real_end_date,
+            }))} baseDate="2025-07-10" />
           </div>
 
           <div className="todo-card">

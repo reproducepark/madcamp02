@@ -10,6 +10,7 @@ import { getTeams } from '../../services'; // getTeams import
 import '../../styles/ScrumPage.css';
 import { createTeamGoal, getTeamGoals, deleteTeamGoal, completeTeamGoal, uncompleteTeamGoal } from '../../services/teamService';
 
+
 function ScrumPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
   const location = useLocation();
