@@ -141,10 +141,17 @@ const TimerComponent = () => {
 
   // 타이머 시작/일시정지
   const handleStartPause = () => {
+    console.log('=== handleStartPause called ===');
+    console.log('Current isRunning:', isRunning);
+    console.log('Current remaining:', remaining);
+    console.log('Current duration:', duration);
+    
     if (isRunning) {
+      console.log('Stopping timer...');
       setIsRunning(false);
       clearInterval(intervalRef.current);
     } else {
+      console.log('Starting timer...');
       setIsRunning(true);
     }
   };
@@ -167,16 +174,36 @@ const TimerComponent = () => {
 
   // 타이머 동작
   useEffect(() => {
-    if (!isRunning) return;
+    console.log('=== Timer useEffect triggered ===');
+    console.log('isRunning:', isRunning);
+    console.log('remaining:', remaining);
+    console.log('duration:', duration);
+    
+    if (!isRunning) {
+      console.log('Timer not running, returning early');
+      return;
+    }
+    
+    console.log('Setting up interval...');
     intervalRef.current = setInterval(() => {
+      console.log('=== Interval tick ===');
       setRemaining(prev => {
+        console.log('setRemaining called with prev:', prev);
         if (prev <= 1) {
+          console.log('Timer finished!');
           setIsRunning(false);
           clearInterval(intervalRef.current);
           return 0;
         }
         const newRemaining = prev - 1;
+        console.log('New remaining:', newRemaining);
         setCurrentTime(formatTime(newRemaining));
+        
+        // 시간 입력 필드도 업데이트
+        const newMinutes = Math.floor(newRemaining / 60);
+        const newSeconds = newRemaining % 60;
+        setInputMinutes(newMinutes);
+        setInputSeconds(newSeconds);
         
         // 프로그레스 바 업데이트
         const newDeg = (newRemaining / DURATION_IN_SECONDS) * 360;
@@ -189,8 +216,13 @@ const TimerComponent = () => {
         return newRemaining;
       });
     }, 1000);
-    return () => clearInterval(intervalRef.current);
-  }, [isRunning, duration]);
+    
+    console.log('Interval set up with ID:', intervalRef.current);
+    return () => {
+      console.log('Cleaning up interval:', intervalRef.current);
+      clearInterval(intervalRef.current);
+    };
+  }, [isRunning]);
 
 
 
