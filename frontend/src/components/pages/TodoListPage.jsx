@@ -8,7 +8,7 @@ import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import PersonalMemoSection from '../layout/PersonalMemoSection';
 import { getTeams, getTeamGoals } from '../../services/teamService';
-import { getMemos, createMemo, deleteMemo } from '../../services/memoService';
+import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 
 function TodoListPage() {
@@ -41,11 +41,41 @@ function TodoListPage() {
     const loadTeams = async () => {
       const res = await getTeams();
       if (res.success && res.data.teams.length > 0) {
+        // localStorage에서 선택된 팀 정보 확인
+        const savedTeam = localStorage.getItem('selectedTeam');
+        if (savedTeam) {
+          const selectedTeam = JSON.parse(savedTeam);
+          // 선택된 팀이 여전히 유효한지 확인
+          const isValidTeam = res.data.teams.find(team => team.id === selectedTeam.id);
+          if (isValidTeam) {
+            setCurrentTeamId(selectedTeam.id);
+            setCurrentTeamName(selectedTeam.name);
+            return;
+          }
+        }
+        // 저장된 팀이 없거나 유효하지 않으면 첫 번째 팀 선택
         setCurrentTeamId(res.data.teams[0].id);
         setCurrentTeamName(res.data.teams[0].name);
+        // localStorage에 첫 번째 팀 정보 저장
+        localStorage.setItem('selectedTeam', JSON.stringify({
+          id: res.data.teams[0].id,
+          name: res.data.teams[0].name
+        }));
       }
     };
     loadTeams();
+  }, []);
+
+  // 팀 변경 이벤트 감지
+  useEffect(() => {
+    const handleTeamChange = (event) => {
+      const { teamId, teamName } = event.detail;
+      setCurrentTeamId(teamId);
+      setCurrentTeamName(teamName);
+    };
+
+    window.addEventListener('teamChanged', handleTeamChange);
+    return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
 
   // ✅ 팀 목표 + SubGoal 불러오기
@@ -77,11 +107,12 @@ function TodoListPage() {
   // 🗒️ 개인 메모 불러오기
   useEffect(() => {
     const loadMemos = async () => {
-      const res = await getMemos();
+      if (!currentTeamId) return;
+      const res = await getPersonalMemos(currentTeamId);
       if (res.success) setMemos(res.data.memos);
     };
     loadMemos();
-  }, []);
+  }, [currentTeamId]);
 
   // ✅ 등록
   const handleAdd = async () => {
@@ -91,8 +122,8 @@ function TodoListPage() {
     }
 
     if (activeGoalId === 'memo') {
-      await createMemo(newInput.trim());
-      const res = await getMemos();
+      await createPersonalMemo(newInput.trim(), currentTeamId);
+      const res = await getPersonalMemos(currentTeamId);
       setMemos(res.data.memos);
     } else {
       await createSubGoal(activeGoalId, { content: newInput.trim() });
@@ -166,7 +197,7 @@ function TodoListPage() {
                 onActivate={() => setActiveGoalId('memo')}
                 onDeleteMemo={async (memoId) => {
                   await deleteMemo(memoId);
-                  const res = await getMemos();
+                  const res = await getPersonalMemos(currentTeamId);
                   setMemos(res.data.memos);
                 }}
               />

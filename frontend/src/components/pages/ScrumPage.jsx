@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import ScrumGoalItem from '../layout/ScrumGoalItem';
+import TeamMemoSection from '../layout/TeamMemoSection';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import { getTeams } from '../../services'; // getTeams import
@@ -34,28 +35,55 @@ function ScrumPage() {
   // 팀 정보 설정 useEffect
   useEffect(() => {
     const fetchAndSetDefaultTeam = async () => {
-      if (navigatedTeamId && navigatedTeamName) {
-        // 네비게이션을 통해 팀 정보가 전달된 경우 해당 팀을 사용
-        setCurrentTeamId(navigatedTeamId);
-        setCurrentTeamName(navigatedTeamName);
-      } else {
-        // 네비게이션 정보가 없는 경우, 사용자 팀 목록에서 첫 번째 팀을 기본값으로 설정
-        try {
-          const response = await getTeams();
-          if (response.success && response.data.teams.length > 0) {
+      try {
+        const response = await getTeams();
+        if (response.success && response.data.teams.length > 0) {
+          // localStorage에서 선택된 팀 정보 확인
+          const savedTeam = localStorage.getItem('selectedTeam');
+          let selectedTeam = null;
+
+          if (savedTeam) {
+            const parsedTeam = JSON.parse(savedTeam);
+            // 선택된 팀이 여전히 유효한지 확인
+            const isValidTeam = response.data.teams.find(team => team.id === parsedTeam.id);
+            if (isValidTeam) {
+              selectedTeam = parsedTeam;
+            }
+          }
+
+          // 네비게이션을 통해 팀 정보가 전달된 경우 해당 팀을 우선 사용
+          if (navigatedTeamId && navigatedTeamName) {
+            setCurrentTeamId(navigatedTeamId);
+            setCurrentTeamName(navigatedTeamName);
+            // localStorage에 네비게이션 팀 정보 저장
+            localStorage.setItem('selectedTeam', JSON.stringify({
+              id: navigatedTeamId,
+              name: navigatedTeamName
+            }));
+          } else if (selectedTeam) {
+            // localStorage에 저장된 팀 정보 사용
+            setCurrentTeamId(selectedTeam.id);
+            setCurrentTeamName(selectedTeam.name);
+          } else {
+            // 저장된 팀이 없거나 유효하지 않으면 첫 번째 팀 선택
             const firstTeam = response.data.teams[0];
             setCurrentTeamId(firstTeam.id);
             setCurrentTeamName(firstTeam.name);
-          } else {
-            // 팀이 없는 경우
-            setCurrentTeamId(null);
-            setCurrentTeamName(null);
+            // localStorage에 첫 번째 팀 정보 저장
+            localStorage.setItem('selectedTeam', JSON.stringify({
+              id: firstTeam.id,
+              name: firstTeam.name
+            }));
           }
-        } catch (error) {
-          console.error("팀 목록을 불러오는 데 실패했습니다:", error);
+        } else {
+          // 팀이 없는 경우
           setCurrentTeamId(null);
           setCurrentTeamName(null);
         }
+      } catch (error) {
+        console.error("팀 목록을 불러오는 데 실패했습니다:", error);
+        setCurrentTeamId(null);
+        setCurrentTeamName(null);
       }
     };
 
@@ -81,6 +109,18 @@ function ScrumPage() {
   useEffect(() => {
     loadGoals();
   }, [currentTeamId]);
+
+  // 팀 변경 이벤트 감지
+  useEffect(() => {
+    const handleTeamChange = (event) => {
+      const { teamId, teamName } = event.detail;
+      setCurrentTeamId(teamId);
+      setCurrentTeamName(teamName);
+    };
+
+    window.addEventListener('teamChanged', handleTeamChange);
+    return () => window.removeEventListener('teamChanged', handleTeamChange);
+  }, []);
 
 const handleToggleGoal = async (goalId, currentCompleted) => {
   try {
@@ -151,9 +191,7 @@ const handleDeleteGoal = async (goalId) => {
     }
   };
 
-  const handleCreateScrum = () => {
-    showAlert('스크럼 생성', '새로운 스크럼이 생성되었습니다.');
-  };
+
 
   return (
     <div className="todo-container">
@@ -172,13 +210,10 @@ const handleDeleteGoal = async (goalId) => {
             </section>
 
             {/* 메모장 영역 (하단 절반) */}
-            <section className="todo-memo-section">
-              <div className="todo-memo-title">메모장</div>
-              <div className="todo-memo-content">필요한거 알아낸거 궁금한거</div>
-              <div className="todo-memo-btn-group">
-                <button className="todo-memo-btn" onClick={handleCreateScrum}>스크럼 생성</button>
-              </div>
-            </section>
+            <TeamMemoSection 
+              teamId={currentTeamId} 
+              teamName={currentTeamName} 
+            />
           </div>
 
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}

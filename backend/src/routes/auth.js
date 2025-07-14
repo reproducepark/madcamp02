@@ -8,15 +8,15 @@ const prisma = new PrismaClient();
 
 // 회원가입 API
 router.post('/signup', async (req, res) => {
-  const { id, password, name, class_section } = req.body;
+  const { username, password, name, class_section } = req.body;
 
   try {
-    // 이미 같은 id 있는지 확인
+    // 이미 같은 username 있는지 확인
     const existingUser = await prisma.user.findUnique({
-      where: { id }
+      where: { username }
     });
     if (existingUser) {
-      return res.status(400).json({ message: "ID already exists." });
+      return res.status(400).json({ message: "Username already exists." });
     }
 
     // 비밀번호 해시화
@@ -25,7 +25,7 @@ router.post('/signup', async (req, res) => {
     // DB에 저장
     const newUser = await prisma.user.create({
       data: {
-        id,
+        username,
         password: hashedPassword,
         name,
         class_section
@@ -34,7 +34,7 @@ router.post('/signup', async (req, res) => {
 
     res.status(201).json({ 
       message: "Signup success", 
-      user: { num: newUser.num, id: newUser.id, name: newUser.name, class_section: newUser.class_section } 
+      user: { id: newUser.id, username: newUser.username, name: newUser.name, class_section: newUser.class_section } 
     });
 
   } catch (err) {
@@ -46,23 +46,32 @@ router.post('/signup', async (req, res) => {
 
 // 로그인 API
 router.post('/login', async (req, res) => {
-  const { id, password } = req.body;
+  const { username, password } = req.body;
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id }
+      where: { username }
     });
-    if (!user) return res.status(401).json({ message: "Invalid ID or password." });
+    if (!user) return res.status(401).json({ message: "Invalid username or password." });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(401).json({ message: "Invalid ID or password." });
+    if (!isMatch) return res.status(401).json({ message: "Invalid username or password." });
 
     // JWT 발급
-    const token = jwt.sign({ userNum: user.num, id: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user.id, username: user.username }, process.env.JWT_SECRET, {
       expiresIn: '1h'
     });
 
-    res.json({ message: "Login success", token });
+    res.json({ 
+      message: "Login success", 
+      token,
+      user: { 
+        id: user.id, 
+        username: user.username, 
+        name: user.name, 
+        class_section: user.class_section 
+      }
+    });
 
   } catch (err) {
     console.error(err);
@@ -81,10 +90,10 @@ router.get('/profile', async (req, res) => {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     // DB에서 사용자 조회
     const user = await prisma.user.findUnique({
-      where: { num: payload.userNum }
+      where: { id: payload.userId }
     });
     if (!user) return res.sendStatus(404);
-    res.json({ num: user.num, id: user.id, createdAt: user.createdAt });
+    res.json({ id: user.id, username: user.username, createdAt: user.createdAt });
   } catch (err) {
     res.sendStatus(403);
   }

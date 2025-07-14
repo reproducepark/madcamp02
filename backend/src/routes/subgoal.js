@@ -27,7 +27,7 @@ router.get('/:goalId/subgoals', authenticateToken, async (req, res) => {
 router.post('/:goalId/subgoal', authenticateToken, async (req, res) => {
   const { goalId } = req.params;
   const { content } = req.body;
-  const userId = req.user.num;
+  const userId = req.user.id;
 
   try {
     const newSubGoal = await prisma.subGoal.create({

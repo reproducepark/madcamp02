@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // 팀 생성 API
 router.post('/createTeam', authenticateToken, async (req, res) => {
   const { name } = req.body;
-  const userNum = req.user.num; // authenticateToken 미들웨어에서 추가된 사용자 정보
+  const userId = req.user.id; // authenticateToken 미들웨어에서 추가된 사용자 정보
 
   try {
     const existingTeam = await prisma.team.findUnique({
@@ -29,7 +29,7 @@ router.post('/createTeam', authenticateToken, async (req, res) => {
     await prisma.teamMember.create({
       data: {
         team_id: newTeam.id,
-        user_id: userNum,
+        user_id: userId,
       },
     });
 
@@ -42,11 +42,11 @@ router.post('/createTeam', authenticateToken, async (req, res) => {
 
 // 사용자가 속한 팀 목록 조회 API
 router.get('/myTeams', authenticateToken, async (req, res) => {
-  const userNum = req.user.num;
+  const userId = req.user.id;
 
   try {
     const teamMemberships = await prisma.teamMember.findMany({
-      where: { user_id: userNum },
+      where: { user_id: userId },
       include: {
         team: {
           include: {
@@ -71,13 +71,59 @@ router.get('/myTeams', authenticateToken, async (req, res) => {
       name: membership.team.name,
       created_at: membership.team.created_at,
       members: (membership.team.TeamMembers || [])
-      .filter(member => member.user.num !== userNum) // 자기 자신 제외
+      .filter(member => member.user.id !== userId) // 자기 자신 제외
       .map(member => member.user),
     }));
 
     console.log('teams to send:', JSON.stringify(teams, null, 2));
 
     res.status(200).json({ teams });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// 팀 멤버 조회 API
+router.get('/:teamId/members', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+  const userId = req.user.id;
+
+  try {
+    // 사용자가 해당 팀의 멤버인지 확인
+    const teamMembership = await prisma.teamMember.findFirst({
+      where: {
+        team_id: teamId,
+        user_id: userId,
+      },
+    });
+
+    if (!teamMembership) {
+      return res.status(403).json({ message: "해당 팀의 멤버가 아닙니다." });
+    }
+
+    // 팀의 모든 멤버 조회
+    const teamMembers = await prisma.teamMember.findMany({
+      where: { team_id: teamId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            class_section: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: 'asc',
+        },
+      },
+    });
+
+    const members = teamMembers.map(member => member.user);
+
+    res.status(200).json({ members });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
