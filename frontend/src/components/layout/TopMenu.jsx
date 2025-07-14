@@ -82,6 +82,7 @@ function TopMenu() {
   };
 
   const handleTeamCreated = () => {
+    fetchTeams(); // 팀 생성 후 바로 최신화
     closeCreateModal();
   };
 
