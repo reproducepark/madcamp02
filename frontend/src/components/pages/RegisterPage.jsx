@@ -7,7 +7,7 @@ import { useModal } from '../../hooks/useModal';
 import '../../styles/Auth.css';
 
 function RegisterPage() {
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [name, setName] = useState('');
@@ -35,7 +35,7 @@ function RegisterPage() {
       return;
     }
 
-    if (!id.trim()) {
+    if (!username.trim()) {
       await showAlert('오류', '아이디를 입력해주세요!');
       inputRef.current?.focus();
       return;
@@ -56,7 +56,7 @@ function RegisterPage() {
         return;
       }
 
-      const result = await registerUser(id, password, name, classSectionInt);
+      const result = await registerUser(username, password, name, classSectionInt);
       
       if (result.success) {
         await showAlert('성공', result.message);
@@ -85,8 +85,8 @@ function RegisterPage() {
             ref={inputRef}
             type="text"
             id="username"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             onKeyPress={handleKeyPress}
             required
             placeholder="아이디를 입력하세요"

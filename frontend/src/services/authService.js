@@ -2,18 +2,18 @@ const API_URL = import.meta.env.VITE_API_URL || '';
 
 /**
  * 사용자 로그인 API
- * @param {string} id - 사용자 아이디
+ * @param {string} username - 사용자 아이디
  * @param {string} password - 사용자 비밀번호
  * @returns {Promise<Object>} 로그인 결과
  */
-export const loginUser = async (id, password) => {
+export const loginUser = async (username, password) => {
   try {
     const response = await fetch(`/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id, password }),
+      body: JSON.stringify({ username, password }),
     });
     
     const data = await response.json();
@@ -46,18 +46,18 @@ export const loginUser = async (id, password) => {
 
 /**
  * 사용자 회원가입 API
- * @param {string} id - 사용자 아이디
+ * @param {string} username - 사용자 아이디
  * @param {string} password - 사용자 비밀번호
  * @returns {Promise<Object>} 회원가입 결과
  */
-export const registerUser = async (id, password, name, class_section) => {
+export const registerUser = async (username, password, name, class_section) => {
   try {
     const response = await fetch(`/api/auth/signup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id, password, name, class_section }),
+      body: JSON.stringify({ username, password, name, class_section }),
     });
     
     const data = await response.json();

@@ -8,8 +8,8 @@ datasource db {
 }
 
 model User {
-  num           Int        @id @default(autoincrement())
-  id            String     @unique
+  id            Int        @id @default(autoincrement())
+  username      String     @unique
   password      String
   name          String
   class_section Int
@@ -36,7 +36,7 @@ model TeamMember {
   user_id      Int
 
   team         Team   @relation(fields: [team_id], references: [id], onDelete: Cascade)
-  user         User   @relation(fields: [user_id], references: [num], onDelete: Cascade)
+  user         User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model TeamGoal {
@@ -62,7 +62,7 @@ model SubGoal {
   created_at     DateTime @default(now())
 
   teamGoal       TeamGoal @relation(fields: [team_goal_id], references: [id], onDelete: Cascade)
-  user           User     @relation(fields: [user_id], references: [num], onDelete: Cascade)
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Memo {
@@ -73,6 +73,6 @@ model Memo {
   created_at   DateTime @default(now())
   completed_at DateTime?
 
-  user         User     @relation(fields: [user_id], references: [num], onDelete: Cascade)
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   team         Team     @relation(fields: [team_id], references: [id], onDelete: Cascade)
 }

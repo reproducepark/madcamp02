@@ -8,7 +8,7 @@ import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import PersonalMemoSection from '../layout/PersonalMemoSection';
 import { getTeams, getTeamGoals } from '../../services/teamService';
-import { getMemos, createMemo, deleteMemo } from '../../services/memoService';
+import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 
 function TodoListPage() {
@@ -77,11 +77,12 @@ function TodoListPage() {
   // 🗒️ 개인 메모 불러오기
   useEffect(() => {
     const loadMemos = async () => {
-      const res = await getMemos();
+      if (!currentTeamId) return;
+      const res = await getPersonalMemos(currentTeamId);
       if (res.success) setMemos(res.data.memos);
     };
     loadMemos();
-  }, []);
+  }, [currentTeamId]);
 
   // ✅ 등록
   const handleAdd = async () => {
@@ -91,8 +92,8 @@ function TodoListPage() {
     }
 
     if (activeGoalId === 'memo') {
-      await createMemo(newInput.trim());
-      const res = await getMemos();
+      await createPersonalMemo(newInput.trim(), currentTeamId);
+      const res = await getPersonalMemos(currentTeamId);
       setMemos(res.data.memos);
     } else {
       await createSubGoal(activeGoalId, { content: newInput.trim() });
@@ -166,7 +167,7 @@ function TodoListPage() {
                 onActivate={() => setActiveGoalId('memo')}
                 onDeleteMemo={async (memoId) => {
                   await deleteMemo(memoId);
-                  const res = await getMemos();
+                  const res = await getPersonalMemos(currentTeamId);
                   setMemos(res.data.memos);
                 }}
               />

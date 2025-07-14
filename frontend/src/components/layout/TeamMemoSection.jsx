@@ -22,6 +22,7 @@ function TeamMemoSection({ teamId, teamName }) {
       setMemos(response.data.memos || []);
     } catch (err) {
       console.error('❌ 팀 메모 로딩 실패:', err);
+      console.error('❌ 에러 상세:', err.response || err);
     } finally {
       setIsLoading(false);
     }
@@ -72,7 +73,7 @@ function TeamMemoSection({ teamId, teamName }) {
             {memos.map((memo) => (
               <div key={memo.id} className="memo-item">
                 <div className="memo-content">{memo.content}</div>
-                {currentUser && memo.user_id === currentUser.num && (
+                {currentUser && memo.user_id === currentUser.id && (
                   <button 
                     className="memo-delete-btn"
                     onClick={() => handleDeleteMemo(memo.id)}

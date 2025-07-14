@@ -7,7 +7,7 @@ import { useModal } from '../../hooks/useModal';
 import '../../styles/Auth.css';
 
 function LoginPage() {
-  const [id, setId] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -27,7 +27,7 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!id.trim()) {
+    if (!username.trim()) {
       await showAlert('오류', '아이디를 입력해주세요!');
       inputRef.current?.focus();
       return;
@@ -42,7 +42,7 @@ function LoginPage() {
     setIsLoading(true);
     
     try {
-      const result = await loginUser(id, password);
+      const result = await loginUser(username, password);
       
       if (result.success) {
         navigate('/todo'); // Redirect to a protected route
@@ -69,8 +69,8 @@ function LoginPage() {
             ref={inputRef}
             type="text"
             id="username"
-            value={id}
-            onChange={(e) => setId(e.target.value)}
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             onKeyPress={handleKeyPress}
             required
             placeholder="아이디를 입력하세요"
