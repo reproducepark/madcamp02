@@ -45,31 +45,67 @@ router.post('/:goalId/subgoal', authenticateToken, async (req, res) => {
   }
 });
 
-// 완료 처리
-router.patch('/subgoal/:id/complete', authenticateToken, async (req, res) => {
-  const id = parseInt(req.params.id)
-  const updated = await prisma.subGoal.update({
-    where: { id },
-    data: {
-      is_completed: true,
-      completed_at: new Date()
-    }
-  })
-  res.json(updated)
-})
+// ✅ SubGoal 완료
+router.patch('/subgoal/:subgoalId/complete', authenticateToken, async (req, res) => {
+  const subgoalId = parseInt(req.params.subgoalId, 10);
+  try {
+    const updatedSubGoal = await prisma.subGoal.update({
+      where: { id: subgoalId },
+      data: {
+        is_completed: true,
+        completed_at: new Date()
+      }
+    });
 
-// 완료 취소
-router.patch('/subgoal/:id/uncomplete', authenticateToken, async (req, res) => {
-  const id = parseInt(req.params.id)
-  const updated = await prisma.subGoal.update({
-    where: { id },
-    data: {
-      is_completed: false,
-      completed_at: null
+    // 모든 subgoal이 완료됐는지 확인
+    const allCompleted = await prisma.subGoal.findMany({
+      where: {
+        team_goal_id: updatedSubGoal.team_goal_id
+      }
+    });
+
+    if (allCompleted.length > 0 && allCompleted.every(sg => sg.is_completed)) {
+      await prisma.teamGoal.update({
+        where: { id: updatedSubGoal.team_goal_id },
+        data: { real_end_date: new Date() }
+      });
+      console.log(`✅ All SubGoals completed → TeamGoal ${updatedSubGoal.team_goal_id} 완료 처리`);
     }
-  })
-  res.json(updated)
-})
+
+    res.json(updatedSubGoal);
+  } catch (err) {
+    console.error('Error completing subgoal:', err);
+    res.status(500).json({ error: 'SubGoal 완료 실패' });
+  }
+});
+
+
+// ✅ SubGoal 해제
+router.patch('/subgoal/:subgoalId/uncomplete', authenticateToken, async (req, res) => {
+  const subgoalId = parseInt(req.params.subgoalId, 10);
+  try {
+    const updatedSubGoal = await prisma.subGoal.update({
+      where: { id: subgoalId },
+      data: {
+        is_completed: false,
+        completed_at: null
+      }
+    });
+
+    // subgoal 해제 → teamGoal 무조건 완료 해제
+    await prisma.teamGoal.update({
+      where: { id: updatedSubGoal.team_goal_id },
+      data: { real_end_date: null }
+    });
+
+    console.log(`⚠️ SubGoal ${subgoalId} 해제 → TeamGoal ${updatedSubGoal.team_goal_id} 자동 해제`);
+    res.json(updatedSubGoal);
+  } catch (err) {
+    console.error('Error uncompleting subgoal:', err);
+    res.status(500).json({ error: 'SubGoal 해제 실패' });
+  }
+});
+
 
 // 삭제
 router.delete('/subgoal/:id', authenticateToken, async (req, res) => {

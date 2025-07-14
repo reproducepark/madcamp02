@@ -18,6 +18,46 @@ function ScrumPage() {
   const [currentTeamId, setCurrentTeamId] = useState(null);
   const [currentTeamName, setCurrentTeamName] = useState(null);
   const [scrumGoals, setScrumGoals] = useState([]);
+  const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
+  const filteredGoals = scrumGoals
+    .filter(goal => {
+      if (filter === 'COMPLETED') return goal.real_end_date !== null;
+      if (filter === 'INCOMPLETE') return goal.real_end_date === null;
+      return true; // ALL
+    })
+    .sort((a, b) => {
+      if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
+        // 단일 필터인 경우
+        if (a.start_date !== b.start_date) {
+          return new Date(a.start_date) - new Date(b.start_date);
+        }
+        if (filter === 'COMPLETED') {
+          return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+        } else {
+          return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+        }
+      } else {
+        // ALL인 경우, 미완 -> 완료
+        const aIsDone = a.real_end_date !== null;
+        const bIsDone = b.real_end_date !== null;
+        if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
+
+        // 같은 상태라면 start_date
+        if (a.start_date !== b.start_date) {
+          return new Date(a.start_date) - new Date(b.start_date);
+        }
+
+        if (!aIsDone) {
+          // 미완 : planned_end_date 빠른 게 먼저
+          return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+        } else {
+          // 완료 : real_end_date 빠른 게 먼저
+          return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+        }
+      }
+    });
+
+
   const [newGoalInput, setNewGoalInput] = useState('');
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
@@ -122,9 +162,16 @@ function ScrumPage() {
     return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
 
-const handleToggleGoal = async (goalId, currentCompleted) => {
+const handleToggleGoal = async (goalId, currentCompleted, goalContent) => {
   try {
     if (currentCompleted) {
+      const confirmed = await showConfirm(
+        '완료 취소',
+        `"${goalContent}" 완료 해제 시 하위 목표들의 진행상태도 초기화됩니다.\n정말 진행할까요?`,
+        '확인',
+        '취소'
+      );
+      if (!confirmed) return;
       await uncompleteTeamGoal(goalId);
     } else {
       await completeTeamGoal(goalId);
@@ -221,16 +268,38 @@ const handleDeleteGoal = async (goalId) => {
             <div className="todo-date">
               {currentTeamName ? `${currentTeamName} 팀 스크럼` : '팀을 선택해주세요'}
             </div>
+            <div className="goal-filter-buttons">
+              <button 
+                className={`filter-btn ${filter === 'INCOMPLETE' ? 'active' : ''}`}
+                onClick={() => setFilter('INCOMPLETE')}
+              >
+                미완
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'COMPLETED' ? 'active' : ''}`}
+                onClick={() => setFilter('COMPLETED')}
+              >
+                완료
+              </button>
+              <button 
+                className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
+                onClick={() => setFilter('ALL')}
+              >
+                모두
+              </button>
+            </div>
+
             <ul className="todo-goal-list">
-              {scrumGoals.map((goal) => (
-              <ScrumGoalItem
-                key={goal.id}
-                goal={goal}
-                onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null)}
-                onDelete={handleDeleteGoal}
-              />
+              {filteredGoals.map((goal) => (
+                <ScrumGoalItem
+                  key={goal.id}
+                  goal={goal}
+                  onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
+                  onDelete={handleDeleteGoal}
+                />
               ))}
             </ul>
+
             <div className="todo-goal-input-group">
               <div className="date-input-container">
                 <input 

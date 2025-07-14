@@ -67,36 +67,60 @@ router.delete('/goal/:goalId', authenticateToken, async (req, res) => {
   }
 });
 
-// ✅ 완료로 설정
+// ✅ TeamGoal 완료 시 → 하위 SubGoal 전부 완료
 router.patch('/goal/:goalId/complete', authenticateToken, async (req, res) => {
-  const { goalId } = req.params;
+  const goalId = parseInt(req.params.goalId, 10);
   try {
+    // teamGoal 완료 처리
     const updatedGoal = await prisma.teamGoal.update({
-      where: { id: parseInt(goalId) },
+      where: { id: goalId },
       data: { real_end_date: new Date() }
     });
-    console.log(`✔️ Marked goal ${goalId} as complete`);
+
+    // 해당 teamGoal의 모든 subgoal 완료 처리
+    await prisma.subGoal.updateMany({
+      where: { team_goal_id: goalId },
+      data: {
+        is_completed: true,
+        completed_at: new Date()
+      }
+    });
+
+    console.log(`✔️ Goal ${goalId} 완료 및 하위 SubGoal 모두 완료`);
     res.json(updatedGoal);
   } catch (err) {
     console.error('Error completing goal:', err);
-    res.status(500).json({ error: '완료 설정 실패' });
+    res.status(500).json({ error: '완료 처리 실패' });
   }
 });
 
-// ✅ 완료 해제
+
+// ✅ TeamGoal 완료 해제 시 → 하위 SubGoal 전부 해제
 router.patch('/goal/:goalId/uncomplete', authenticateToken, async (req, res) => {
-  const { goalId } = req.params;
+  const goalId = parseInt(req.params.goalId, 10);
   try {
+    // teamGoal 완료 해제
     const updatedGoal = await prisma.teamGoal.update({
-      where: { id: parseInt(goalId) },
+      where: { id: goalId },
       data: { real_end_date: null }
     });
-    console.log(`🚫 Unmarked goal ${goalId}`);
+
+    // 해당 teamGoal의 모든 subgoal 완료 해제
+    await prisma.subGoal.updateMany({
+      where: { team_goal_id: goalId },
+      data: {
+        is_completed: false,
+        completed_at: null
+      }
+    });
+
+    console.log(`🚫 Goal ${goalId} 완료 해제 및 하위 SubGoal 모두 초기화`);
     res.json(updatedGoal);
   } catch (err) {
     console.error('Error uncompleting goal:', err);
-    res.status(500).json({ error: '완료 해제 실패' });
+    res.status(500).json({ error: '해제 처리 실패' });
   }
 });
+
 
 export default router

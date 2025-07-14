@@ -91,7 +91,7 @@ function TodoListPage() {
           todos: subRes.success ? subRes.data.subgoals.map(sg => ({
             id: sg.id,
             text: sg.content,
-            completed: sg.is_completed,
+            is_completed: sg.is_completed,
             disabled: false
           })) : []
         };
@@ -135,9 +135,9 @@ function TodoListPage() {
   };
 
   // ✅ 토글
-  const handleToggleTodo = async (goalId, todoId, completed) => {
+  const handleToggleTodo = async (goalId, todoId, is_completed) => {
     try {
-      if (completed) {
+      if (is_completed) {
         await uncompleteSubGoal(todoId);
       } else {
         await completeSubGoal(todoId);
@@ -182,7 +182,7 @@ function TodoListPage() {
                     title={goal.title}
                     todos={goal.todos.map(todo => ({
                       ...todo,
-                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.completed)
+                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
                     }))}
                     onActivate={setActiveGoalId}
                     onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}

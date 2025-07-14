@@ -20,3 +20,4 @@ export const completeSubGoal = (subGoalId) => {
 export const uncompleteSubGoal = (subGoalId) => {
   return apiPatch(`/teamGoal/subgoal/${subGoalId}/uncomplete`);
 };
+

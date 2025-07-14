@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-function ScrumGoalItem({ goal, onToggle, onDelete, isTeammateView = false }) {
+function ScrumGoalItem({ goal, onToggle, onDelete }) {
   return (
     <li className="todo-item">
       <input
         type="checkbox"
         checked={goal.real_end_date !== null}
-        onChange={() => onToggle(goal.id)}
+        onChange={() => onToggle(goal.id, goal.real_end_date !== null, goal.content)}
       />
       <span className="todo-text">
         {goal.content}
@@ -20,3 +20,5 @@ function ScrumGoalItem({ goal, onToggle, onDelete, isTeammateView = false }) {
 }
 
 export default ScrumGoalItem;
+
+
