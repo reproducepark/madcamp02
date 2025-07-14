@@ -169,16 +169,24 @@ function TodoListPage() {
   };
 
   return (
-    <div className="app-wrapper">
+    <div className="todo-container">
       <TopMenu />
-      <div className="container">
+      <div className="todo-body">
         <Sidebar />
-        <main className="main-content">
-          <div className="todo-center-card">
-            <div className="todo-center-title">중앙 영역</div>
+        <main className="todo-main">
+          {/* 왼쪽 영역 (3:1 비율의 3) */}
+          <div className="todo-left-section">
+            {/* 시간표 영역 (상단 절반) */}
+            <section className="todo-schedule-section">
+              <div className="todo-schedule-title">시간표</div>
+              <div className="todo-schedule-content">
+                시간표 컴포넌트가 들어갈 공간입니다
+              </div>
+            </section>
           </div>
 
-          <div className="todo-card">
+          {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
+          <aside className="todo-goal-aside">
             <div className="todo-date">
               {currentTeamName ? `${currentTeamName} 팀` : '팀을 선택해주세요'}
             </div>
@@ -257,7 +265,7 @@ function TodoListPage() {
                 등록
               </button>
             </div>
-          </div>
+          </aside>
         </main>
       </div>
 
