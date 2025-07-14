@@ -39,11 +39,11 @@ export const deleteTeam = (teamId) => {
 /**
  * 팀 멤버 추가
  * @param {string} teamId - 팀 ID
- * @param {string} userId - 추가할 사용자 ID
+ * @param {string} username - 추가할 사용자 ID
  * @returns {Promise<Object>} API 응답
  */
-export const addTeamMember = (teamId, userId) => {
-  return apiPost(`/team/${teamId}/members`, { userId });
+export const addTeamMember = (teamId, username) => {
+  return apiPost(`/team/${teamId}/members`, { username });
 };
 
 /**

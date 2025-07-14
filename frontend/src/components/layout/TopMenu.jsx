@@ -46,6 +46,14 @@ function TopMenu() {
     }
   }, [isDropdownOpen]);
 
+  useEffect(() => {
+    const savedTeam = localStorage.getItem('selectedTeam');
+    if (savedTeam) {
+      const parsedTeam = JSON.parse(savedTeam);
+      console.log("✅ 복원된 selectedTeam:", parsedTeam);
+      setSelectedTeam(parsedTeam);
+    }
+  }, []);
 
   const handleLogout = () => {
     logoutUser();
@@ -69,9 +77,11 @@ function TopMenu() {
     setSelectedTeam(null);
   };
 
-  // 모든 팀에서 중복되지 않는 팀원 목록 추출
-  const allTeammates = Array.from(new Set(teams.flatMap(team => team.members.map(member => JSON.stringify(member)))))
-    .map(memberString => JSON.parse(memberString));
+  // // 모든 팀에서 중복되지 않는 팀원 목록 추출
+  // const allTeammates = Array.from(new Set(teams.flatMap(team => team.members.map(member => JSON.stringify(member)))))
+  //   .map(memberString => JSON.parse(memberString));
+  const teammates = selectedTeam ? selectedTeam.members : [];
+
 
   return (
     <header className="top-menu">
@@ -100,40 +110,42 @@ function TopMenu() {
                     teams.map((team) => (
                       <div key={team.id} className="dropdown-item-container">
                         <span 
-                        className="dropdown-item-name"
-                        onClick={() => {
-                          // localStorage에 선택된 팀 정보 저장
-                          localStorage.setItem('selectedTeam', JSON.stringify({
-                            id: team.id,
-                            name: team.name
-                          }));
-                          
-                          // 현재 페이지에 따라 적절한 페이지로 이동
-                          if (location.pathname === '/todo') {
-                            // 투두리스트 페이지에서 팀을 변경한 경우 커스텀 이벤트 발생
-                            window.dispatchEvent(new CustomEvent('teamChanged', {
-                              detail: { teamId: team.id, teamName: team.name }
-                            }));
-                          } else if (location.pathname === '/scrum') {
-                            // 스크럼 페이지에서 팀을 변경한 경우 커스텀 이벤트 발생
-                            window.dispatchEvent(new CustomEvent('teamChanged', {
-                              detail: { teamId: team.id, teamName: team.name }
-                            }));
-                          } else {
-                            navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
-                          }
-                          setIsDropdownOpen(false); // 드롭다운 닫기
-                        }}
-                      >
-                        {team.name}
-                      </span>
+                          className="dropdown-item-name"
+                          onClick={() => {
+                            localStorage.setItem('selectedTeam', JSON.stringify(team));
+                            setSelectedTeam(team); 
+                            console.log("✅ team 선택됨:", team);
+                            console.log("✅ team.members:", team.members);
+
+                            if (location.pathname === '/todo') {
+                              window.dispatchEvent(new CustomEvent('teamChanged', {
+                                detail: { teamId: team.id, teamName: team.name }
+                              }));
+                            } else if (location.pathname === '/scrum') {
+                              window.dispatchEvent(new CustomEvent('teamChanged', {
+                                detail: { teamId: team.id, teamName: team.name }
+                              }));
+                            } else {
+                              navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
+                            }
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          {team.name}
+                        </span>
+
                         {!isTodoPage && (
                           <button 
                             className="dropdown-item-setting-btn"
                             onClick={() => {
-                              setSelectedTeam(team);
+                              localStorage.setItem('selectedTeam', JSON.stringify(team));
+                              setSelectedTeam(team); 
+                              console.log("✅ 선택된 team:", team);
+                              console.log("✅ team.members:", team.members);
                               openManageModal();
                             }}
+
+
                           >
                             설정
                           </button>
@@ -155,12 +167,20 @@ function TopMenu() {
                 </button>
                 {showTeammateDropdown && (
                   <div className="dropdown-menu">
-                    {allTeammates.length > 0 ? (
-                      allTeammates.map((member) => (
+                    {teammates.length > 0 ? (
+                      teammates.map((member) => (
                         <button
                           key={member.id}
                           className="dropdown-item"
-                          onClick={() => navigate('/scrum/teammate-todolist', { state: { userId: member.id, userName: member.name } })}
+                          onClick={() => navigate('/scrum/teammate-todolist', { 
+                            state: { 
+                              teamId: selectedTeam.id,
+                              teamName: selectedTeam.name,
+                              userId: member.id,
+                              userName: member.name,
+                            }
+                          })}
+                          
                         >
                           {member.name}
                         </button>
@@ -173,7 +193,14 @@ function TopMenu() {
               </div>
             )}
             {isTeamViewPage && ( // '홈' 버튼은 팀원 페이지에서만 보이도록
-              <button className="scrum-menu-button" onClick={() => navigate('/scrum')}>홈</button>
+              <button className="scrum-menu-button" onClick={() => navigate('/scrum', {
+              state: { 
+                teamId: selectedTeam.id,
+                teamName: selectedTeam.name,
+                userId: member.id,
+                userName: member.name
+                }
+              })}>홈</button>
             )}
           </div>
         )}
