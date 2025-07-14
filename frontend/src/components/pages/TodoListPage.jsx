@@ -22,49 +22,84 @@ function TodoListPage({ onLogout }) {
   const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
 
   // 스크럼 페이지와 동일한 필터링 및 정렬 로직 적용
-  const filteredGoals = goals
-    .filter(goal => {
-      if (filter === 'COMPLETED') {
-        // 완료된 목표: 모든 할일이 완료된 목표
-        return goal.todos.length > 0 && goal.todos.every(todo => todo.is_completed);
-      }
-      if (filter === 'INCOMPLETE') {
-        // 미완료된 목표: 하나라도 미완료인 할일이 있는 목표
-        return goal.todos.length === 0 || goal.todos.some(todo => !todo.is_completed);
-      }
-      return true; // ALL
+const filteredGoals = goals
+  .map(goal => ({
+    ...goal,
+    todos: goal.todos.filter(todo => {
+      if (filter === 'COMPLETED') return todo.is_completed;
+      if (filter === 'INCOMPLETE') return !todo.is_completed;
+      return true;
     })
-    .sort((a, b) => {
-      if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
-        // 단일 필터인 경우
-        if (a.start_date !== b.start_date) {
-          return new Date(a.start_date) - new Date(b.start_date);
-        }
-        if (filter === 'COMPLETED') {
-          return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
-        } else {
-          return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
-        }
-      } else {
-        // ALL인 경우, 미완 -> 완료
-        const aIsDone = a.todos.length > 0 && a.todos.every(todo => todo.is_completed);
-        const bIsDone = b.todos.length > 0 && b.todos.every(todo => todo.is_completed);
-        if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
-
-        // 같은 상태라면 start_date
-        if (a.start_date !== b.start_date) {
-          return new Date(a.start_date) - new Date(b.start_date);
-        }
-
-        if (!aIsDone) {
-          // 미완 : planned_end_date 빠른 게 먼저
-          return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
-        } else {
-          // 완료 : real_end_date 빠른 게 먼저
-          return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
-        }
+  }))
+  .sort((a, b) => {
+    // 기존 정렬 유지
+    if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
+      if (a.start_date !== b.start_date) {
+        return new Date(a.start_date) - new Date(b.start_date);
       }
-    });
+      if (filter === 'COMPLETED') {
+        return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+      } else {
+        return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+      }
+    } else {
+      const aIsDone = a.todos.length > 0 && a.todos.every(todo => todo.is_completed);
+      const bIsDone = b.todos.length > 0 && b.todos.every(todo => todo.is_completed);
+      if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
+      if (a.start_date !== b.start_date) {
+        return new Date(a.start_date) - new Date(b.start_date);
+      }
+      if (!aIsDone) {
+        return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+      } else {
+        return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+      }
+    }
+  });
+
+  // const filteredGoals = goals
+  //   .filter(goal => {
+  //     if (filter === 'COMPLETED') {
+  //       // 완료된 목표: 모든 할일이 완료된 목표
+  //       return goal.todos.length > 0 && goal.todos.every(todo => todo.is_completed);
+  //     }
+  //     if (filter === 'INCOMPLETE') {
+  //       // 미완료된 목표: 하나라도 미완료인 할일이 있는 목표
+  //       return goal.todos.length === 0 || goal.todos.some(todo => !todo.is_completed);
+  //     }
+  //     return true; // ALL
+  //   })
+  //   .sort((a, b) => {
+  //     if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
+  //       // 단일 필터인 경우
+  //       if (a.start_date !== b.start_date) {
+  //         return new Date(a.start_date) - new Date(b.start_date);
+  //       }
+  //       if (filter === 'COMPLETED') {
+  //         return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+  //       } else {
+  //         return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+  //       }
+  //     } else {
+  //       // ALL인 경우, 미완 -> 완료
+  //       const aIsDone = a.todos.length > 0 && a.todos.every(todo => todo.is_completed);
+  //       const bIsDone = b.todos.length > 0 && b.todos.every(todo => todo.is_completed);
+  //       if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
+
+  //       // 같은 상태라면 start_date
+  //       if (a.start_date !== b.start_date) {
+  //         return new Date(a.start_date) - new Date(b.start_date);
+  //       }
+
+  //       if (!aIsDone) {
+  //         // 미완 : planned_end_date 빠른 게 먼저
+  //         return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
+  //       } else {
+  //         // 완료 : real_end_date 빠른 게 먼저
+  //         return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
+  //       }
+  //     }
+  //   });
 
   const [activeGoalId, setActiveGoalId] = useState(null);
   const [newInput, setNewInput] = useState('');
@@ -365,7 +400,7 @@ function TodoListPage({ onLogout }) {
             <div className="todo-content">
 
 
-              {goalsWithFilteredTodos
+              {filteredGoals
                 .filter(goal => {
                   const start = goal.start_date?.slice(0, 10);
                   const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
@@ -391,7 +426,7 @@ function TodoListPage({ onLogout }) {
                       onActivate={setActiveGoalId}
                       onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
                     />
-                    {index < goalsWithFilteredTodos.length - 1 && <Divider />}
+                    {index < filteredGoals.length - 1 && <Divider />}
                   </React.Fragment>
                 ))}
 
