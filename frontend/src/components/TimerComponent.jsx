@@ -158,13 +158,21 @@ const TimerComponent = () => {
 
   // 리셋
   const handleReset = () => {
-    setRemaining(duration);
+    // 50분으로 설정
+    const resetMinutes = 50;
+    const resetSeconds = 0;
+    const resetDuration = resetMinutes * 60 + resetSeconds;
+    
+    setInputMinutes(resetMinutes);
+    setInputSeconds(resetSeconds);
+    setDuration(resetDuration);
+    setRemaining(resetDuration);
     setIsRunning(false);
     clearInterval(intervalRef.current);
-    setCurrentTime(formatTime(duration));
+    setCurrentTime(formatTime(resetDuration));
     
     // 프로그레스 바 리셋
-    const newDeg = (duration / DURATION_IN_SECONDS) * 360;
+    const newDeg = (resetDuration / DURATION_IN_SECONDS) * 360;
     setLastDegree(newDeg);
     if (timerRef.current) {
       timerRef.current.set(newDeg / 360);
@@ -396,9 +404,15 @@ const TimerComponent = () => {
           onClick={handleStartPause}
           className={`timer-start-btn ${isRunning ? 'running' : ''}`}
         >
-          {isRunning ? '일시정지' : '시작'}
+          {isRunning ? '정지' : '시작'}
         </button>
-
+        <button
+          onClick={handleReset}
+          className={`timer-reset-btn ${isRunning ? 'active' : ''}`}
+          disabled={!isRunning}
+        >
+          리셋
+        </button>
       </div>
       
 
