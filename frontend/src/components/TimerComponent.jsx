@@ -357,6 +357,32 @@ const TimerComponent = () => {
   return (
     <div className="timer-component">
       <div className="timer-container">
+        {/* 시계 인덱스 SVG */}
+        <svg className="timer-index-svg" width="260" height="260" style={{position: 'absolute', top: '-30px', left: '-30px', pointerEvents: 'none'}}>
+          {[...Array(12)].map((_, i) => {
+            const angle = (i * 30 - 90) * (Math.PI / 180); // 0시가 위로 오도록
+            const r = 115; // 숫자 반지름을 115로 줄임
+            const cx = 130;
+            const cy = 130;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle) + 4; // +4는 시각적 보정
+            return (
+              <text
+                key={i}
+                x={x}
+                y={y}
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                fontSize="18"
+                fill="#888"
+                fontWeight="bold"
+                style={{userSelect: 'none'}}
+              >
+                {i === 0 ? '0' : 60 - i * 5}
+              </text>
+            );
+          })}
+        </svg>
         <div 
           ref={progressBarRef}
           className="timer-disk"

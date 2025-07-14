@@ -8,11 +8,22 @@
   background: transparent;
 }
 
+.timer-index-svg {
+  position: absolute;
+  top: -30px;
+  left: -30px;
+  width: 260px;
+  height: 260px;
+  pointer-events: none;
+  z-index: 10;
+}
+
 .timer-container {
   position: relative;
   width: 200px;
   height: 200px;
   margin: 0 auto;
+  z-index: 1;
 }
 
 .timer-disk {
@@ -25,6 +36,7 @@
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  z-index: 3;
 }
 
 
