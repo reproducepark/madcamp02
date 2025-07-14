@@ -44,6 +44,13 @@
   .todo-schedule-content, .todo-memo-content {
     flex-grow: 1;
     /* 내용이 채워질 공간 */
+    overflow: hidden;
+  }
+
+  /* 간트 차트 컨테이너 스타일 */
+  .todo-schedule-content .gantt-chart {
+    height: 100%;
+    border-radius: 8px;
   }
   
   .todo-memo-btn-group {
