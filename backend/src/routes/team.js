@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 // 팀 생성 API
 router.post('/createTeam', authenticateToken, async (req, res) => {
   const { name } = req.body;
-  const userId = req.user.id; // authenticateToken 미들웨어에서 추가된 사용자 정보
+  const userId = req.user.id;
 
   try {
     const existingTeam = await prisma.team.findUnique({
@@ -16,16 +16,13 @@ router.post('/createTeam', authenticateToken, async (req, res) => {
     });
 
     if (existingTeam) {
-      return res.status(400).json({ message: "Team name already exists." });
+      return res.status(400).json({ message: "이미 존재하는 팀 이름입니다." });
     }
 
     const newTeam = await prisma.team.create({
-      data: {
-        name,
-      },
+      data: { name },
     });
 
-    // 팀 생성자를 TeamMember로 추가
     await prisma.teamMember.create({
       data: {
         team_id: newTeam.id,
@@ -33,27 +30,25 @@ router.post('/createTeam', authenticateToken, async (req, res) => {
       },
     });
 
-    res.status(201).json({ message: "Team created successfully", team: newTeam });
+    res.status(201).json({ message: "팀이 성공적으로 생성되었습니다.", team: newTeam });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
 
-// 사용자가 속한 팀 목록 조회 API
+// 사용자가 속한 팀 목록 조회
 router.get('/myTeams', authenticateToken, async (req, res) => {
   const userId = req.user.id;
 
   try {
-    const teamMemberships = await prisma.teamMember.findMany({
+    const memberships = await prisma.teamMember.findMany({
       where: { user_id: userId },
       include: {
         team: {
           include: {
             TeamMembers: {
-              include: {
-                user: true,
-              },
+              include: { user: true },
             },
           },
         },
@@ -63,74 +58,27 @@ router.get('/myTeams', authenticateToken, async (req, res) => {
       },
     });
 
-    console.log('teamMemberships:', JSON.stringify(teamMemberships, null, 2));
-
-    // TeamMembers에서 user 정보만 추출해서 members로 정리
-    const teams = teamMemberships.map(membership => ({
+    const teams = memberships.map(membership => ({
       id: membership.team.id,
       name: membership.team.name,
       created_at: membership.team.created_at,
-      members: (membership.team.TeamMembers || [])
-      .filter(member => member.user.id !== userId) // 자기 자신 제외
-      .map(member => member.user),
+      members: membership.team.TeamMembers
+        .filter(member => member.user.id !== userId) // 자기 제외
+        .map(member => ({
+          id: member.user.id,
+          username: member.user.username,
+          name: member.user.name,
+        })),
     }));
-
-    console.log('teams to send:', JSON.stringify(teams, null, 2));
 
     res.status(200).json({ teams });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
 
-// 팀 멤버 조회 API
-router.get('/:teamId/members', authenticateToken, async (req, res) => {
-  const teamId = parseInt(req.params.teamId, 10);
-  const userId = req.user.id;
-
-  try {
-    // 사용자가 해당 팀의 멤버인지 확인
-    const teamMembership = await prisma.teamMember.findFirst({
-      where: {
-        team_id: teamId,
-        user_id: userId,
-      },
-    });
-
-    if (!teamMembership) {
-      return res.status(403).json({ message: "해당 팀의 멤버가 아닙니다." });
-    }
-
-    // 팀의 모든 멤버 조회
-    const teamMembers = await prisma.teamMember.findMany({
-      where: { team_id: teamId },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            class_section: true,
-          },
-        },
-      },
-      orderBy: {
-        user: {
-          name: 'asc',
-        },
-      },
-    });
-
-    const members = teamMembers.map(member => member.user);
-
-    res.status(200).json({ members });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
-// 팀 이름 변경 API
+// 팀 이름 변경
 router.put('/:teamId', authenticateToken, async (req, res) => {
   const teamId = parseInt(req.params.teamId, 10);
   const { name } = req.body;
@@ -140,33 +88,137 @@ router.put('/:teamId', authenticateToken, async (req, res) => {
   }
 
   try {
-    // 같은 이름으로 변경 방지
-    const current = await prisma.team.findUnique({
-      where : { id: teamId}
-    });
-    
-    if (current.name == name) {
+    const current = await prisma.team.findUnique({ where: { id: teamId } });
+    if (!current) {
+      return res.status(404).json({ message: "팀을 찾을 수 없습니다." });
+    }
+
+    if (current.name === name) {
       return res.status(400).json({ message: "같은 이름으로는 변경할 수 없습니다." });
     }
 
-    // 동일 이름 중복 방지
-    const existingTeam = await prisma.team.findUnique({
-      where: { name },
-    });
-
-    if (existingTeam && existingTeam.id !== teamId) {
+    const duplicate = await prisma.team.findUnique({ where: { name } });
+    if (duplicate) {
       return res.status(400).json({ message: "같은 이름의 팀이 이미 존재합니다." });
     }
 
-    const updatedTeam = await prisma.team.update({
+    const updated = await prisma.team.update({
       where: { id: teamId },
       data: { name },
     });
 
-    res.status(200).json({ success: true, team: updatedTeam });
+    res.status(200).json({ success: true, team: updated });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+// 팀 멤버 추가 (username 기준)
+router.post('/:teamId/members', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+  const { username } = req.body;
+
+  console.log("teamId:", teamId);
+  console.log("username:", username);
+  console.log("req.body:", req.body);
+
+  try {
+    const userToAdd = await prisma.user.findUnique({
+      where: { username },
+    });
+
+    if (!userToAdd) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    const teamExists = await prisma.team.findUnique({
+      where: { id: teamId },
+    });
+
+    if (!teamExists) {
+      return res.status(404).json({ message: "팀을 찾을 수 없습니다." });
+    }
+
+    const alreadyMember = await prisma.teamMember.findFirst({
+      where: {
+        team_id: teamId,
+        user_id: userToAdd.id,
+      },
+    });
+
+    if (alreadyMember) {
+      return res.status(400).json({ message: "이미 팀에 속한 사용자입니다." });
+    }
+
+    await prisma.teamMember.create({
+      data: {
+        team_id: teamId,
+        user_id: userToAdd.id,
+      },
+    });
+
+    res.status(201).json({ message: "멤버가 성공적으로 추가되었습니다!", member: { id: userToAdd.id, username: userToAdd.username } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+// 팀 멤버 삭제 (id 기준)
+router.delete('/:teamId/members/:userId', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+  const userId = parseInt(req.params.userId, 10);
+
+  try {
+    const userToRemove = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!userToRemove) {
+      return res.status(404).json({ message: "사용자를 찾을 수 없습니다." });
+    }
+
+    const membership = await prisma.teamMember.findFirst({
+      where: {
+        team_id: teamId,
+        user_id: userToRemove.id,
+      },
+    });
+
+    if (!membership) {
+      return res.status(404).json({ message: "팀에 속하지 않은 사용자입니다." });
+    }
+
+    await prisma.teamMember.delete({
+      where: { id: membership.id },
+    });
+
+    res.status(200).json({ message: "멤버가 성공적으로 삭제되었습니다." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
+  }
+});
+
+
+// 팀 삭제
+router.delete('/:teamId', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+
+  try {
+    const team = await prisma.team.findUnique({ where: { id: teamId } });
+
+    if (!team) {
+      return res.status(404).json({ message: "팀을 찾을 수 없습니다." });
+    }
+
+    await prisma.team.delete({ where: { id: teamId } });
+
+    res.status(200).json({ message: "팀이 성공적으로 삭제되었습니다." });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "서버 오류가 발생했습니다." });
   }
 });
 
