@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import WebcamComponent from '../WebcamComponent';
+import TimerComponent from '../TimerComponent';
 import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
@@ -52,7 +53,7 @@ function StretchingPage() {
           <section className="todo-timer-section">
             <div className="todo-timer-title">타이머</div>
             <div className="todo-timer-content">
-              타이머 컴포넌트가 들어갈 공간입니다
+              <TimerComponent />
             </div>
           </section>
         </main>
