@@ -20,4 +20,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.on('timer-state-updated', handler);
         return () => ipcRenderer.removeListener('timer-state-updated', handler);
     },
+    onOverlayPositionChanged: (callback) => {
+        const handler = (event, position) => callback(position);
+        ipcRenderer.on('overlay-position-changed', handler);
+        return () => ipcRenderer.removeListener('overlay-position-changed', handler);
+    },
 });

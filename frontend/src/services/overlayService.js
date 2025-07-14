@@ -2,6 +2,33 @@ class OverlayService {
   constructor() {
     this.isOpen = false;
     this.callbacks = new Set();
+    this.position = this.loadPosition();
+  }
+
+  // 위치 저장
+  savePosition(x, y) {
+    this.position = { x, y };
+    try {
+      localStorage.setItem('overlayPosition', JSON.stringify(this.position));
+    } catch (error) {
+      console.error('OverlayService: 위치 저장 실패', error);
+    }
+  }
+
+  // 위치 로드
+  loadPosition() {
+    try {
+      const saved = localStorage.getItem('overlayPosition');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.warn('OverlayService: 저장된 위치 로드 실패:', error);
+      return null;
+    }
+  }
+
+  // 저장된 위치 가져오기
+  getSavedPosition() {
+    return this.position;
   }
 
   // 오버레이 열기
