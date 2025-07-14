@@ -1,162 +1,202 @@
-import React, { useState } from 'react';
-import '../../styles/TodoListPage.css'; // 새로 생성할 CSS 파일을 import 합니다.
+import React, { useState, useEffect, useRef } from 'react';
+import '../../styles/TodoListPage.css';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import GoalSection from '../layout/GoalSection';
 import Divider from '../layout/Divider';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
+import PersonalMemoSection from '../layout/PersonalMemoSection';
+import { getTeams, getTeamGoals } from '../../services/teamService';
+import { getMemos, createMemo, deleteMemo } from '../../services/memoService';
+import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 
 function TodoListPage() {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
-  
-  // 더미 데이터 - 목표들
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      title: '프로젝트 계획',
-      todos: [
-        { id: 1, text: '요구사항 분석', completed: false, disabled: false },
-        { id: 2, text: '기술 스택 선정', completed: true, disabled: false },
-        { id: 3, text: '팀 구성', completed: false, disabled: false },
-        { id: 4, text: '일정 수립', completed: false, disabled: false },
-        { id: 5, text: '예산 계획', completed: false, disabled: false }
-      ]
-    },
-    {
-      id: 2,
-      title: '개발 작업',
-      todos: [
-        { id: 6, text: '데이터베이스 설계', completed: true, disabled: false },
-        { id: 7, text: 'API 개발', completed: false, disabled: false },
-        { id: 8, text: '프론트엔드 개발', completed: false, disabled: false },
-        { id: 9, text: '테스트 코드 작성', completed: false, disabled: false }
-      ]
-    },
-    {
-      id: 3,
-      title: '디자인 작업',
-      todos: [
-        { id: 10, text: 'UI/UX 디자인', completed: false, disabled: false },
-        { id: 11, text: '프로토타입 제작', completed: false, disabled: false },
-        { id: 12, text: '디자인 시스템 구축', completed: false, disabled: false }
-      ]
-    },
-    {
-      id: 4,
-      title: '배포 준비',
-      todos: [
-        { id: 13, text: '서버 환경 구성', completed: false, disabled: false },
-        { id: 14, text: 'CI/CD 파이프라인 구축', completed: false, disabled: false },
-        { id: 15, text: '모니터링 시스템 구축', completed: false, disabled: false },
-        { id: 16, text: '백업 시스템 구축', completed: false, disabled: false }
-      ]
+
+  const [currentTeamId, setCurrentTeamId] = useState(null);
+  const [currentTeamName, setCurrentTeamName] = useState('');
+  const [goals, setGoals] = useState([]);
+  const [activeGoalId, setActiveGoalId] = useState(null);
+  const [newInput, setNewInput] = useState('');
+  const [memos, setMemos] = useState([]);
+
+  const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
+  const inputGroupRef = useRef();
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (
+        e.target.closest('.goal-section') ||
+        inputGroupRef.current?.contains(e.target)
+      ) return;
+      setActiveGoalId(null);
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  // ✅ 팀 불러오기
+  useEffect(() => {
+    const loadTeams = async () => {
+      const res = await getTeams();
+      if (res.success && res.data.teams.length > 0) {
+        setCurrentTeamId(res.data.teams[0].id);
+        setCurrentTeamName(res.data.teams[0].name);
+      }
+    };
+    loadTeams();
+  }, []);
+
+  // ✅ 팀 목표 + SubGoal 불러오기
+  const loadTeamGoals = async () => {
+    if (!currentTeamId) return;
+    const res = await getTeamGoals(currentTeamId);
+    if (res.success) {
+      const goalsWithSubGoals = await Promise.all(res.data.goals.map(async goal => {
+        const subRes = await getSubGoals(goal.id);
+        return {
+          id: goal.id,
+          title: goal.content,
+          todos: subRes.success ? subRes.data.subgoals.map(sg => ({
+            id: sg.id,
+            text: sg.content,
+            completed: sg.is_completed,
+            disabled: false
+          })) : []
+        };
+      }));
+      setGoals(goalsWithSubGoals);
     }
-  ]);
-
-  const handleAddTodo = (goalId) => {
-    console.log(`목표 ${goalId}에 할일 추가`);
-    // 실제 구현에서는 새로운 할일을 해당 목표에 추가
   };
 
-  const handleToggleTodo = (goalId, todoId) => {
-    setGoals(prevGoals => 
-      prevGoals.map(goal => 
-        goal.id === goalId 
-          ? {
-              ...goal,
-              todos: goal.todos.map(todo => 
-                todo.id === todoId 
-                  ? { ...todo, completed: !todo.completed }
-                  : todo
-              )
-            }
-          : goal
-      )
-    );
+  useEffect(() => {
+    loadTeamGoals();
+  }, [currentTeamId]);
+
+  // 🗒️ 개인 메모 불러오기
+  useEffect(() => {
+    const loadMemos = async () => {
+      const res = await getMemos();
+      if (res.success) setMemos(res.data.memos);
+    };
+    loadMemos();
+  }, []);
+
+  // ✅ 등록
+  const handleAdd = async () => {
+    if (!newInput.trim()) {
+      showAlert('입력 오류', '내용을 입력해주세요.');
+      return;
+    }
+
+    if (activeGoalId === 'memo') {
+      await createMemo(newInput.trim());
+      const res = await getMemos();
+      setMemos(res.data.memos);
+    } else {
+      await createSubGoal(activeGoalId, { content: newInput.trim() });
+      await loadTeamGoals();
+    }
+
+    setNewInput('');
+    setActiveGoalId(null);
   };
 
+  // ✅ 토글
+  const handleToggleTodo = async (goalId, todoId, completed) => {
+    try {
+      if (completed) {
+        await uncompleteSubGoal(todoId);
+      } else {
+        await completeSubGoal(todoId);
+      }
+      await loadTeamGoals();
+    } catch (err) {
+      console.error('체크박스 토글 실패:', err);
+      showAlert('에러', '완료 상태 변경 실패');
+    }
+  };
+
+  // ✅ 삭제
   const handleDeleteTodo = async (goalId, todoId) => {
-    const confirmed = await showConfirm(
-      '할일 삭제',
-      '정말로 이 할일을 삭제하시겠습니까?',
-      '삭제',
-      '취소'
-    );
-    
+    const confirmed = await showConfirm('할일 삭제', '정말로 삭제할까요?', '삭제', '취소');
     if (confirmed) {
-      setGoals(prevGoals => 
-        prevGoals.map(goal => 
-          goal.id === goalId 
-            ? {
-                ...goal,
-                todos: goal.todos.filter(todo => todo.id !== todoId)
-              }
-            : goal
-        )
-      );
+      await deleteSubGoal(todoId);
+      await loadTeamGoals();
     }
-  };
-
-  const renderGoalSection = (goal) => {
-    return (
-      <GoalSection 
-        key={goal.id}
-        title={goal.title}
-        todos={goal.todos.map(todo => ({
-          ...todo,
-          onToggle: (todoId) => handleToggleTodo(goal.id, todoId)
-        }))}
-        onAddTodo={() => handleAddTodo(goal.id)}
-        onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
-      />
-    );
   };
 
   return (
     <div className="app-wrapper">
-      {/* 상단 메뉴 */}
       <TopMenu />
-            <div className="container">
-        {/* 사이드바 */}
+      <div className="container">
         <Sidebar />
-      {/* 본문 */}
-      <main className="main-content">
-        {/* 중앙 컴포넌트 */}
-        <div className="todo-center-card">
-          <div className="todo-center-title">중앙 영역</div>
-          <div className="todo-center-content">
-            중앙에 들어갈 컴포넌트입니다
+        <main className="main-content">
+          <div className="todo-center-card">
+            <div className="todo-center-title">중앙 영역</div>
           </div>
-        </div>
-        
-        <div className="todo-card">
-          {/* 날짜 */}
-          <div className="todo-date">2025. 1. 1.</div>
-          <Divider />
-          {/* 스크롤 가능한 콘텐츠 영역 */}
-          <div className="todo-content">
-            {/* 목표들 자동 렌더링 */}
-            {goals.map((goal, index) => (
-              <React.Fragment key={goal.id}>
-                {renderGoalSection(goal)}
-                {index < goals.length - 1 && <Divider />}
-              </React.Fragment>
-            ))}
-          </div>
-          {/* 하단 고정 영역 */}
-          <div className="todo-footer">
-            <div className="memo">메모</div>
-            <div className="button-group">
-              <button className="action-button">할일 추가</button>
-              <button className="action-button">등록</button>
+
+          <div className="todo-card">
+            <div className="todo-date">
+              {currentTeamName ? `${currentTeamName} 팀` : '팀을 선택해주세요'}
+            </div>
+            <Divider />
+
+            <div className="todo-content">
+              {goals.map((goal, index) => (
+                <React.Fragment key={goal.id}>
+                  <GoalSection
+                    goalId={goal.id}
+                    title={goal.title}
+                    todos={goal.todos.map(todo => ({
+                      ...todo,
+                      onToggle: () => handleToggleTodo(goal.id, todo.id, todo.completed)
+                    }))}
+                    onActivate={setActiveGoalId}
+                    onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
+                  />
+                  {index < goals.length - 1 && <Divider />}
+                </React.Fragment>
+              ))}
+
+              <Divider />
+              <PersonalMemoSection
+                memos={memos}
+                onActivate={() => setActiveGoalId('memo')}
+                onDeleteMemo={async (memoId) => {
+                  await deleteMemo(memoId);
+                  const res = await getMemos();
+                  setMemos(res.data.memos);
+                }}
+              />
+            </div>
+
+            <div className="todo-goal-input-group" ref={inputGroupRef}>
+              <input
+                placeholder={
+                  activeGoalId === 'memo'
+                    ? "개인 메모를 작성하세요"
+                    : activeGoalId
+                      ? `${activeGoalName}에 할 일을 추가합니다`
+                      : "목표를 선택해 주세요."
+                }
+                value={newInput}
+                onChange={(e) => setNewInput(e.target.value)}
+                disabled={!activeGoalId}
+              />
+              <button
+                className="todo-goal-btn"
+                onClick={handleAdd}
+                disabled={!activeGoalId}
+              >
+                등록
+              </button>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
       </div>
-      
-      {/* 모달 */}
+
       <Modal
         isOpen={modalState.isOpen}
         onClose={closeModal}
