@@ -171,12 +171,38 @@ function TodoListPage({ onLogout }) {
   ];
 
   // 첫 번째 목표의 start_date가 속하는 duration의 시작일을 baseDate로 사용
-  let baseDate = durations[0].start;
+  let defaultBaseDate = durations[0].start;
   if (goals.length > 0 && goals[0].start_date) {
     const firstGoalDate = goals[0].start_date.slice(0, 10);
     const found = durations.find(d => firstGoalDate >= d.start && firstGoalDate <= d.end);
-    if (found) baseDate = found.start;
+    if (found) defaultBaseDate = found.start;
   }
+
+  // 슬라이더 상태
+  const [sliderDate, setSliderDate] = useState(defaultBaseDate);
+
+  // 현재 duration 구간 찾기
+  const currentDuration = durations.find(d => sliderDate >= d.start && sliderDate <= d.end) || durations[0];
+  // duration 내 날짜 배열 생성
+  const getDateArray = (start, end) => {
+    const arr = [];
+    let d = new Date(start);
+    const endDate = new Date(end);
+    while (d <= endDate) {
+      arr.push(d.toISOString().slice(0, 10));
+      d.setDate(d.getDate() + 1);
+    }
+    return arr;
+  };
+  const dateArray = getDateArray(currentDuration.start, currentDuration.end);
+
+  // baseDate가 duration 범위 밖이면 슬라이더를 duration 시작일로 맞춤
+  useEffect(() => {
+    if (sliderDate < currentDuration.start || sliderDate > currentDuration.end) {
+      setSliderDate(currentDuration.start);
+    }
+    // eslint-disable-next-line
+  }, [currentDuration.start, currentDuration.end]);
 
   return (
     <div className="app-wrapper">
@@ -186,8 +212,31 @@ function TodoListPage({ onLogout }) {
         <main className="main-content">
           <div className="todo-center-card">
             <div className="todo-center-title">중앙 영역</div>
+            {/* 슬라이더 UI */}
+            <div className="gantt-slider-wrapper">
+              <input
+                type="range"
+                min={0}
+                max={dateArray.length - 1}
+                value={dateArray.findIndex(d => d === sliderDate)}
+                onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
+                step={1}
+                className="gantt-slider"
+                style={{ width: '100%' }}
+              />
+              <div className="gantt-slider-labels">
+                {dateArray.map((d, i) => {
+                  const dayNames = ['일', '월', '화', '수', '목', '금', '토'];
+                  const dateObj = new Date(d);
+                  return (
+                    <span key={d} className="gantt-slider-label">
+                      {dayNames[dateObj.getDay()]}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
             <GanttChart goals={goals
-              .slice()
               .sort((a, b) => {
                 const aStart = new Date(a.start_date).getTime();
                 const bStart = new Date(b.start_date).getTime();
@@ -202,7 +251,7 @@ function TodoListPage({ onLogout }) {
                 start_date: goal.start_date,
                 planned_end_date: goal.planned_end_date,
                 real_end_date: goal.real_end_date,
-            }))} baseDate={baseDate} />
+            }))} baseDate={defaultBaseDate} />
           </div>
 
           <div className="todo-card">

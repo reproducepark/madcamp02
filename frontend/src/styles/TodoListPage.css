@@ -177,3 +177,21 @@
     cursor: pointer;
     border-radius: 4px; /* 적당한 라운딩 추가 */
   }
+
+.gantt-slider-wrapper {
+  margin-bottom: 12px;
+  width: 100%;
+}
+.gantt-slider-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-top: 2px;
+}
+.gantt-slider-label {
+  width: 24px;
+  text-align: center;
+}
+.gantt-slider {
+  width: 100%;
+}
