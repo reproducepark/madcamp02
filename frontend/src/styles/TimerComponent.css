@@ -144,6 +144,28 @@
   box-shadow: 0px 4px 12px rgba(33, 150, 243, 0.3);
 }
 
+.timer-overlay-btn {
+  background: #fff;
+  color: #9c27b0;
+  border: 2px solid #9c27b0;
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  padding: 6px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timer-overlay-btn.active {
+  background: #9c27b0;
+  color: #fff;
+}
+
+.timer-overlay-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0px 4px 12px rgba(156, 39, 176, 0.3);
+}
+
 
 
 
@@ -186,6 +208,11 @@
   .timer-reset-btn {
     font-size: 18px;
     padding: 4px 24px;
+  }
+  
+  .timer-overlay-btn {
+    font-size: 16px;
+    padding: 4px 20px;
   }
   
 

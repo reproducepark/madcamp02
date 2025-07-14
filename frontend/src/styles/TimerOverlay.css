@@ -1,0 +1,160 @@
+.timer-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+  pointer-events: auto;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: none;
+}
+
+/* 오버레이 창의 body 배경을 투명하게 */
+body {
+  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  -webkit-app-region: drag;
+}
+
+html {
+  background: transparent !important;
+}
+
+/* 맥 전용 투명화 설정 */
+@supports (-webkit-backdrop-filter: none) {
+  body {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  
+  .timer-overlay {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+.timer-overlay-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 15px;
+  padding: 20px;
+  pointer-events: auto;
+  cursor: move;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
+}
+
+.timer-overlay-disk {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+}
+
+.timer-overlay-time {
+  font-size: 24px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.6);
+  margin-bottom: 6px;
+  font-family: 'Courier New', monospace;
+}
+
+.timer-overlay-status {
+  font-size: 12px;
+  color: #ffffff;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 10px rgba(0, 0, 0, 0.6);
+  font-weight: 500;
+}
+
+.timer-overlay-status.running {
+  color: #4caf50;
+  text-shadow: 0 1px 4px rgba(76, 175, 80, 0.8), 0 0 10px rgba(76, 175, 80, 0.6);
+}
+
+.timer-overlay-status.paused {
+  color: #ff9800;
+  text-shadow: 0 1px 4px rgba(255, 152, 0, 0.8), 0 0 10px rgba(255, 152, 0, 0.6);
+}
+
+.timer-overlay-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+  -webkit-app-region: no-drag;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+.timer-overlay-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.1);
+}
+
+.timer-overlay-close-btn:active {
+  transform: scale(0.95);
+}
+
+/* ProgressBar.js 스타일 오버라이드 */
+.timer-overlay-disk .progressbar-text {
+  display: none !important;
+}
+
+.timer-overlay-disk svg {
+  transform: scale(-1, 1);
+}
+
+.timer-overlay-disk svg path:first-child {
+  stroke: rgba(255, 255, 255, 0.2) !important;
+}
+
+.timer-overlay-disk svg path:last-child {
+  stroke: #ff4444 !important;
+  filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.6));
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .timer-overlay-container {
+    padding: 20px;
+  }
+  
+  .timer-overlay-disk {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .timer-overlay-time {
+    font-size: 28px;
+  }
+  
+  .timer-overlay-status {
+    font-size: 12px;
+  }
+} 

@@ -46,13 +46,20 @@ class TimerService {
 
   // 모든 콜백 호출
   notify() {
+    const state = {
+      duration: this.duration,
+      remaining: this.remaining,
+      isRunning: this.isRunning
+    };
+    console.log('TimerService: 상태 알림', state, '구독자 수:', this.callbacks.size);
     this.callbacks.forEach(callback => {
-      callback({
-        duration: this.duration,
-        remaining: this.remaining,
-        isRunning: this.isRunning
-      });
+      callback(state);
     });
+    
+    // Electron 환경에서 다른 창에 상태 브로드캐스트
+    if (window.electronAPI) {
+      window.electronAPI.broadcastTimerState(state);
+    }
   }
 
   // 시간 설정
@@ -69,6 +76,7 @@ class TimerService {
 
   // 타이머 시작/일시정지
   toggle() {
+    console.log('TimerService: toggle 호출, 현재 상태:', this.isRunning);
     if (this.isRunning) {
       this.pause();
     } else {
@@ -80,6 +88,7 @@ class TimerService {
   start() {
     if (this.isRunning) return;
     
+    console.log('TimerService: 타이머 시작');
     this.isRunning = true;
     this.intervalId = setInterval(() => {
       if (this.remaining <= 1) {
@@ -165,5 +174,10 @@ class TimerService {
 
 // 싱글톤 인스턴스 생성
 const timerService = new TimerService();
+
+// Electron 환경에서 전역으로 노출
+if (typeof window !== 'undefined') {
+  window.timerService = timerService;
+}
 
 export default timerService; 
