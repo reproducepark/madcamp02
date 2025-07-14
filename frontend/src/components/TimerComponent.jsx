@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ProgressBar from 'progressbar.js';
 import timerService from '../services/timerService';
+import overlayService from '../services/overlayService';
 import '../styles/TimerComponent.css';
 
 const TimerComponent = () => {
@@ -17,6 +18,7 @@ const TimerComponent = () => {
   const [inputSeconds, setInputSeconds] = useState(0);
   const [duration, setDuration] = useState(600); // 전체 시간(초)
   const [remaining, setRemaining] = useState(600); // 남은 시간(초)
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   
   const DURATION_IN_SECONDS = 60 * 60; // 60 minutes
   const timerRef = useRef(null);
@@ -35,6 +37,10 @@ const TimerComponent = () => {
     const seconds = initialState.remaining % 60;
     setInputMinutes(minutes);
     setInputSeconds(seconds);
+    
+    // 오버레이 상태 초기화
+    const overlayState = overlayService.getOverlayState();
+    setIsOverlayOpen(overlayState.isOpen);
     
     const unsubscribeTimer = timerService.subscribe((state) => {
       console.log('TimerComponent: 상태 업데이트', state);
@@ -58,10 +64,13 @@ const TimerComponent = () => {
       updateKnobPosition(newDeg);
     });
 
-
+    const unsubscribeOverlay = overlayService.subscribe((state) => {
+      setIsOverlayOpen(state.isOpen);
+    });
 
     return () => {
       unsubscribeTimer();
+      unsubscribeOverlay();
     };
   }, []);
 
@@ -183,10 +192,21 @@ const TimerComponent = () => {
     timerService.setTime(50, 0);
   };
 
-  // 오버레이 토글 (비활성화됨)
-  const handleOverlayToggle = () => {
-    console.log('TimerComponent: 오버레이 기능이 비활성화되었습니다.');
-    alert('오버레이 기능이 비활성화되었습니다.');
+  // 오버레이 토글
+  const handleOverlayToggle = async () => {
+    console.log('TimerComponent: 오버레이 토글 버튼 클릭, 현재 상태:', isOverlayOpen);
+    
+    if (isOverlayOpen) {
+      console.log('TimerComponent: 오버레이 닫기 시도');
+      await overlayService.closeOverlay();
+      setIsOverlayOpen(false);
+      console.log('TimerComponent: 오버레이 닫기 완료');
+    } else {
+      console.log('TimerComponent: 오버레이 열기 시도');
+      await overlayService.openOverlay();
+      setIsOverlayOpen(true);
+      console.log('TimerComponent: 오버레이 열기 완료');
+    }
   };
 
 
@@ -422,10 +442,9 @@ const TimerComponent = () => {
         </button>
         <button
           onClick={handleOverlayToggle}
-          className="timer-overlay-btn"
-          disabled
+          className={`timer-overlay-btn ${isOverlayOpen ? 'active' : ''}`}
         >
-          오버레이 열기
+          {isOverlayOpen ? '오버레이 닫기' : '오버레이 열기'}
         </button>
       </div>
       

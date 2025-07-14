@@ -1,0 +1,103 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: rgba(0, 0, 0, 0); /* 투명 배경 */
+    overflow: hidden;
+}
+
+.timer-overlay {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0);
+    user-select: none;
+}
+
+.timer-overlay-container {
+    width: 120px;
+    height: 120px;
+    background-color: white;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    app-region: drag;
+    cursor: move;
+}
+
+.timer-overlay-disk {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+    margin-bottom: 8px;
+}
+
+.timer-overlay-time {
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+}
+
+.timer-overlay-controls {
+    display: flex;
+    gap: 4px;
+}
+
+.timer-overlay-start-btn {
+    background: #fff;
+    color: #d32f2f;
+    border: 1px solid #d32f2f;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    app-region: no-drag;
+}
+
+.timer-overlay-start-btn.running {
+    background: #d32f2f;
+    color: #fff;
+}
+
+.timer-overlay-start-btn:hover {
+    transform: scale(1.05);
+}
+
+.timer-overlay-close-btn {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    app-region: no-drag;
+    transition: all 0.2s;
+}
+
+.timer-overlay-close-btn:hover {
+    background: #cc0000;
+    transform: scale(1.1);
+} 

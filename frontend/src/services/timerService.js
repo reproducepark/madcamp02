@@ -55,6 +55,11 @@ class TimerService {
     this.callbacks.forEach(callback => {
       callback(state);
     });
+    
+    // Electron 환경에서 다른 창에 상태 브로드캐스트
+    if (window.electronAPI && window.electronAPI.broadcastTimerState) {
+      window.electronAPI.broadcastTimerState(state);
+    }
   }
 
   // 시간 설정
