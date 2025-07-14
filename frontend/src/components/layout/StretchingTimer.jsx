@@ -1,8 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-
-function pad(num) {
-  return num.toString().padStart(2, '0');
-}
+import React, { useState } from 'react';
+import { useTimer } from '../../hooks/useTimer';
 
 const RADIUS = 90;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -13,10 +10,9 @@ function StretchingTimer() {
   // 기본값: 1시간
   const [inputMinutes, setInputMinutes] = useState(60);
   const [inputSeconds, setInputSeconds] = useState(0);
-  const [duration, setDuration] = useState(3600); // 전체 시간(초)
-  const [remaining, setRemaining] = useState(3600); // 남은 시간(초)
-  const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef(null);
+  
+  // 전역 타이머 서비스 사용
+  const { duration, remaining, isRunning, setTime, toggle, reset, getFormattedTime, getFormattedDuration } = useTimer();
 
   // 시간 입력 핸들러
   const handleInputChange = (e) => {
@@ -28,47 +24,18 @@ function StretchingTimer() {
 
   // 시간 설정 버튼
   const handleSetTime = () => {
-    const total = inputMinutes * 60 + inputSeconds;
-    if (total > 0) {
-      setDuration(total);
-      setRemaining(total);
-      setIsRunning(false);
-      clearInterval(intervalRef.current);
-    }
+    setTime(inputMinutes, inputSeconds);
   };
 
   // 타이머 시작/일시정지
   const handleStartPause = () => {
-    if (isRunning) {
-      setIsRunning(false);
-      clearInterval(intervalRef.current);
-    } else {
-      setIsRunning(true);
-    }
+    toggle();
   };
 
   // 리셋
   const handleReset = () => {
-    setRemaining(duration);
-    setIsRunning(false);
-    clearInterval(intervalRef.current);
+    reset();
   };
-
-  // 타이머 동작
-  useEffect(() => {
-    if (!isRunning) return;
-    intervalRef.current = setInterval(() => {
-      setRemaining(prev => {
-        if (prev <= 1) {
-          setIsRunning(false);
-          clearInterval(intervalRef.current);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(intervalRef.current);
-  }, [isRunning, duration]);
 
   // SVG 원형 타이머 계산 (항상 60분 기준, 부채꼴)
   const totalMinutes = 60;
@@ -98,10 +65,8 @@ function StretchingTimer() {
   const sectorPath = describeSector(CENTER, CENTER, RADIUS, startAngle, endAngle);
 
   // 시간 표시
-  const min = Math.floor(remaining / 60);
-  const sec = remaining % 60;
-  const totalMin = Math.floor(duration / 60);
-  const totalSec = duration % 60;
+  const { minutes: min, seconds: sec } = getFormattedTime();
+  const { minutes: totalMin, seconds: totalSec } = getFormattedDuration();
 
   // 눈금 및 숫자(0~55, 5분 단위)
   const ticks = Array.from({ length: 12 }, (_, i) => {
@@ -175,7 +140,7 @@ function StretchingTimer() {
           fill="#222"
           fontWeight="bold"
         >
-          {pad(min)}:{pad(sec)}
+          {min}:{sec}
         </text>
       </svg>
       {/* 시간 입력 및 컨트롤 */}
@@ -277,7 +242,7 @@ function StretchingTimer() {
         </button>
       </div>
       <div style={{ color: '#888', fontSize: 16, marginTop: 2 }}>
-        전체: {pad(totalMin)}:{pad(totalSec)}
+        전체: {totalMin}:{totalSec}
       </div>
     </div>
   );
