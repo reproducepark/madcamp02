@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import ProgressBar from 'progressbar.js';
 import timerService from '../services/timerService';
+import overlayService from '../services/overlayService';
 
 const TimerOverlay = () => {
   const progressBarRef = useRef(null);
@@ -21,7 +22,6 @@ const TimerOverlay = () => {
 
     // 타이머 상태 구독 (timerService가 이미 Electron 동기화를 처리함)
     const unsubscribe = timerService.subscribe((state) => {
-      console.log('TimerOverlay: 상태 업데이트 수신', state);
       setTimerState(state);
       
       // ProgressBar 업데이트
@@ -32,8 +32,21 @@ const TimerOverlay = () => {
       }
     });
 
+    // 오버레이 위치 변경 이벤트 구독
+    let positionUnsubscribe;
+    if (window.electronAPI && window.electronAPI.onOverlayPositionChanged) {
+      positionUnsubscribe = window.electronAPI.onOverlayPositionChanged((position) => {
+        if (Array.isArray(position) && position.length >= 2) {
+          overlayService.savePosition(position[0], position[1]);
+        }
+      });
+    }
+
     return () => {
       unsubscribe();
+      if (positionUnsubscribe) {
+        positionUnsubscribe();
+      }
     };
   }, []);
 

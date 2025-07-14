@@ -63,7 +63,7 @@ function createOverlayWindow() {
         maximizable: false,
         closable: true,
         focusable: false,
-        center: true,
+        center: false, // center 대신 수동으로 위치 설정
         show: false,
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
@@ -84,9 +84,42 @@ function createOverlayWindow() {
     });
 
     overlayWindow.once('ready-to-show', () => {
-        overlayWindow.center();
-        overlayWindow.show();
-        console.log('Main: 오버레이 창 표시 완료');
+        // 저장된 위치가 있으면 사용, 없으면 중앙에 배치
+        overlayWindow.webContents.executeJavaScript(`
+            (() => {
+                try {
+                    const saved = localStorage.getItem('overlayPosition');
+                    const parsed = saved ? JSON.parse(saved) : null;
+                    return parsed;
+                } catch (error) {
+                    console.warn('저장된 위치 로드 실패:', error);
+                    return null;
+                }
+            })()
+        `).then((savedPosition) => {
+            if (savedPosition && savedPosition.x !== undefined && savedPosition.y !== undefined) {
+                overlayWindow.setPosition(savedPosition.x, savedPosition.y);
+            } else {
+                overlayWindow.center();
+            }
+            overlayWindow.show();
+        }).catch((error) => {
+            console.error('위치 로드 실패, 중앙에 배치:', error);
+            overlayWindow.center();
+            overlayWindow.show();
+        });
+    });
+
+    // 창이 이동될 때 위치 저장
+    overlayWindow.on('moved', () => {
+        const position = overlayWindow.getPosition();
+        overlayWindow.webContents.send('overlay-position-changed', position);
+    });
+
+    // 창이 닫히기 전에 현재 위치 저장
+    overlayWindow.on('close', () => {
+        const position = overlayWindow.getPosition();
+        overlayWindow.webContents.send('overlay-position-changed', position);
     });
 
     overlayWindow.on('closed', () => {
