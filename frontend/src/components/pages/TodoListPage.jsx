@@ -162,6 +162,22 @@ function TodoListPage({ onLogout }) {
     }
   };
 
+  // duration 하드코딩
+  const durations = [
+    { start: '2025-07-03', end: '2025-07-09' },
+    { start: '2025-07-10', end: '2025-07-16' },
+    { start: '2025-07-17', end: '2025-07-23' },
+    { start: '2025-07-24', end: '2025-07-31' }, // 마지막 주차는 8일
+  ];
+
+  // 첫 번째 목표의 start_date가 속하는 duration의 시작일을 baseDate로 사용
+  let baseDate = durations[0].start;
+  if (goals.length > 0 && goals[0].start_date) {
+    const firstGoalDate = goals[0].start_date.slice(0, 10);
+    const found = durations.find(d => firstGoalDate >= d.start && firstGoalDate <= d.end);
+    if (found) baseDate = found.start;
+  }
+
   return (
     <div className="app-wrapper">
       <TopMenu onLogout={onLogout} />
@@ -186,7 +202,7 @@ function TodoListPage({ onLogout }) {
                 start_date: goal.start_date,
                 planned_end_date: goal.planned_end_date,
                 real_end_date: goal.real_end_date,
-            }))} baseDate="2025-07-10" />
+            }))} baseDate={baseDate} />
           </div>
 
           <div className="todo-card">
