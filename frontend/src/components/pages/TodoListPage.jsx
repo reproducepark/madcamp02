@@ -41,11 +41,41 @@ function TodoListPage() {
     const loadTeams = async () => {
       const res = await getTeams();
       if (res.success && res.data.teams.length > 0) {
+        // localStorage에서 선택된 팀 정보 확인
+        const savedTeam = localStorage.getItem('selectedTeam');
+        if (savedTeam) {
+          const selectedTeam = JSON.parse(savedTeam);
+          // 선택된 팀이 여전히 유효한지 확인
+          const isValidTeam = res.data.teams.find(team => team.id === selectedTeam.id);
+          if (isValidTeam) {
+            setCurrentTeamId(selectedTeam.id);
+            setCurrentTeamName(selectedTeam.name);
+            return;
+          }
+        }
+        // 저장된 팀이 없거나 유효하지 않으면 첫 번째 팀 선택
         setCurrentTeamId(res.data.teams[0].id);
         setCurrentTeamName(res.data.teams[0].name);
+        // localStorage에 첫 번째 팀 정보 저장
+        localStorage.setItem('selectedTeam', JSON.stringify({
+          id: res.data.teams[0].id,
+          name: res.data.teams[0].name
+        }));
       }
     };
     loadTeams();
+  }, []);
+
+  // 팀 변경 이벤트 감지
+  useEffect(() => {
+    const handleTeamChange = (event) => {
+      const { teamId, teamName } = event.detail;
+      setCurrentTeamId(teamId);
+      setCurrentTeamName(teamName);
+    };
+
+    window.addEventListener('teamChanged', handleTeamChange);
+    return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
 
   // ✅ 팀 목표 + SubGoal 불러오기

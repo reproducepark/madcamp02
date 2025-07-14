@@ -21,6 +21,7 @@ function TopMenu() {
   const location = useLocation();
 
   const isScrumPage = location.pathname.startsWith('/scrum');
+  const isTodoPage = location.pathname === '/todo';
   const isTeamViewPage = location.pathname === '/scrum/teammate-todolist';
 
   // fetchTeams 함수와 useEffect 훅은 하드코딩을 위해 주석 처리합니다.
@@ -81,39 +82,62 @@ function TopMenu() {
 
       {/* 중앙: 스크럼 관련 버튼 */}
       <div className="top-menu-center">
-        {isScrumPage && (
+        {(isScrumPage || isTodoPage) && (
           <div className="scrum-menu">
             <div className="team-management-container">
               <button className="scrum-menu-button" onClick={() => {
                 setIsDropdownOpen(!isDropdownOpen);
                 setShowTeammateDropdown(false); // 팀 관리 드롭다운 열릴 때 팀원 드롭다운 닫기
               }}>
-                팀 생성/관리
+                {isTodoPage ? '팀 선택' : '팀 생성/관리'}
               </button>
               {isDropdownOpen && (
                 <div className="dropdown-menu">
-                  <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
+                  {!isTodoPage && (
+                    <button className="dropdown-item" onClick={openCreateModal}>팀 생성</button>
+                  )}
                   {teams.length > 0 ? (
                     teams.map((team) => (
                       <div key={team.id} className="dropdown-item-container">
                         <span 
                         className="dropdown-item-name"
                         onClick={() => {
-                          navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
+                          // localStorage에 선택된 팀 정보 저장
+                          localStorage.setItem('selectedTeam', JSON.stringify({
+                            id: team.id,
+                            name: team.name
+                          }));
+                          
+                          // 현재 페이지에 따라 적절한 페이지로 이동
+                          if (location.pathname === '/todo') {
+                            // 투두리스트 페이지에서 팀을 변경한 경우 커스텀 이벤트 발생
+                            window.dispatchEvent(new CustomEvent('teamChanged', {
+                              detail: { teamId: team.id, teamName: team.name }
+                            }));
+                          } else if (location.pathname === '/scrum') {
+                            // 스크럼 페이지에서 팀을 변경한 경우 커스텀 이벤트 발생
+                            window.dispatchEvent(new CustomEvent('teamChanged', {
+                              detail: { teamId: team.id, teamName: team.name }
+                            }));
+                          } else {
+                            navigate('/scrum', { state: { teamId: team.id, teamName: team.name } });
+                          }
                           setIsDropdownOpen(false); // 드롭다운 닫기
                         }}
                       >
                         {team.name}
                       </span>
-                        <button 
-                          className="dropdown-item-setting-btn"
-                          onClick={() => {
-                            setSelectedTeam(team);
-                            openManageModal();
-                          }}
-                        >
-                          설정
-                        </button>
+                        {!isTodoPage && (
+                          <button 
+                            className="dropdown-item-setting-btn"
+                            onClick={() => {
+                              setSelectedTeam(team);
+                              openManageModal();
+                            }}
+                          >
+                            설정
+                          </button>
+                        )}
                       </div>
                     ))
                   ) : null
@@ -121,31 +145,33 @@ function TopMenu() {
                 </div>
               )}
             </div>
-            <div className="team-management-container"> {/* 팀원 버튼도 드롭다운을 위해 컨테이너 추가 */}
-              <button className="scrum-menu-button" onClick={() => {
-                setShowTeammateDropdown(!showTeammateDropdown);
-                setIsDropdownOpen(false); // 팀원 드롭다운 열릴 때 팀 관리 드롭다운 닫기
-              }}>
-                팀원
-              </button>
-              {showTeammateDropdown && (
-                <div className="dropdown-menu">
-                  {allTeammates.length > 0 ? (
-                    allTeammates.map((member) => (
-                      <button
-                        key={member.id}
-                        className="dropdown-item"
-                        onClick={() => navigate('/scrum/teammate-todolist', { state: { userId: member.id, userName: member.name } })}
-                      >
-                        {member.name}
-                      </button>
-                    ))
-                  ) : (
-                    <p className="dropdown-message">팀원이 없습니다.</p>
-                  )}
-                </div>
-              )}
-            </div>
+            {isScrumPage && (
+              <div className="team-management-container"> {/* 팀원 버튼도 드롭다운을 위해 컨테이너 추가 */}
+                <button className="scrum-menu-button" onClick={() => {
+                  setShowTeammateDropdown(!showTeammateDropdown);
+                  setIsDropdownOpen(false); // 팀원 드롭다운 열릴 때 팀 관리 드롭다운 닫기
+                }}>
+                  팀원
+                </button>
+                {showTeammateDropdown && (
+                  <div className="dropdown-menu">
+                    {allTeammates.length > 0 ? (
+                      allTeammates.map((member) => (
+                        <button
+                          key={member.id}
+                          className="dropdown-item"
+                          onClick={() => navigate('/scrum/teammate-todolist', { state: { userId: member.id, userName: member.name } })}
+                        >
+                          {member.name}
+                        </button>
+                      ))
+                    ) : (
+                      <p className="dropdown-message">팀원이 없습니다.</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             {isTeamViewPage && ( // '홈' 버튼은 팀원 페이지에서만 보이도록
               <button className="scrum-menu-button" onClick={() => navigate('/scrum')}>홈</button>
             )}
