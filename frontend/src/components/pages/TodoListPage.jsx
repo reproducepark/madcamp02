@@ -21,7 +21,7 @@ function TodoListPage({ onLogout }) {
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [goals, setGoals] = useState([]);
   const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
-  const [showAllPeriods, setShowAllPeriods] = useState(false);
+  const [showAllPeriods, setShowAllPeriods] = useState(true);
 
 
   // 스크럼 페이지와 동일한 필터링 및 정렬 로직 적용
@@ -208,7 +208,7 @@ const filteredGoals = goals
   useEffect(() => {
     setSelectedUserId(location.state?.userId ?? null);
     setSelectedUserName(location.state?.userName ?? null);
-    setShowAllPeriods(false)
+    setShowAllPeriods(true)
   }, [location.state]);
 
   // ✅ 팀 목표 + SubGoal 불러오기
