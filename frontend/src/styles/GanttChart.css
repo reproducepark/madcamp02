@@ -69,15 +69,6 @@
   border-color: #90caf9;
 }
 
-.gantt-bar-progress {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  background: linear-gradient(90deg, #5c6bc0 0%, #42a5f5 100%);
-  border-radius: 10px 0 0 10px;
-  z-index: 1;
-  transition: width 0.3s, background 0.3s;
-  box-shadow: 0 2px 8px rgba(66,165,245,0.10);
-}
 .gantt-bar-label {
   position: relative;
   z-index: 2;
@@ -90,18 +81,10 @@
   font-size: 15px;
 }
 
-.gantt-bar.red {
-  background: repeating-linear-gradient(
-    135deg, #ff6b6b 0 10px, #fff0 10px 20px
-  );
-  color: #fff;
-}
-
 .gantt-bar.completed {
   background: #4caf50;
   color: #fff;
   border-color: #388e3c;
-  
 }
 
 .gantt-bar.completed .gantt-bar-label {
@@ -117,4 +100,4 @@
   z-index: 1;
   pointer-events: none;
   border-radius: 8px;
-} 
+}
