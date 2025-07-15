@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getTeamMemos, createMemo, deleteMemo } from '../../services/memoService';
 import { getCurrentUser } from '../../services/authService';
 import { gatherDataForLLM } from '../../services/scrumService';
+import { useTeamModal } from '../../hooks/useTeamModal';
+import ScrumGenerationModal from '../Modal/ScrumGenerationModal';
 import '../../styles/TeamMemoSection.css';
 
 function TeamMemoSection({ teamId, teamName }) {
@@ -10,13 +12,18 @@ function TeamMemoSection({ teamId, teamName }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingScrum, setIsGeneratingScrum] = useState(false);
   const [llmResult, setLlmResult] = useState(null);
+  const {
+    isOpen: isScrumModalOpen,
+    openModal: openScrumModal,
+    closeModal: closeScrumModal
+  } = useTeamModal();
   const currentUser = getCurrentUser();
   const abortControllerRef = useRef(null);
 
   // 팀 메모 로드
   const loadTeamMemos = async () => {
     if (!teamId) return;
-    
+
     console.log('🔄 팀 메모 로딩 시작 - 팀 ID:', teamId, '팀 이름:', teamName);
     setIsLoading(true);
     try {
@@ -80,13 +87,13 @@ function TeamMemoSection({ teamId, teamName }) {
       }
 
       console.log('Sending data to LLM:', JSON.stringify(llmDataResponse.data, null, 2));
-      
+
       const result = await window.electronAPI.llmGenerateText(
         JSON.stringify(llmDataResponse.data)
       );
 
       if (signal.aborted) return;
-      
+
       console.log("Received from LLM:", result);
 
       if (result.success) {
@@ -104,6 +111,28 @@ function TeamMemoSection({ teamId, teamName }) {
         setIsGeneratingScrum(false);
       }
       abortControllerRef.current = null;
+    }
+  };
+
+  const handleOpenScrumModal = () => {
+    openScrumModal();
+    handleGenerateScrum();
+  };
+
+  const handleCloseScrumModal = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      setIsGeneratingScrum(false);
+    }
+    setLlmResult(null);
+    closeScrumModal();
+  };
+
+  const handleCopyScrumResult = () => {
+    if (llmResult) {
+      navigator.clipboard.writeText(llmResult);
+      // 사용자에게 복사되었음을 알리는 기능 추가 가능
     }
   };
 
@@ -127,8 +156,16 @@ function TeamMemoSection({ teamId, teamName }) {
       <section className="todo-memo-section">
         <div className="todo-memo-title">
           <span>{teamName ? `${teamName} 팀 메모장` : '메모장'}</span>
+          <button
+            className="ai-scrum-generate-btn"
+            onClick={handleOpenScrumModal}
+            title="AI 스크럼 생성"
+            disabled={isGeneratingScrum || !teamId}
+          >
+            스크럼 생성하기
+          </button>
         </div>
-        
+
         <div className="todo-memo-content">
           {isLoading ? (
             <div className="memo-loading">로딩 중...</div>
@@ -140,7 +177,7 @@ function TeamMemoSection({ teamId, teamName }) {
                 <div key={memo.id} className="memo-item">
                   <div className="memo-content">{memo.content}</div>
                   {currentUser && memo.user_id === currentUser.id && (
-                    <button 
+                    <button
                       className="memo-delete-btn"
                       onClick={() => handleDeleteMemo(memo.id)}
                       title="삭제"
@@ -164,7 +201,7 @@ function TeamMemoSection({ teamId, teamName }) {
             onKeyPress={(e) => e.key === 'Enter' && handleAddMemo()}
             disabled={!teamId}
           />
-          <button 
+          <button
             className="memo-add-btn"
             onClick={handleAddMemo}
             disabled={!teamId || !newMemoInput.trim()}
@@ -172,30 +209,15 @@ function TeamMemoSection({ teamId, teamName }) {
             추가
           </button>
         </div>
-
-        <div className="scrum-generation-section">
-          <button
-            onClick={handleGenerateScrum}
-            className="generate-scrum-button"
-            disabled={isGeneratingScrum || !teamId}
-          >
-            {isGeneratingScrum ? "생성 중..." : "AI 스크럼 보고서 생성"}
-          </button>
-          {isGeneratingScrum && <div className="memo-loading">AI가 보고서를 생성하고 있습니다...</div>}
-          {llmResult && (
-            <div className="llm-result-container">
-              <h3>AI 생성 보고서</h3>
-              <pre className="llm-result-raw">{llmResult}</pre>
-              <button
-                onClick={() => navigator.clipboard.writeText(llmResult)}
-                className="copy-button"
-              >
-                복사하기
-              </button>
-            </div>
-          )}
-        </div>
       </section>
+
+      <ScrumGenerationModal
+        isOpen={isScrumModalOpen}
+        onClose={handleCloseScrumModal}
+        isGenerating={isGeneratingScrum}
+        result={llmResult}
+        onCopy={handleCopyScrumResult}
+      />
     </>
   );
 }
