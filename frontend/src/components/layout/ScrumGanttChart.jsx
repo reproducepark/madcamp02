@@ -18,7 +18,7 @@ function getWeekDays(baseDateStr) {
 export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
   const weekDays = getWeekDays(baseDate);
   const weekStart = weekDays[0].time;
-  const weekEnd = weekDays[6].time;
+  const weekEnd = new Date(weekDays[6].time).setHours(23, 59, 59, 999);
 
   const sortedGoals = [...goals].sort((a, b) => {
     const aStart = new Date(a.start_date);
@@ -51,10 +51,12 @@ export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
         let rawEnd;
         if (isCompleted) {
             const realEndDate = new Date(goal.real_end_date);
-            realEndDate.setHours(0,0,0,0);
+            realEndDate.setHours(23, 59, 59, 999);
             rawEnd = realEndDate.getTime();
         } else {
-            rawEnd = new Date(goal.planned_end_date).getTime();
+            const plannedEndDate = new Date(goal.planned_end_date);
+            plannedEndDate.setHours(23, 59, 59, 999);
+            rawEnd = plannedEndDate.getTime();
         }
 
         if (rawStart === null || isNaN(rawEnd)) return null;

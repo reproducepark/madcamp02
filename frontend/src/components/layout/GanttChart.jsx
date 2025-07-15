@@ -18,7 +18,7 @@ function getWeekDays(baseDateStr) {
 export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
   const weekDays = getWeekDays(baseDate);
   const weekStart = weekDays[0].time;
-  const weekEnd = weekDays[6].time;
+  const weekEnd = new Date(weekDays[6].time).setHours(23, 59, 59, 999);
   const outerRadius = 10;
   const borderWidth = 2;
   const innerRadius = outerRadius - borderWidth;
@@ -45,8 +45,20 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
       {sortedGoals.map((goal, idx) => {
         const isCompleted = goal.progress === 1 && goal.real_end_date;
 
-        const rawStart = new Date(goal.start_date).getTime();
-        const rawEnd = new Date(isCompleted ? goal.real_end_date : goal.planned_end_date).getTime();
+        const startDate = new Date(goal.start_date);
+        startDate.setHours(0,0,0,0);
+        const rawStart = startDate.getTime();
+
+        let rawEnd;
+        if (isCompleted) {
+            const realEndDate = new Date(goal.real_end_date);
+            realEndDate.setHours(23, 59, 59, 999);
+            rawEnd = realEndDate.getTime();
+        } else {
+            const plannedEndDate = new Date(goal.planned_end_date);
+            plannedEndDate.setHours(23, 59, 59, 999);
+            rawEnd = plannedEndDate.getTime();
+        }
 
         if (isNaN(rawStart) || isNaN(rawEnd)) return null;
         if (rawEnd < weekStart || rawStart > weekEnd) return null;
