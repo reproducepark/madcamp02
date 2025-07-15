@@ -1,11 +1,32 @@
 /**
  * Google AI Studio LLM (Gemini API) 서비스
- * 프론트엔드에서 직접 Google AI Studio와 통신
+ * @google/genai 라이브러리 사용
  */
 
-// 환경 변수에서 API 키 가져오기
+import { GoogleGenAI } from "@google/genai";
+
+// API 키 설정 (임시 해결책 - 나중에 백엔드로 이동 권장)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const GEMINI_API_URL = '/gemini/v1beta/models';
+
+console.log('🔑 API 키 확인:');
+console.log('GEMINI_API_KEY exists:', !!GEMINI_API_KEY);
+console.log('GEMINI_API_KEY length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
+console.log('GEMINI_API_KEY preview:', GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 10)}...` : 'undefined');
+
+// API 키가 없으면 에러 발생
+if (!GEMINI_API_KEY) {
+  throw new Error('Gemini API 키가 설정되지 않았습니다.');
+}
+
+// Google GenAI 클라이언트 초기화 - 환경 변수에서 API 키 사용
+let ai;
+try {
+  ai = new GoogleGenAI(GEMINI_API_KEY);
+  console.log('✅ Google GenAI 클라이언트 초기화 성공');
+} catch (error) {
+  console.error('❌ Google GenAI 클라이언트 초기화 실패:', error);
+  throw error;
+}
 
 /**
  * 프로젝트 진행 상황 보고서 생성을 위한 시스템 프롬프트
@@ -35,12 +56,12 @@ const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바�
 빈 필드 처리: 만약 특정 섹션에 해당하는 입력 체크리스트가 비어 있다면, 해당 출력 섹션도 비워두어야 함.`;
 
 /**
- * Gemini API 요청 기본 함수
- * @param {string} model - 사용할 모델명 (예: 'gemini-pro', 'gemini-pro-vision')
- * @param {Object} requestBody - 요청 본문
+ * Google GenAI API 요청 기본 함수
+ * @param {string} prompt - 사용자 입력 프롬프트
+ * @param {Object} options - 추가 옵션 (temperature, maxTokens 등)
  * @returns {Promise<Object>} API 응답
  */
-const geminiApiRequest = async (model, requestBody) => {
+const geminiApiRequest = async (prompt, options = {}) => {
   console.log('API Key exists:', !!GEMINI_API_KEY);
   console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
   
@@ -48,33 +69,27 @@ const geminiApiRequest = async (model, requestBody) => {
     throw new Error('Gemini API 키가 설정되지 않았습니다. VITE_GEMINI_API_KEY 환경 변수를 확인해주세요.');
   }
 
-  const url = `${GEMINI_API_URL}/${model}:generateContent?key=${GEMINI_API_KEY}`;
-
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestBody)
+    const response = await ai.models.generateContent({
+      model: "gemini-1.5-flash",
+      contents: prompt,
+      config: {
+        temperature: options.temperature || 0.7,
+        maxOutputTokens: options.maxOutputTokens || 2048,
+        topP: options.topP || 0.8,
+        topK: options.topK || 40,
+        thinkingConfig: {
+          thinkingBudget: 0, // Disables thinking for faster response
+        },
+      }
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      return {
-        success: true,
-        data: data,
-        status: response.status
-      };
-    } else {
-      return {
-        success: false,
-        message: data.error?.message || 'Gemini API 요청에 실패했습니다.',
-        status: response.status,
-        data: data
-      };
-    }
+    return {
+      success: true,
+      data: response,
+      text: response.text,
+      status: 200
+    };
   } catch (error) {
     console.error('Gemini API request failed:', error);
     console.error('Error details:', {
@@ -98,37 +113,14 @@ const geminiApiRequest = async (model, requestBody) => {
  * @returns {Promise<Object>} 생성된 응답
  */
 export const generateTextResponse = async (prompt, history = [], options = {}) => {
-  const {
-    temperature = 0.7,
-    maxOutputTokens = 2048,
-    topP = 0.8,
-    topK = 40
-  } = options;
-
-  // 대화 히스토리와 현재 프롬프트를 결합
-  const contents = [];
-  
-  // 히스토리가 있으면 추가
+  // 히스토리가 있으면 프롬프트에 포함
+  let fullPrompt = prompt;
   if (history.length > 0) {
-    contents.push(...history);
+    const historyText = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+    fullPrompt = `${historyText}\n\n현재 요청: ${prompt}`;
   }
-  
-  // 현재 프롬프트 추가
-  contents.push({
-    parts: [{ text: prompt }]
-  });
 
-  const requestBody = {
-    contents: contents,
-    generationConfig: {
-      temperature: temperature,
-      maxOutputTokens: maxOutputTokens,
-      topP: topP,
-      topK: topK
-    }
-  };
-
-  return await geminiApiRequest('gemma-3-27b-it', requestBody);
+  return await geminiApiRequest(fullPrompt, options);
 };
 
 /**
@@ -137,16 +129,10 @@ export const generateTextResponse = async (prompt, history = [], options = {}) =
  * @returns {string} 추출된 텍스트
  */
 export const extractTextFromResponse = (response) => {
-  if (!response.success || !response.data?.candidates) {
+  if (!response.success || !response.text) {
     return '';
   }
-
-  const candidate = response.data.candidates[0];
-  if (!candidate?.content?.parts) {
-    return '';
-  }
-
-  return candidate.content.parts[0]?.text || '';
+  return response.text;
 };
 
 /**
@@ -156,8 +142,8 @@ export const extractTextFromResponse = (response) => {
  */
 export const formatConversationHistory = (messages) => {
   return messages.map(message => ({
-    parts: [{ text: message.content }],
-    role: message.role === 'user' ? 'user' : 'model'
+    role: message.role === 'user' ? 'user' : 'assistant',
+    content: message.content
   }));
 };
 
@@ -212,6 +198,109 @@ ${JSON.stringify(projectData, null, 2)}
       report: reportText,
       rawResponse: response.data
     };
+  } else {
+    return {
+      success: false,
+      error: response.message,
+      rawResponse: response
+    };
+  }
+};
+
+/**
+ * 스크럼 생성 시스템 프롬프트
+ */
+const SCRUM_GENERATION_SYSTEM_PROMPT = `당신은 팀의 목표와 메모를 바탕으로 스크럼 페이지를 생성하는 AI 어시스턴트입니다.
+
+주어진 팀 목표들과 메모들을 분석하여 다음 형식의 JSON을 생성해주세요:
+
+{
+  "sprint_title": "스프린트 제목",
+  "sprint_duration": "스프린트 기간 (예: 2주)",
+  "sprint_goals": [
+    {
+      "title": "목표 제목",
+      "description": "목표 설명",
+      "priority": "HIGH|MEDIUM|LOW",
+      "estimated_hours": 숫자,
+      "assignee": "담당자 (팀 전체 또는 특정 역할)",
+      "acceptance_criteria": ["기준1", "기준2", "기준3"]
+    }
+  ],
+  "team_notes": [
+    "팀 메모에서 추출한 중요 사항들"
+  ],
+  "risks_and_blockers": [
+    "잠재적 위험 요소나 차단 요소들"
+  ],
+  "next_actions": [
+    "다음에 취해야 할 액션들"
+  ]
+}
+
+생성 규칙:
+1. 목표들은 기존 팀 목표들을 참고하여 더 구체적이고 실행 가능한 형태로 변환
+2. 메모 내용을 분석하여 팀 노트와 위험 요소 추출
+3. 모든 내용은 한국어로 작성
+4. 우선순위는 목표의 중요도와 긴급성을 고려하여 설정
+5. 예상 시간은 현실적이고 합리적인 범위로 설정
+6. 담당자는 팀 전체 또는 역할 기반으로 설정`;
+
+/**
+ * 스크럼 페이지 생성
+ * @param {Object} scrumData - 스크럼 데이터
+ * @param {Array} scrumData.goals - 팀 목표 배열
+ * @param {Array} scrumData.memos - 팀 메모 배열
+ * @param {string} scrumData.teamName - 팀 이름
+ * @returns {Promise<Object>} 생성된 스크럼 페이지
+ */
+export const generateScrumPage = async (scrumData) => {
+  const prompt = `${SCRUM_GENERATION_SYSTEM_PROMPT}
+
+다음 팀 데이터를 바탕으로 스크럼 페이지를 생성해주세요:
+
+팀명: ${scrumData.teamName}
+
+팀 목표들:
+${JSON.stringify(scrumData.goals, null, 2)}
+
+팀 메모들:
+${JSON.stringify(scrumData.memos, null, 2)}
+
+위 데이터를 분석하여 스크럼 페이지 JSON을 생성해주세요.`;
+
+  const response = await generateTextResponse(prompt, [], {
+    temperature: 0.4,
+    maxOutputTokens: 4096
+  });
+
+  if (response.success) {
+    const responseText = extractTextFromResponse(response);
+    
+    try {
+      // JSON 응답을 파싱
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const scrumPageData = JSON.parse(jsonMatch[0]);
+        return {
+          success: true,
+          scrumPage: scrumPageData,
+          rawResponse: responseText
+        };
+      } else {
+        return {
+          success: false,
+          error: 'JSON 형식의 응답을 찾을 수 없습니다.',
+          rawResponse: responseText
+        };
+      }
+    } catch (parseError) {
+      return {
+        success: false,
+        error: `JSON 파싱 오류: ${parseError.message}`,
+        rawResponse: responseText
+      };
+    }
   } else {
     return {
       success: false,

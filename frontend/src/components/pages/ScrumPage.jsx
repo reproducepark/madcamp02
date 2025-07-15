@@ -204,6 +204,27 @@ function ScrumPage({ onLogout }) {
     return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
 
+  // 목표 데이터 요청 이벤트 리스너
+  useEffect(() => {
+    const handleRequestGoalsData = () => {
+      const goalsData = filteredGoals.map(goal => ({
+        id: goal.id,
+        content: goal.content,
+        start_date: goal.start_date,
+        planned_end_date: goal.planned_end_date,
+        real_end_date: goal.real_end_date,
+        completed: goal.real_end_date !== null
+      }));
+      
+      window.dispatchEvent(new CustomEvent('getGoalsData', {
+        detail: goalsData
+      }));
+    };
+
+    window.addEventListener('requestGoalsData', handleRequestGoalsData);
+    return () => window.removeEventListener('requestGoalsData', handleRequestGoalsData);
+  }, [filteredGoals]);
+
 const handleToggleGoal = async (goalId, currentCompleted, goalContent) => {
   try {
     if (currentCompleted) {

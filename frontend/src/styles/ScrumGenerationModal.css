@@ -1,0 +1,347 @@
+.scrum-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.scrum-modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.scrum-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e1e5e9;
+  background: #f8f9fa;
+}
+
+.scrum-modal-header h2 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.scrum-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.scrum-modal-close:hover {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.scrum-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* 로딩 스타일 */
+.scrum-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.scrum-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.scrum-loading p {
+  color: #6c757d;
+  font-size: 1.1rem;
+  margin: 0 0 20px 0;
+}
+
+.scrum-cancel-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scrum-cancel-btn:hover {
+  background: #c82333;
+  transform: translateY(-1px);
+}
+
+/* 오류 스타일 */
+.scrum-error {
+  text-align: center;
+  padding: 40px 20px;
+  color: #dc3545;
+}
+
+.scrum-error h3 {
+  margin-bottom: 16px;
+  color: #dc3545;
+}
+
+/* 결과 스타일 */
+.scrum-result {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.scrum-sprint-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 24px;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.scrum-sprint-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.sprint-duration {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+/* 섹션 공통 스타일 */
+.scrum-goals-section,
+.scrum-notes-section,
+.scrum-risks-section,
+.scrum-actions-section {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.scrum-goals-section h4,
+.scrum-notes-section h4,
+.scrum-risks-section h4,
+.scrum-actions-section h4 {
+  margin: 0 0 16px 0;
+  color: #2c3e50;
+  font-size: 1.3rem;
+  font-weight: 600;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+/* 목표 목록 스타일 */
+.scrum-goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.scrum-goal-item {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.goal-header h5 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+  font-weight: 600;
+  flex: 1;
+  min-width: 200px;
+}
+
+.goal-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.priority-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.estimated-hours {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.assignee {
+  background: #f3e5f5;
+  color: #7b1fa2;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.goal-description {
+  color: #495057;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.acceptance-criteria {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.acceptance-criteria h6 {
+  margin: 0 0 8px 0;
+  color: #495057;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.acceptance-criteria ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.acceptance-criteria li {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+/* 리스트 스타일 */
+.scrum-notes-list,
+.scrum-risks-list,
+.scrum-actions-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.scrum-notes-list li,
+.scrum-risks-list li,
+.scrum-actions-list li {
+  color: #495057;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.scrum-risks-list li {
+  color: #dc3545;
+}
+
+.scrum-actions-list li {
+  color: #28a745;
+}
+
+/* 푸터 스타일 */
+.scrum-modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #e1e5e9;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.scrum-modal-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.scrum-modal-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.scrum-modal-btn.secondary:hover {
+  background: #5a6268;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .scrum-modal-content {
+    margin: 10px;
+    max-height: 95vh;
+  }
+  
+  .scrum-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .scrum-modal-body {
+    padding: 20px;
+  }
+  
+  .goal-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .goal-meta {
+    width: 100%;
+    justify-content: flex-start;
+  }
+} 
