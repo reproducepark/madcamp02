@@ -103,7 +103,7 @@ function StretchingPage({ onLogout }) {
             {/* 기능 on/off 토글 버튼 */}
             <div className="stretching-controls">
               <div className="toggle-container">
-                <span className="toggle-label">스트레칭 기능</span>
+                <span className="toggle-label">자세 감지</span>
                 <button 
                   className={`toggle-button ${isStretchingEnabled ? 'active' : ''}`}
                   onClick={() => handleStretchingToggle(!isStretchingEnabled)}
@@ -153,18 +153,6 @@ function StretchingPage({ onLogout }) {
                     <h4>자세 확인 설정</h4>
                     <div className="settings-content">
                       <div className="setting-item">
-                        <label>전역 추론 기능</label>
-                        <button 
-                          className={`toggle-button ${isInferenceEnabled ? 'active' : ''}`}
-                          onClick={() => dispatch({ type: 'SET_INFERENCE_ENABLED', payload: !isInferenceEnabled })}
-                        >
-                          <span className="toggle-slider"></span>
-                          <span className="toggle-text">
-                            {isInferenceEnabled ? 'ON' : 'OFF'}
-                          </span>
-                        </button>
-                      </div>
-                      <div className="setting-item">
                         <label>자세 확인 주기</label>
                         <select 
                           className="setting-select"
@@ -201,37 +189,12 @@ function StretchingPage({ onLogout }) {
                           </span>
                         </button>
                       </div>
-                      <div className="setting-item">
-                        <label>알림 권한</label>
-                        <button 
-                          className="notification-permission-button"
-                          onClick={() => {
-                            if ('Notification' in window) {
-                              Notification.requestPermission();
-                            }
-                          }}
-                        >
-                          권한 요청
-                        </button>
-                      </div>
                     </div>
                   </div>
-
-                  {/* 현재 자세 상태 표시 */}
-                  {currentAnalysis && (
-                    <div className="current-posture-status">
-                      <h4>현재 자세 상태</h4>
-                      <div className="posture-info">
-                        <p>목 각도: {currentAnalysis.shoulderNeckAngle ? `${currentAnalysis.shoulderNeckAngle.toFixed(1)}도` : '측정 불가'}</p>
-                        <p>얼굴 위치: {currentAnalysis.faceInLowerHalf ? '하단' : '상단'}</p>
-                        <p>자세 상태: {currentAnalysis.isValid ? (currentAnalysis.isAngleGreaterThan20 || currentAnalysis.faceInLowerHalf ? '⚠️ 교정 필요' : '✅ 정상') : '측정 불가'}</p>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <div className="stretching-disabled">
-                  <p>스트레칭 기능을 활성화해주세요</p>
+                  <p>스트레칭 및 자세 감지 기능을 활성화해주세요</p>
                 </div>
               )}
             </div>

@@ -137,18 +137,6 @@ function WebcamComponent() {
         <h4>자세 확인 설정</h4>
         <div className="settings-content">
           <div className="setting-item">
-            <label>전역 추론 기능</label>
-            <button 
-              className={`toggle-button ${isInferenceEnabled ? 'active' : ''}`}
-              onClick={() => dispatch({ type: 'SET_INFERENCE_ENABLED', payload: !isInferenceEnabled })}
-            >
-              <span className="toggle-slider"></span>
-              <span className="toggle-text">
-                {isInferenceEnabled ? 'ON' : 'OFF'}
-              </span>
-            </button>
-          </div>
-          <div className="setting-item">
             <label>자세 확인 주기</label>
             <select 
               className="setting-select"
@@ -183,19 +171,6 @@ function WebcamComponent() {
               <span className="toggle-text">
                 {facePositionCheck ? 'ON' : 'OFF'}
               </span>
-            </button>
-          </div>
-          <div className="setting-item">
-            <label>알림 권한</label>
-            <button 
-              className="notification-permission-button"
-              onClick={() => {
-                if ('Notification' in window) {
-                  Notification.requestPermission();
-                }
-              }}
-            >
-              권한 요청
             </button>
           </div>
         </div>

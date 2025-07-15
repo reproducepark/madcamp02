@@ -20,8 +20,8 @@ const initialState = {
   // 설정
   isInferenceEnabled: false,
   inferenceInterval: 1/6, // 10초 (1/6분)
-  neckAngleCheck: false,
-  facePositionCheck: false,
+  neckAngleCheck: true,
+  facePositionCheck: true,
   
   // 추론 데이터
   keypoints: null,
