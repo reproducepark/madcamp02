@@ -14,33 +14,6 @@ if (!isElectron) {
 }
 
 /**
- * 프로젝트 진행 상황 보고서 생성을 위한 시스템 프롬프트
- */
-const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성하는 AI 어시스턴트입니다.
-
-당신의 임무는 프로젝트 주제, 팀 체크리스트, 그리고 익명으로 제공된 여러 구성원의 체크리스트를 처리하여 보고서를 생성하는 것입니다.
-
-생성된 보고서는 아래의 세 가지 섹션으로 엄격하게 구성되어야 합니다:
-- 어제까지 한 일
-- 오늘 할 일  
-- 궁금한/필요한/알아낸 것
-
-보고서 생성 시 다음 규칙을 반드시 준수해야 합니다:
-
-구조: 위에 명시된 세 가지 섹션 구조를 반드시 따라야 함.
-언어: 보고서는 반드시 한국어로 작성해야 함.
-작성 스타일: 답변은 '~합니다'와 같은 서술형 문장이 아닌, 'ㅇㅇ 완료', 'ㅁㅁ 필요' 와 같이 명사형으로 간결하게 마무리해야 함.
-
-업무 취합:
-"어제까지 한 일": "team_checklist"와 "member_checklists"에 있는 모든 "completed" 필드의 작업을 취합하여 목록으로 작성.
-"오늘 할 일": 모든 "incomplete" 필드의 작업을 취합하여 목록으로 작성. 더불어, 개별 멤버에게 작업을 할당하지 말고, 팀 전체의 통합된 업무 목록으로 제시해야 함. 만약 없다면 최대 3개의 업무를 기존 완료한 것들을 바탕으로 제시해야 함.
-
-'궁금한/필요한/알아낸 것' 섹션:
-"inquiries" 필드의 정보를 사용하여 이 섹션을 작성함. 만약 "inquiries" 필드가 비어 있다면, "project_topic"을 참고하여 팀에 도움이 될 만한 관련 사항을 생성해야 함. 입력값에 URL이나 참조 링크가 포함된 경우, 해당 내용을 요약하되 URL 자체는 결과물에 포함하지 않아야 함.
-
-빈 필드 처리: 만약 특정 섹션에 해당하는 입력 체크리스트가 비어 있다면, 해당 출력 섹션도 비워두어야 함.`;
-
-/**
  * Google GenAI API 요청 기본 함수
  * @param {string} prompt - 사용자 입력 프롬프트
  * @param {Object} options - 추가 옵션 (temperature, maxTokens 등)
@@ -217,7 +190,66 @@ const SCRUM_GENERATION_SYSTEM_PROMPT = `당신은 팀의 목표와 메모를 바
  * @param {string} scrumData.teamName - 팀 이름
  * @returns {Promise<Object>} 생성된 스크럼 페이지
  */
+
+const MOCK_API_CALLS = true; // LLM API 호출을 모킹하려면 true로 설정
+
+const mockScrumData = {
+  sprint_title: "Sprint 1: The Foundation",
+  sprint_duration: "1 week (2025-07-15 ~ 2025-07-22)",
+  sprint_goals: [
+    {
+      title: "User Authentication Setup",
+      description: "Implement user login, registration, and session management.",
+      priority: "HIGH",
+      estimated_hours: 16,
+      assignee: "Backend Team",
+      acceptance_criteria: [
+        "Users can register with a unique username and password.",
+        "Users can log in with correct credentials.",
+        "A session token is generated upon successful login."
+      ]
+    },
+    {
+      title: "Initial UI/UX Mockup Design",
+      description: "Create wireframes and mockups for the main application pages.",
+      priority: "MEDIUM",
+      estimated_hours: 24,
+      assignee: "Design Team",
+      acceptance_criteria: [
+        "Wireframes for Dashboard, Settings, and Profile pages are complete.",
+        "High-fidelity mockups are approved by the product owner."
+      ]
+    }
+  ],
+  team_notes: [
+    "The backend database schema needs to be finalized by Wednesday.",
+    "Marketing team requires initial screenshots for the upcoming presentation."
+  ],
+  risks_and_blockers: [
+    "The new UI library has a steep learning curve which might delay frontend development.",
+    "API endpoint specifications are still pending from the external partner."
+  ],
+  next_actions: [
+    "Finalize the database schema and share with the team.",
+    "Schedule a follow-up meeting with the external partner regarding API specs."
+  ]
+};
+
+
 export const generateScrumPage = async (scrumData) => {
+  if (MOCK_API_CALLS) {
+    console.warn('🚧 LLM API 호출이 모킹되었습니다. 실제 API를 호출하지 않습니다.');
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve({
+          success: true,
+          scrumPage: mockScrumData,
+          rawResponse: "Mocked response"
+        });
+      }, 1500); // 1.5초 지연을 시뮬레이션
+    });
+  }
+  
   if (!isElectron) {
     return {
       success: false,

@@ -1,0 +1,132 @@
+{
+    "team_id": 12,
+    "timestamp": "2025-07-15T14:18:28.187Z",
+    "data_since": "2025-07-14T14:18:28.187Z",
+    "team_goals": [
+      {
+        "id": 67,
+        "team_id": 12,
+        "content": "각종 버그 수정",
+        "start_date": "2025-07-15T00:00:00.000Z",
+        "planned_end_date": "2025-07-15T00:00:00.000Z",
+        "real_end_date": null,
+        "created_at": "2025-07-15T14:16:36.155Z",
+        "subgoals": [
+          {
+            "member": "test1",
+            "subgoals": [
+              {
+                "content": "레이아웃 버그",
+                "is_completed": false,
+                "completed_at": null
+              },
+              {
+                "content": "스트레칭 컴포넌트 동작 안되는 문제",
+                "is_completed": false,
+                "completed_at": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 66,
+        "team_id": 12,
+        "content": "앱 이름 결정",
+        "start_date": "2025-07-15T00:00:00.000Z",
+        "planned_end_date": "2025-07-15T00:00:00.000Z",
+        "real_end_date": null,
+        "created_at": "2025-07-15T14:15:01.848Z",
+        "subgoals": [
+          {
+            "member": "test1",
+            "subgoals": [
+              {
+                "content": "몰입메이트 vs 몰캠메이트",
+                "is_completed": false,
+                "completed_at": null
+              },
+              {
+                "content": "파일 수정",
+                "is_completed": false,
+                "completed_at": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 65,
+        "team_id": 12,
+        "content": "디자인 수정 및 아이콘 생성",
+        "start_date": "2025-07-15T00:00:00.000Z",
+        "planned_end_date": "2025-07-15T00:00:00.000Z",
+        "real_end_date": null,
+        "created_at": "2025-07-15T14:14:56.606Z",
+        "subgoals": [
+          {
+            "member": "test1",
+            "subgoals": [
+              {
+                "content": "전체 테마 선택",
+                "is_completed": false,
+                "completed_at": null
+              },
+              {
+                "content": "버튼 모양 선택",
+                "is_completed": false,
+                "completed_at": null
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": 64,
+        "team_id": 12,
+        "content": "llm api 연동",
+        "start_date": "2025-07-15T00:00:00.000Z",
+        "planned_end_date": "2025-07-15T00:00:00.000Z",
+        "real_end_date": null,
+        "created_at": "2025-07-15T14:14:41.793Z",
+        "subgoals": [
+          {
+            "member": "test1",
+            "subgoals": [
+              {
+                "content": "api 키 발급",
+                "is_completed": false,
+                "completed_at": null
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "team_memos": [
+      {
+        "id": 25,
+        "user_id": 1,
+        "team_id": 12,
+        "content": "react native windows의 빌드 과정",
+        "created_at": "2025-07-15T12:28:00.855Z",
+        "completed_at": null,
+        "user": {
+          "id": 1,
+          "name": "test1"
+        }
+      },
+      {
+        "id": 24,
+        "user_id": 1,
+        "team_id": 12,
+        "content": "다양한 기술(엔진, 언어 등)의 종류와 역할",
+        "created_at": "2025-07-15T12:27:55.724Z",
+        "completed_at": null,
+        "user": {
+          "id": 1,
+          "name": "test1"
+        }
+      }
+    ]
+  }

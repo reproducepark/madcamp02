@@ -41,12 +41,9 @@ export const gatherDataForLLM = async (teamId) => {
 
     // 2. 지난 24시간과 관련된 팀 목표를 필터링합니다.
     const recentTeamGoals = allTeamGoals.filter(goal => {
-      const createdAt = new Date(goal.created_at);
-      const updatedAt = new Date(goal.updated_at);
-      const realEndDate = goal.real_end_date ? new Date(goal.real_end_date) : null;
-
-      // 생성, 수정, 또는 완료 시점이 24시간 이내인 경우
-      return createdAt >= twentyFourHoursAgo || updatedAt >= twentyFourHoursAgo || (realEndDate && realEndDate >= twentyFourHoursAgo);
+      const startDate = new Date(goal.start_date);
+      // 시작 날짜가 24시간 이내인 경우
+      return startDate >= twentyFourHoursAgo && startDate <= now;
     });
 
     // 3. 필터링된 각 팀 목표에 대해 모든 멤버의 하위 목표를 가져옵니다.
@@ -55,10 +52,10 @@ export const gatherDataForLLM = async (teamId) => {
         const subGoalsByMember = await Promise.all(
           members.map(async (member) => {
             const subgoalsResponse = await getSubGoals(goal.id, member.id);
-            if (subgoalsResponse.success && subgoalsResponse.subgoals.length > 0) {
+            if (subgoalsResponse.success && subgoalsResponse.data?.subgoals?.length > 0) {
               return {
                 member: member.username,
-                subgoals: subgoalsResponse.subgoals.map(sg => ({
+                subgoals: subgoalsResponse.data.subgoals.map(sg => ({
                   content: sg.content,
                   is_completed: sg.is_completed,
                   completed_at: sg.completed_at
