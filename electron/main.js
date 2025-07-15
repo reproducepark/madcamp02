@@ -5,9 +5,6 @@ const fs = require("fs");
 // dotenv를 사용하여 .env 파일 로드
 require('dotenv').config();
 
-// Google GenAI 라이브러리 추가
-const { GoogleGenAI } = require("@google/genai");
-
 const iconPath = path.resolve(__dirname, "../frontend/src/assets/icon_1024.png");
 console.log('Icon path:', iconPath);
 console.log('Icon file exists:', fs.existsSync(iconPath));
@@ -25,21 +22,67 @@ console.log('process.env.VITE_GEMINI_API_KEY exists:', !!process.env.VITE_GEMINI
 console.log('process.env.VITE_GEMINI_API_KEY length:', process.env.VITE_GEMINI_API_KEY ? process.env.VITE_GEMINI_API_KEY.length : 0);
 console.log('process.env keys:', Object.keys(process.env).filter(key => key.includes('GEMINI') || key.includes('VITE')));
 
-// Google GenAI 클라이언트 초기화
-let ai = null;
-const initializeGenAI = () => {
-  if (ai) return ai;
-  
+// Gemini API 직접 호출 함수
+const callGeminiAPI = async (prompt, options = {}) => {
   try {
-    if (!GEMINI_API_KEY || GEMINI_API_KEY.trim() === '') {
-      throw new Error('API 키가 설정되지 않았습니다.');
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_actual_api_key_here') {
+      throw new Error('API 키가 설정되지 않았습니다. .env 파일에서 VITE_GEMINI_API_KEY를 설정해주세요.');
     }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${GEMINI_API_KEY}`;
     
-    ai = new GoogleGenAI(GEMINI_API_KEY);
-    console.log('✅ Google GenAI 클라이언트 초기화 성공 (메인 프로세스)');
-    return ai;
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: options.temperature || 0.7,
+        maxOutputTokens: options.maxOutputTokens || 2048,
+        topP: options.topP || 0.8,
+        topK: options.topK || 40
+      }
+    };
+
+    console.log('📡 Gemini API 직접 호출 시작');
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 호출 실패: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`API 오류: ${data.error.message}`);
+    }
+
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!generatedText) {
+      throw new Error('API 응답에서 텍스트를 찾을 수 없습니다.');
+    }
+
+    console.log('✅ Gemini API 직접 호출 성공');
+    return {
+      success: true,
+      text: generatedText,
+      data: data
+    };
   } catch (error) {
-    console.error('❌ Google GenAI 클라이언트 초기화 실패 (메인 프로세스):', error);
+    console.error('❌ Gemini API 직접 호출 실패:', error);
     throw error;
   }
 };
@@ -266,14 +309,6 @@ ipcMain.handle('llm-generate-text', async (event, prompt, history = [], options 
     try {
         console.log('Main: LLM API 호출 시작');
         
-        // API 키가 없으면 에러
-        if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_actual_api_key_here') {
-            throw new Error('API 키가 설정되지 않았습니다. .env 파일에서 VITE_GEMINI_API_KEY를 설정해주세요.');
-        }
-        
-        // GenAI 클라이언트 초기화
-        const genAI = initializeGenAI();
-        
         // 히스토리가 있으면 프롬프트에 포함
         let fullPrompt = prompt;
         if (history.length > 0) {
@@ -281,25 +316,13 @@ ipcMain.handle('llm-generate-text', async (event, prompt, history = [], options 
             fullPrompt = `${historyText}\n\n현재 요청: ${prompt}`;
         }
         
-        // API 키를 명시적으로 설정하여 호출
-        const response = await genAI.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: fullPrompt,
-            config: {
-                temperature: options.temperature || 0.7,
-                maxOutputTokens: options.maxOutputTokens || 2048,
-                topP: options.topP || 0.8,
-                topK: options.topK || 40,
-                thinkingConfig: {
-                    thinkingBudget: 0, // Disables thinking for faster response
-                },
-            }
-        });
+        // 직접 API 호출
+        const response = await callGeminiAPI(fullPrompt, options);
         
         console.log('Main: LLM API 호출 성공');
         return {
             success: true,
-            data: response,
+            data: response.data,
             text: response.text,
             status: 200
         };
@@ -350,26 +373,17 @@ ${JSON.stringify(projectData, null, 2)}
 
 위 데이터를 분석하여 세 가지 섹션으로 구성된 보고서를 생성해주세요.`;
         
-        const genAI = initializeGenAI();
-        const response = await genAI.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: prompt,
-            config: {
-                temperature: 0.3,
-                maxOutputTokens: 2048,
-                topP: 0.8,
-                topK: 40,
-                thinkingConfig: {
-                    thinkingBudget: 0,
-                },
-            }
+        // 직접 API 호출
+        const response = await callGeminiAPI(prompt, {
+            temperature: 0.3,
+            maxOutputTokens: 2048
         });
         
         console.log('Main: 프로젝트 보고서 생성 성공');
         return {
             success: true,
             report: response.text,
-            rawResponse: response
+            rawResponse: response.data
         };
     } catch (error) {
         console.error('Main: 프로젝트 보고서 생성 실패:', error);
