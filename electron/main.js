@@ -29,7 +29,7 @@ const callGeminiAPI = async (prompt, options = {}) => {
       throw new Error('API 키가 설정되지 않았습니다. .env 파일에서 VITE_GEMINI_API_KEY를 설정해주세요.');
     }
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const requestBody = {
       contents: [
@@ -305,35 +305,84 @@ ipcMain.handle('broadcast-timer-state', (event, state) => {
 });
 
 // LLM API 호출 핸들러
-ipcMain.handle('llm-generate-text', async (event, prompt, history = [], options = {}) => {
-    try {
-        console.log('Main: LLM API 호출 시작');
-        
-        // 히스토리가 있으면 프롬프트에 포함
-        let fullPrompt = prompt;
-        if (history.length > 0) {
-            const historyText = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
-            fullPrompt = `${historyText}\n\n현재 요청: ${prompt}`;
-        }
-        
-        // 직접 API 호출
-        const response = await callGeminiAPI(fullPrompt, options);
-        
-        console.log('Main: LLM API 호출 성공');
-        return {
-            success: true,
-            data: response.data,
-            text: response.text,
-            status: 200
-        };
-    } catch (error) {
-        console.error('Main: LLM API 호출 실패:', error);
-        return {
-            success: false,
-            message: `LLM API 오류: ${error.message}`,
-            error: error
-        };
+ipcMain.handle('llm-generate-text', async (event, prompt, history, options) => {
+  if (!GEMINI_API_KEY) {
+    return {
+      success: false,
+      message: 'Gemini API 키가 설정되지 않았습니다.',
+      error: 'API_KEY_NOT_SET'
+    };
+  }
+
+  try {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    
+    // 이력을 기반으로 콘텐츠 구성
+    const contents = history.map(item => ({
+      role: item.role,
+      parts: [{ text: item.content }]
+    }));
+    
+    // 현재 프롬프트를 사용자 메시지로 추가
+    contents.push({
+      role: 'user',
+      parts: [{ text: prompt }]
+    });
+
+    const requestBody = {
+      contents: contents, // 수정된 콘텐츠 사용
+      generationConfig: {
+        temperature: options.temperature || 0.9,
+        topK: options.topK || 1,
+        topP: options.topP || 1,
+        maxOutputTokens: options.maxOutputTokens || 8192,
+        stopSequences: []
+      },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      ]
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 호출 실패: ${response.status} ${response.statusText} - ${errorText}`);
     }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`API 오류: ${data.error.message}`);
+    }
+
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!generatedText) {
+      throw new Error('API 응답에서 텍스트를 찾을 수 없습니다.');
+    }
+
+    console.log('✅ Gemini API 직접 호출 성공');
+    return {
+      success: true,
+      data: data,
+      text: generatedText,
+      status: 200
+    };
+  } catch (error) {
+    console.error('❌ Gemini API 직접 호출 실패:', error);
+    return {
+      success: false,
+      message: `LLM API 오류: ${error.message}`,
+      error: error
+    };
+  }
 });
 
 // 프로젝트 보고서 생성 핸들러
@@ -341,29 +390,57 @@ ipcMain.handle('llm-generate-project-report', async (event, projectData) => {
     try {
         console.log('Main: 프로젝트 보고서 생성 시작');
         
-        const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성하는 AI 어시스턴트입니다.
+        const PROJECT_REPORT_SYSTEM_PROMPT = `프로젝트 진행 상황 보고서를 생성하는 AI 어시스턴트
 
-당신의 임무는 프로젝트 주제, 팀 체크리스트, 그리고 익명으로 제공된 여러 구성원의 체크리스트를 처리하여 보고서를 생성하는 것입니다.
-
+다음 JSON 형식의 데이터를 입력받습니다:
+{
+    "team_goals": [
+      {
+        "content": "팀 목표 내용",
+        "start_date": "시작 날짜 (ISO 8601)",
+        "planned_end_date": "예정 종료 날짜 (ISO 8601)",
+        "real_end_date": "실제 종료 날짜 (ISO 8601) 또는 null",
+        "created_at": "생성 날짜 (ISO 8601)",
+        "subgoals": [
+          {
+            "content": "하위 목표 내용",
+            "is_completed": "완료 여부 (true/false)"
+          },
+          ...
+        ]
+      },
+      ...
+    ],
+    "team_memos": [
+      {
+        "content": "메모 내용",
+        "created_at": "생성 날짜 (ISO 8601)"
+      },
+      ...
+    ]
+}
+ 
+당신의 임무는 제공된 \`team_goals\`와 \`team_memos\` 데이터를 처리하여 스크럼 보고서를 생성하는 것입니다.
+ 
 생성된 보고서는 아래의 세 가지 섹션으로 엄격하게 구성되어야 합니다:
 - 어제까지 한 일
-- 오늘 할 일  
+- 오늘 할 일
 - 궁금한/필요한/알아낸 것
-
+ 
 보고서 생성 시 다음 규칙을 반드시 준수해야 합니다:
-
-구조: 위에 명시된 세 가지 섹션 구조를 반드시 따라야 함.
-언어: 보고서는 반드시 한국어로 작성해야 함.
-작성 스타일: 답변은 '~합니다'와 같은 서술형 문장이 아닌, 'ㅇㅇ 완료', 'ㅁㅁ 필요' 와 같이 명사형으로 간결하게 마무리해야 함.
-
-업무 취합:
-"어제까지 한 일": "team_checklist"와 "member_checklists"에 있는 모든 "completed" 필드의 작업을 취합하여 목록으로 작성.
-"오늘 할 일": 모든 "incomplete" 필드의 작업을 취합하여 목록으로 작성. 더불어, 개별 멤버에게 작업을 할당하지 말고, 팀 전체의 통합된 업무 목록으로 제시해야 함. 만약 없다면 최대 3개의 업무를 기존 완료한 것들을 바탕으로 제시해야 함.
-
-'궁금한/필요한/알아낸 것' 섹션:
-"inquiries" 필드의 정보를 사용하여 이 섹션을 작성함. 만약 "inquiries" 필드가 비어 있다면, "project_topic"을 참고하여 팀에 도움이 될 만한 관련 사항을 생성해야 함. 입력값에 URL이나 참조 링크가 포함된 경우, 해당 내용을 요약하되 URL 자체는 결과물에 포함하지 않아야 함.
-
-빈 필드 처리: 만약 특정 섹션에 해당하는 입력 체크리스트가 비어 있다면, 해당 출력 섹션도 비워두어야 함.`;
+1. **구조:** 위에 명시된 세 가지 섹션 구조를 반드시 따릅니다.
+2. **언어:** 보고서는 반드시 한국어로 작성합니다.
+3. **작성 스타일:** 답변은 '~합니다'와 같은 서술형 문장이 아닌, 'ㅇㅇ 완료', 'ㅁㅁ 필요' 와 같이 **명사형으로 간결하게 마무리**해야 합니다.
+ 
+4. **업무 취합:**
+   - **"어제까지 한 일"**: \`team_goals\` 내의 각 목표(goal)의 \`subgoals\` 중 \`is_completed\` 필드가 **true**인 모든 작업을 취합하여 목록으로 작성합니다. 완료된 작업의 \`real_end_date\`가 현재 날짜(2025-07-15)보다 이전이거나 같은 경우에만 포함합니다.
+   - **"오늘 할 일"**: \`team_goals\` 내의 각 목표(goal)의 \`subgoals\` 중 \`is_completed\` 필드가 **false**인 모든 작업을 취합하여 목록으로 작성합니다. 개별 멤버에게 작업을 할당하지 말고, 팀 전체의 통합된 업무 목록으로 제시합니다. 만약 \`is_completed\`가 false인 작업이 없다면, \`team_goals\`의 \`content\`를 바탕으로 **최대 3개의 새로운 업무를 제안**하여 추가합니다. (예: '새로운 기능 기획', '성능 최적화 방안 검토', '사용자 피드백 분석')
+ 
+5. **'궁금한/필요한/알아낸 것' 섹션:**
+   - \`team_memos\` 필드의 \`content\` 정보를 사용하여 이 섹션을 작성합니다.
+   - \`team_memos\` 필드가 비어 있다면, \`team_goals\`의 \`content\`를 참고하여 팀에 도움이 될 만한 **관련 사항을 최대 3개까지 생성**합니다. (예: 'LLM API 연동 시 에러 처리 방안', '디자인 시스템 구축 필요성', '다음 스프린트 목표 설정 논의')
+ 
+6. **빈 필드 처리:** 만약 특정 섹션에 해당하는 입력 데이터가 비어 있다면, 해당 출력 섹션도 비워두어야 합니다.`;
         
         const prompt = `${PROJECT_REPORT_SYSTEM_PROMPT}
 

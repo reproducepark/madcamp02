@@ -34,6 +34,7 @@ const geminiApiRequest = async (prompt, options = {}) => {
     console.log('📡 Electron 메인 프로세스로 API 호출');
     const response = await window.electronAPI.llmGenerateText(prompt, [], options);
     console.log('✅ Electron API 호출 성공');
+    console.log('📄 LLM 응답:', response);
     return response;
   } catch (error) {
     console.error('❌ Electron API 호출 실패:', error);
@@ -132,6 +133,7 @@ export const generateProjectReport = async (projectData) => {
     console.log('📡 Electron 메인 프로세스로 프로젝트 보고서 생성 요청');
     const response = await window.electronAPI.llmGenerateProjectReport(projectData);
     console.log('✅ Electron 프로젝트 보고서 생성 성공');
+    console.log('📄 LLM 프로젝트 보고서 응답:', response);
     return response;
   } catch (error) {
     console.error('❌ Electron 프로젝트 보고서 생성 실패:', error);
@@ -191,7 +193,7 @@ const SCRUM_GENERATION_SYSTEM_PROMPT = `당신은 팀의 목표와 메모를 바
  * @returns {Promise<Object>} 생성된 스크럼 페이지
  */
 
-const MOCK_API_CALLS = true; // LLM API 호출을 모킹하려면 true로 설정
+const MOCK_API_CALLS = false; // LLM API 호출을 모킹하려면 true로 설정
 
 const mockScrumData = {
   sprint_title: "Sprint 1: The Foundation",
@@ -279,6 +281,7 @@ ${JSON.stringify(scrumData.memos, null, 2)}
 
   if (response.success) {
     const responseText = extractTextFromResponse(response);
+    console.log('📄 LLM 응답 텍스트 (스크럼 생성):', responseText);
     
     try {
       // JSON 응답을 파싱

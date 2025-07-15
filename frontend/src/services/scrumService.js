@@ -79,13 +79,29 @@ export const gatherDataForLLM = async (teamId) => {
         return createdAt >= twentyFourHoursAgo;
     });
 
-    // 5. 최종 JSON 객체를 구성합니다.
+    // 5. 최종 JSON 객체를 구성하고 정제합니다.
+    const cleanedGoals = goalsWithSubgoals.map(goal => ({
+      content: goal.content,
+      start_date: goal.start_date,
+      planned_end_date: goal.planned_end_date,
+      real_end_date: goal.real_end_date,
+      created_at: goal.created_at,
+      subgoals: goal.subgoals.flatMap(memberSubgoals => 
+        memberSubgoals.subgoals.map(subgoal => ({
+          content: subgoal.content,
+          is_completed: subgoal.is_completed
+        }))
+      )
+    }));
+
+    const cleanedMemos = recentMemos.map(memo => ({
+      content: memo.content,
+      created_at: memo.created_at
+    }));
+
     const llmData = {
-      team_id: teamId,
-      timestamp: now.toISOString(),
-      data_since: twentyFourHoursAgo.toISOString(),
-      team_goals: goalsWithSubgoals,
-      team_memos: recentMemos
+      team_goals: cleanedGoals,
+      team_memos: cleanedMemos,
     };
 
     return { success: true, data: llmData };
