@@ -130,7 +130,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
 
   // runPose 함수를 useCallback으로 정의
   const runPose = useCallback(async () => {
-    console.log("🔄 runPose 함수 실행");
+    console.log("🔄 runPose 함수 실행 - 시간:", new Date().toLocaleTimeString());
     
     if (!videoRef.current) {
       console.log("❌ 비디오 ref 없음");
@@ -302,15 +302,29 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         }
 
         // 키포인트 데이터를 상위 컴포넌트로 전달
-        if (onKeypointsChange && hasValidDetection) {
-          console.log('📊 키포인트 전달:', {
-            키포인트수: keypoints.length,
-            얼굴감지: faceDetected,
-            왼쪽어깨: leftShoulderDetected,
-            오른쪽어깨: rightShoulderDetected,
-            유효감지: hasValidDetection
-          });
-          onKeypointsChange(keypoints);
+        if (onKeypointsChange) {
+          if (hasValidDetection) {
+            // 목 각도 계산을 위한 키포인트 정보 로그
+            const nose = keypoints[0];
+            const leftShoulder = keypoints[5];
+            const rightShoulder = keypoints[6];
+            
+            console.log('📊 키포인트 전달 (유효) - 시간:', new Date().toLocaleTimeString(), {
+              키포인트수: keypoints.length,
+              얼굴감지: faceDetected,
+              왼쪽어깨: leftShoulderDetected,
+              오른쪽어깨: rightShoulderDetected,
+              유효감지: hasValidDetection,
+              코위치: nose ? `(${Math.round(nose.x)}, ${Math.round(nose.y)})` : '없음',
+              왼쪽어깨위치: leftShoulder ? `(${Math.round(leftShoulder.x)}, ${Math.round(leftShoulder.y)})` : '없음',
+              오른쪽어깨위치: rightShoulder ? `(${Math.round(rightShoulder.x)}, ${Math.round(rightShoulder.y)})` : '없음'
+            });
+            onKeypointsChange(keypoints);
+          } else {
+            // 유효하지 않을 때 null 전달
+            console.log('📊 키포인트 전달 (무효) - 시간:', new Date().toLocaleTimeString(), ': 감지되지 않음');
+            onKeypointsChange(null);
+          }
         }
 
         // 키포인트 연결선 그리기 - 투명하게 설정

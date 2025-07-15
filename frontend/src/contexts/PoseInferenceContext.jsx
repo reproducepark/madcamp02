@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
 import { analyzePose } from '../utils/poseAnalysis';
 
 // 액션 타입 정의
@@ -122,18 +122,25 @@ export function PoseInferenceProvider({ children }) {
 
   // 자세 교정이 필요한지 확인하는 함수
   const needsPostureCorrection = (analysis) => {
-    if (!analysis || !analysis.isValid) return false;
+    // 분석이 없거나 유효하지 않으면 자세가 옳다고 가정 (감지되지 않음)
+    if (!analysis || !analysis.isValid) {
+      console.log('📷 감지되지 않음 - 자세가 옳다고 가정');
+      return false;
+    }
     
     // 목 각도 확인이 활성화되어 있고 각도가 20도 초과인 경우
     if (state.neckAngleCheck && analysis.isAngleGreaterThan20) {
+      console.log('⚠️ 목 각도 경고 감지:', analysis.shoulderNeckAngle, '도');
       return true;
     }
     
     // 얼굴 위치 확인이 활성화되어 있고 얼굴이 하단에 있는 경우
     if (state.facePositionCheck && analysis.faceInLowerHalf) {
+      console.log('⚠️ 얼굴 위치 경고 감지: 하단에 위치');
       return true;
     }
     
+    console.log('✅ 자세 정상');
     return false;
   };
 
@@ -170,15 +177,27 @@ export function PoseInferenceProvider({ children }) {
       // 새로운 인터벌 설정 (분을 밀리초로 변환)
       const intervalMs = state.inferenceInterval * 60 * 1000;
       
-      intervalRef.current = setInterval(() => {
+      // 추론 실행 함수 정의
+      const runInference = () => {
         const currentState = stateRef.current;
-        console.log('⏰ 전역 추론 인터벌 실행:', {
+        console.log('⏰ 전역 추론 인터벌 실행 - 시간:', new Date().toLocaleTimeString(), {
           키포인트존재: !!currentState.keypoints,
           추론주기: currentState.inferenceInterval,
           인식상태: currentState.isRecognized
         });
         
         if (currentState.keypoints) {
+          // 키포인트 변경 확인을 위한 로그
+          const nose = currentState.keypoints[0];
+          const leftShoulder = currentState.keypoints[5];
+          const rightShoulder = currentState.keypoints[6];
+          
+          console.log('🎯 현재 키포인트 상태 - 시간:', new Date().toLocaleTimeString(), {
+            코위치: nose ? `(${Math.round(nose.x)}, ${Math.round(nose.y)})` : '없음',
+            왼쪽어깨위치: leftShoulder ? `(${Math.round(leftShoulder.x)}, ${Math.round(leftShoulder.y)})` : '없음',
+            오른쪽어깨위치: rightShoulder ? `(${Math.round(rightShoulder.x)}, ${Math.round(rightShoulder.y)})` : '없음'
+          });
+          
           const analysis = analyzePose(currentState.keypoints, 640);
           console.log('🔍 포즈 분석 완료:', {
             목각도: analysis.shoulderNeckAngle,
@@ -216,7 +235,9 @@ export function PoseInferenceProvider({ children }) {
         } else {
           console.log('❌ 키포인트가 없어서 분석 불가');
         }
-      }, intervalMs);
+      };
+      
+      intervalRef.current = setInterval(runInference, intervalMs);
 
       return () => {
         if (intervalRef.current) {
@@ -238,6 +259,8 @@ export function PoseInferenceProvider({ children }) {
     state.neckAngleCheck,
     state.facePositionCheck
   ]);
+
+
 
   // 컴포넌트 언마운트 시 인터벌 정리
   useEffect(() => {
