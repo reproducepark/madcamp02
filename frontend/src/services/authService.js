@@ -1,12 +1,6 @@
 // API URL 설정 - 개발/프로덕션 환경에 따라 다르게 설정
 const getApiUrl = () => {
-  if (import.meta.env.DEV) {
-    // 개발 환경에서는 Vite proxy 사용
-    return '';
-  } else {
-    // 프로덕션 환경에서는 실제 서버 URL 사용
-    return import.meta.env.VITE_API_URL || 'http://localhost:3001';
-  }
+  return 'https://api.reproducepark.my';
 };
 
 const API_URL = getApiUrl();
@@ -23,7 +17,11 @@ export const loginUser = async (username, password) => {
   console.log('AuthService: loginUser() 시작', { username: username ? '존재함' : '없음' });
   const loginUrl = `${API_URL}/api/auth/login`;
   console.log('AuthService: 로그인 요청 URL:', loginUrl);
+  console.log('AuthService: API_URL:', API_URL);
+  console.log('AuthService: 현재 환경:', import.meta.env.DEV ? '개발' : '프로덕션');
+  
   try {
+    console.log('AuthService: fetch 요청 시작');
     const response = await fetch(loginUrl, {
       method: 'POST',
       headers: {
@@ -32,7 +30,9 @@ export const loginUser = async (username, password) => {
       body: JSON.stringify({ username, password }),
     });
     
+    console.log('AuthService: fetch 응답 받음:', response.status, response.statusText);
     const data = await response.json();
+    console.log('AuthService: 응답 데이터:', data);
     
     if (response.ok) {
       // 로그인 성공 시 토큰과 사용자 정보를 로컬 스토리지에 저장

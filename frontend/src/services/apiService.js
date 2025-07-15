@@ -2,13 +2,7 @@ import { getAuthHeaders } from './authService';
 
 // API URL 설정 - 개발/프로덕션 환경에 따라 다르게 설정
 const getApiBaseUrl = () => {
-  if (import.meta.env.DEV) {
-    // 개발 환경에서는 Vite proxy 사용
-    return '';
-  } else {
-    // 프로덕션 환경에서는 실제 서버 URL 사용
-    return import.meta.env.VITE_API_URL || 'http://localhost:3001';
-  }
+  return 'https://api.reproducepark.my';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -26,6 +20,8 @@ export const apiRequest = async (endpoint, options = {}) => {
   console.log('ApiService: 요청 URL:', url);
   console.log('ApiService: API_BASE_URL:', API_BASE_URL);
   console.log('ApiService: endpoint:', endpoint);
+  console.log('ApiService: 현재 환경:', import.meta.env.DEV ? '개발' : '프로덕션');
+  console.log('ApiService: 전체 요청 정보:', { url, method: options.method || 'GET', headers: options.headers });
   
   const defaultOptions = {
     headers: getAuthHeaders(),
@@ -33,8 +29,11 @@ export const apiRequest = async (endpoint, options = {}) => {
   };
 
   try {
+    console.log('ApiService: fetch 요청 시작');
     const response = await fetch(url, defaultOptions);
+    console.log('ApiService: fetch 응답 받음:', response.status, response.statusText);
     const data = await response.json();
+    console.log('ApiService: 응답 데이터:', data);
 
     if (response.ok) {
       return {
