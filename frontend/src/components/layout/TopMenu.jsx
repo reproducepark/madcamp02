@@ -5,6 +5,7 @@ import { useTeamModal } from '../../hooks/useTeamModal';
 import TeamCreateModal from '../Modal/TeamCreateModal';
 import TeamManageModal from '../Modal/TeamManageModal';
 import './TopMenu.css';
+import logoImage from '../../assets/icon_1024_tp.png';
 
 function TopMenu({ onLogout }) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -103,7 +104,18 @@ function TopMenu({ onLogout }) {
   return (
     <header className="top-menu">
       <div className="top-menu-left">
-        <h1 className="logo" onClick={() => navigate('/')}>Todo App</h1>
+        <img 
+          src={logoImage} 
+          alt="Logo" 
+          className="logo" 
+          onClick={() => navigate('/')}
+          style={{ 
+            height: '40px', 
+            width: 'auto', 
+            cursor: 'pointer',
+            objectFit: 'contain'
+          }}
+        />
       </div>
 
       <div className="top-menu-center">

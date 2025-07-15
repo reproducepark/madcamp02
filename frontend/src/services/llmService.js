@@ -76,52 +76,6 @@ const geminiApiRequest = async (prompt, options = {}) => {
       };
     }
   }
-  
-  // 브라우저 환경에서는 직접 API 호출 (개발용)
-  if (!fallbackAPIKey) {
-    return {
-      success: false,
-      message: 'API 키가 설정되지 않았습니다. Electron 환경에서 실행해주세요.',
-      error: new Error('API 키 없음')
-    };
-  }
-
-  try {
-    // 동적으로 GoogleGenAI import (브라우저에서만)
-    const { GoogleGenAI } = await import("@google/genai");
-    
-    if (!fallbackAI) {
-      fallbackAI = new GoogleGenAI(fallbackAPIKey);
-    }
-    
-    const response = await fallbackAI.models.generateContent({
-      model: "gemini-1.5-flash",
-      contents: prompt,
-      config: {
-        temperature: options.temperature || 0.7,
-        maxOutputTokens: options.maxOutputTokens || 2048,
-        topP: options.topP || 0.8,
-        topK: options.topK || 40,
-        thinkingConfig: {
-          thinkingBudget: 0,
-        },
-      }
-    });
-
-    return {
-      success: true,
-      data: response,
-      text: response.text,
-      status: 200
-    };
-  } catch (error) {
-    console.error('❌ 브라우저 API 호출 실패:', error);
-    return {
-      success: false,
-      message: `브라우저 API 오류: ${error.message}`,
-      error: error
-    };
-  }
 };
 
 /**
