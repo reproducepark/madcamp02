@@ -214,7 +214,7 @@ function TopMenu({ onLogout }) {
       <div className="top-menu-right">
         <div style={{ position: 'relative' }}>
           <button className="icon-button" onClick={() => setShowProfileMenu(!showProfileMenu)}>
-            <img src="\assets\icons\user\user.png" alt="계정" style={{ width: '30px', height: '30px' }} />
+            <img src="assets/icons/user/user.png" alt="계정" style={{ width: '30px', height: '30px' }} />
           </button>
           {showProfileMenu && (
             <div className="dropdown">

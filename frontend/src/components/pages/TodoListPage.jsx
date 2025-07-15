@@ -397,19 +397,19 @@ const filteredGoals = goals
                 className={`filter-btn ${filter === 'INCOMPLETE' ? 'active' : ''}`}
                 onClick={() => setFilter('INCOMPLETE')}
               >
-                <img src="/assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
+                <img src="assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
               </button>
               <button 
                 className={`filter-btn ${filter === 'COMPLETED' ? 'active' : ''}`}
                 onClick={() => setFilter('COMPLETED')}
               >
-                <img src="/assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
+                <img src="assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
               </button>
               <button 
                 className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
                 onClick={() => setFilter('ALL')}
               >
-                <img src="/assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
+                <img src="assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
                   <span style={{
                     color: '#000',         // 검은색
                     fontSize: '14px',      // 조금 더 작게
@@ -417,7 +417,7 @@ const filteredGoals = goals
                   }}>
                     &
                   </span>
-                <img src="/assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
+                <img src="assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
               </button>
             </div>
 
