@@ -1,17 +1,25 @@
 // src/components/WebcamComponent.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import PoseDetectionComponent from './PoseDetectionComponent';
-import { analyzePose } from '../utils/poseAnalysis';
+import { usePoseInference } from '../contexts/PoseInferenceContext';
 
 function WebcamComponent() {
   const videoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState(null);
-  const [postureCheckInterval, setPostureCheckInterval] = useState(3);
-  const [neckAngleCheck, setNeckAngleCheck] = useState(false);
-  const [facePositionCheck, setFacePositionCheck] = useState(false);
-  const [isRecognized, setIsRecognized] = useState(false); // 얼굴과 어깨 인식 상태
-  const [keypoints, setKeypoints] = useState(null);
+  
+  // 전역 추론 상태 사용
+  const {
+    isInferenceEnabled,
+    inferenceInterval,
+    neckAngleCheck,
+    facePositionCheck,
+    isRecognized,
+    keypoints,
+    currentAnalysis,
+    shouldNotify,
+    dispatch
+  } = usePoseInference();
 
   useEffect(() => {
     startWebcam();
@@ -52,21 +60,48 @@ function WebcamComponent() {
     }
   };
 
-  // 키포인트 데이터가 변경될 때 포즈 분석 실행 및 콘솔 출력
+
+
+  // 전역 추론 상태 모니터링
   useEffect(() => {
-    if (keypoints && isRecognized) {
-      const analysis = analyzePose(keypoints, 640); // 캔버스 높이 640
-      
-      // 콘솔에 분석 결과 출력
+    console.log('=== 전역 추론 상태 ===');
+    console.log('추론 활성화:', isInferenceEnabled);
+    console.log('추론 주기:', inferenceInterval, '분');
+    console.log('목 각도 확인:', neckAngleCheck);
+    console.log('얼굴 위치 확인:', facePositionCheck);
+    console.log('인식 상태:', isRecognized);
+    console.log('키포인트 존재:', !!keypoints);
+    console.log('========================');
+  }, [isInferenceEnabled, inferenceInterval, neckAngleCheck, facePositionCheck, isRecognized, keypoints]);
+
+  // 현재 분석 결과가 있을 때 콘솔 출력
+  useEffect(() => {
+    if (currentAnalysis && isRecognized) {
       console.log('=== 포즈 분석 결과 ===');
-      console.log('목-어깨 각도:', analysis.shoulderNeckAngle !== null ? `${Math.round(analysis.shoulderNeckAngle)}도` : '측정 불가');
-      console.log('얼굴 위치 (하단):', analysis.faceInLowerHalf ? '예' : '아니오');
-      console.log('목 각도 경고 (20도 초과):', analysis.isAngleGreaterThan20 ? '예' : '아니오');
-      console.log('분석 유효성:', analysis.isValid ? '유효' : '무효');
-      console.log('전체 분석 객체:', analysis);
+      console.log('목-어깨 각도:', currentAnalysis.shoulderNeckAngle !== null ? `${Math.round(currentAnalysis.shoulderNeckAngle)}도` : '측정 불가');
+      console.log('얼굴 위치 (하단):', currentAnalysis.faceInLowerHalf ? '예' : '아니오');
+      console.log('목 각도 경고 (20도 초과):', currentAnalysis.isAngleGreaterThan20 ? '예' : '아니오');
+      console.log('분석 유효성:', currentAnalysis.isValid ? '유효' : '무효');
+      console.log('알림 상태:', shouldNotify ? '알림 발송됨' : '정상');
+      console.log('전체 분석 객체:', currentAnalysis);
       console.log('========================');
     }
-  }, [keypoints, isRecognized]);
+  }, [currentAnalysis, isRecognized, shouldNotify]);
+
+  // 1초마다 상태 출력 (디버깅용)
+  useEffect(() => {
+    const debugInterval = setInterval(() => {
+      console.log('🔄 1초마다 상태 체크:', {
+        추론활성화: isInferenceEnabled,
+        인식상태: isRecognized,
+        키포인트수: keypoints ? keypoints.length : 0,
+        현재분석: !!currentAnalysis,
+        알림상태: shouldNotify
+      });
+    }, 1000);
+
+    return () => clearInterval(debugInterval);
+  }, [isInferenceEnabled, isRecognized, keypoints, currentAnalysis, shouldNotify]);
 
 
 
@@ -90,8 +125,14 @@ function WebcamComponent() {
             />
             <PoseDetectionComponent 
               videoRef={videoRef}
-              onRecognitionChange={setIsRecognized}
-              onKeypointsChange={setKeypoints}
+              onRecognitionChange={(recognized) => {
+                console.log('👁️ 인식 상태 변경:', recognized);
+                dispatch({ type: 'SET_IS_RECOGNIZED', payload: recognized });
+              }}
+              onKeypointsChange={(keypoints) => {
+                console.log('🎯 키포인트 업데이트:', keypoints ? keypoints.length : 0, '개');
+                dispatch({ type: 'SET_KEYPOINTS', payload: keypoints });
+              }}
             />
           </div>
         )}
@@ -114,12 +155,25 @@ function WebcamComponent() {
         <h4>자세 확인 설정</h4>
         <div className="settings-content">
           <div className="setting-item">
+            <label>전역 추론 기능</label>
+            <button 
+              className={`toggle-button ${isInferenceEnabled ? 'active' : ''}`}
+              onClick={() => dispatch({ type: 'SET_INFERENCE_ENABLED', payload: !isInferenceEnabled })}
+            >
+              <span className="toggle-slider"></span>
+              <span className="toggle-text">
+                {isInferenceEnabled ? 'ON' : 'OFF'}
+              </span>
+            </button>
+          </div>
+          <div className="setting-item">
             <label>자세 확인 주기</label>
             <select 
               className="setting-select"
-              value={postureCheckInterval}
-              onChange={(e) => setPostureCheckInterval(Number(e.target.value))}
+              value={inferenceInterval}
+              onChange={(e) => dispatch({ type: 'SET_INFERENCE_INTERVAL', payload: Number(e.target.value) })}
             >
+              <option value={1/6}>10초</option>
               <option value={1}>1분</option>
               <option value={3}>3분</option>
               <option value={5}>5분</option>
@@ -129,7 +183,7 @@ function WebcamComponent() {
             <label>목 각도 확인</label>
             <button 
               className={`toggle-button ${neckAngleCheck ? 'active' : ''}`}
-              onClick={() => setNeckAngleCheck(!neckAngleCheck)}
+              onClick={() => dispatch({ type: 'SET_NECK_ANGLE_CHECK', payload: !neckAngleCheck })}
             >
               <span className="toggle-slider"></span>
               <span className="toggle-text">
@@ -141,12 +195,25 @@ function WebcamComponent() {
             <label>얼굴 위치 확인</label>
             <button 
               className={`toggle-button ${facePositionCheck ? 'active' : ''}`}
-              onClick={() => setFacePositionCheck(!facePositionCheck)}
+              onClick={() => dispatch({ type: 'SET_FACE_POSITION_CHECK', payload: !facePositionCheck })}
             >
               <span className="toggle-slider"></span>
               <span className="toggle-text">
                 {facePositionCheck ? 'ON' : 'OFF'}
               </span>
+            </button>
+          </div>
+          <div className="setting-item">
+            <label>알림 권한</label>
+            <button 
+              className="notification-permission-button"
+              onClick={() => {
+                if ('Notification' in window) {
+                  Notification.requestPermission();
+                }
+              }}
+            >
+              권한 요청
             </button>
           </div>
         </div>

@@ -15,20 +15,10 @@ function getWeekDays(baseDateStr) {
   });
 }
 
-function clampDateToWeek(dateStr, weekStart, weekEnd) {
-  const t = new Date(dateStr).getTime();
-  if (t < weekStart) return weekStart;
-  if (t > weekEnd) return weekEnd;
-  return t;
-}
-
-export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
+export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
   const weekDays = getWeekDays(baseDate);
   const weekStart = weekDays[0].time;
   const weekEnd = weekDays[6].time;
-  const outerRadius = 10; // px (gantt-bar border-radius)
-  const borderWidth = 2;  // px (gantt-bar border)
-  const innerRadius = outerRadius - borderWidth;
 
   return (
     <div className="gantt-chart">
@@ -50,6 +40,10 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
         const total = weekDays.length;
         const barLeft = `${(startIdx / total) * 100}%`;
         const barWidth = `${((endIdx - startIdx + 1) / total) * 100}%`;
+        
+        // 완료된 목표인지 확인
+        const isCompleted = goal.real_end_date !== null;
+        
         return (
           <div className="gantt-row" key={goal.id || idx}>
             {weekDays.map((_, i) => (
@@ -58,18 +52,9 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
             {/* bar를 한 번만 absolute로 렌더링 */}
             {startIdx >= 0 && endIdx >= startIdx && (
               <div
-                className="gantt-bar"
+                className={`gantt-bar ${isCompleted ? 'completed' : ''}`}
                 style={{ left: barLeft, width: barWidth }}
               >
-                <div
-                  className="gantt-bar-progress"
-                  style={{
-                    width: `${Math.round((goal.progress ?? 0) * 100)}%`,
-                    borderRadius: (goal.progress === 1)
-                      ? `${innerRadius}px`
-                      : `${innerRadius}px 0 0 ${innerRadius}px`
-                  }}
-                />
                 <span className="gantt-bar-label">{goal.content}</span>
               </div>
             )}

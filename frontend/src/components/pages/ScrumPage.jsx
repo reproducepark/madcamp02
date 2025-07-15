@@ -4,6 +4,7 @@ import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import ScrumGoalItem from '../layout/ScrumGoalItem';
 import TeamMemoSection from '../layout/TeamMemoSection';
+import ScrumGanttChart from '../layout/ScrumGanttChart';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import { getTeams } from '../../services'; // getTeams import
@@ -63,6 +64,9 @@ function ScrumPage({ onLogout }) {
   const today = new Date().toISOString().split('T')[0];
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(today);
+  
+  // 간트 차트용 상태
+  const [ganttBaseDate, setGanttBaseDate] = useState(today);
   const loadGoals = async () => {
     if (!currentTeamId) return;
     try {
@@ -150,6 +154,20 @@ function ScrumPage({ onLogout }) {
   useEffect(() => {
     loadGoals();
   }, [currentTeamId]);
+
+  // 간트 차트 baseDate 업데이트
+  useEffect(() => {
+    if (filteredGoals.length > 0) {
+      // 가장 빠른 시작 날짜를 baseDate로 설정
+      const earliestStart = filteredGoals.reduce((earliest, goal) => {
+        const startDate = goal.start_date;
+        if (!startDate) return earliest;
+        return startDate < earliest ? startDate : earliest;
+      }, filteredGoals[0].start_date || today);
+      
+      setGanttBaseDate(earliestStart);
+    }
+  }, [filteredGoals, today]);
 
   // 팀 변경 이벤트 감지
   useEffect(() => {
@@ -249,11 +267,14 @@ const handleDeleteGoal = async (goalId) => {
         <main className="todo-main">
           {/* 왼쪽 영역 (3:1 비율의 3) */}
           <div className="todo-left-section">
-            {/* 시간표 영역 (상단 절반) */}
+            {/* 간트 차트 영역 (상단 절반) */}
             <section className="todo-schedule-section">
-              <div className="todo-schedule-title">시간표</div>
+              <div className="todo-schedule-title">팀 목표 일정</div>
               <div className="todo-schedule-content">
-                시간표 컴포넌트가 들어갈 공간입니다
+                <ScrumGanttChart 
+                  goals={filteredGoals}
+                  baseDate={ganttBaseDate}
+                />
               </div>
             </section>
 

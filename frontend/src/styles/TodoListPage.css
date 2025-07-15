@@ -220,24 +220,38 @@
   width: 0;
   height: 0;
   background: transparent;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 16px solid #4CAF50;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 20px solid #5c6bc0; /* 톤다운 파랑 */
   border-radius: 0;
   cursor: pointer;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(92,107,192,0.18));
+  transition: border-top-color 0.2s;
+}
+.gantt-slider:hover::-webkit-slider-thumb {
+  border-top-color: #42a5f5; /* hover 시 더 밝은 파랑 */
+}
+.gantt-slider:focus::-webkit-slider-thumb {
+  border-top-color: #90caf9;
 }
 
 .gantt-slider::-moz-range-thumb {
   width: 0;
   height: 0;
   background: transparent;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-top: 16px solid #4CAF50;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 20px solid #5c6bc0;
   border-radius: 0;
   cursor: pointer;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 2px 4px rgba(92,107,192,0.18));
+  transition: border-top-color 0.2s;
+}
+.gantt-slider:hover::-moz-range-thumb {
+  border-top-color: #42a5f5;
+}
+.gantt-slider:focus::-moz-range-thumb {
+  border-top-color: #90caf9;
 }
 
 /* 슬라이더 트랙 스타일 */
@@ -255,13 +269,11 @@
 
 /* 호버 효과 */
 .gantt-slider:hover::-webkit-slider-thumb {
-  border-top-color: #45a049;
-  transform: scale(1.1);
+  border-top-color: #42a5f5;
 }
 
 .gantt-slider:hover::-moz-range-thumb {
-  border-top-color: #45a049;
-  transform: scale(1.1);
+  border-top-color: #42a5f5;
 }
 
 /* 포커스 효과 */

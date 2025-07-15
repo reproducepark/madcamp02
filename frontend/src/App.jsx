@@ -9,6 +9,7 @@ import StretchingPage from './components/pages/StretchingPage';
 import TeammateTodoListPage from './components/pages/TeammateTodoListPage';
 import LLMExample from './components/LLMExample';
 import { isAuthenticated, tryAutoLogin, logoutUser } from './services/authService';
+import { PoseInferenceProvider } from './contexts/PoseInferenceContext';
 import './App.css';
 
 function App() {
@@ -68,42 +69,44 @@ function App() {
   }
 
   return (
-    <Router>
-      <Routes>
-        <Route 
-          path="/login" 
-          element={isLoggedIn ? <Navigate to="/todo" /> : <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />} 
-        />
-        <Route 
-          path="/register" 
-          element={isLoggedIn ? <Navigate to="/todo" /> : <RegisterPage />} 
-        />
-        <Route 
-          path="/todo" 
-          element={isLoggedIn ? <TodoListPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/scrum" 
-          element={isLoggedIn ? <ScrumPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/scrum/teammate-todolist" 
-          element={isLoggedIn ? <TeammateTodoListPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/stretching" 
-          element={isLoggedIn ? <StretchingPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="/llm-test" 
-          element={isLoggedIn ? <LLMExample onLogout={handleLogout} /> : <Navigate to="/login" />} 
-        />
-        <Route 
-          path="*" 
-          element={isLoggedIn ? <Navigate to="/todo" /> : <Navigate to="/login" />} 
-        />
-      </Routes>
-    </Router>
+    <PoseInferenceProvider>
+      <Router>
+        <Routes>
+          <Route 
+            path="/login" 
+            element={isLoggedIn ? <Navigate to="/todo" /> : <LoginPage onLoginSuccess={() => setIsLoggedIn(true)} />} 
+          />
+          <Route 
+            path="/register" 
+            element={isLoggedIn ? <Navigate to="/todo" /> : <RegisterPage />} 
+          />
+          <Route 
+            path="/todo" 
+            element={isLoggedIn ? <TodoListPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/scrum" 
+            element={isLoggedIn ? <ScrumPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/scrum/teammate-todolist" 
+            element={isLoggedIn ? <TeammateTodoListPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/stretching" 
+            element={isLoggedIn ? <StretchingPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/llm-test" 
+            element={isLoggedIn ? <LLMExample onLogout={handleLogout} /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="*" 
+            element={isLoggedIn ? <Navigate to="/todo" /> : <Navigate to="/login" />} 
+          />
+        </Routes>
+      </Router>
+    </PoseInferenceProvider>
   );
 }
 

@@ -303,6 +303,13 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
 
         // 키포인트 데이터를 상위 컴포넌트로 전달
         if (onKeypointsChange && hasValidDetection) {
+          console.log('📊 키포인트 전달:', {
+            키포인트수: keypoints.length,
+            얼굴감지: faceDetected,
+            왼쪽어깨: leftShoulderDetected,
+            오른쪽어깨: rightShoulderDetected,
+            유효감지: hasValidDetection
+          });
           onKeypointsChange(keypoints);
         }
 
