@@ -62,31 +62,6 @@ function WebcamComponent() {
 
 
 
-  // 전역 추론 상태 모니터링
-  useEffect(() => {
-    console.log('=== 전역 추론 상태 ===');
-    console.log('추론 활성화:', isInferenceEnabled);
-    console.log('추론 주기:', inferenceInterval, '분');
-    console.log('목 각도 확인:', neckAngleCheck);
-    console.log('얼굴 위치 확인:', facePositionCheck);
-    console.log('인식 상태:', isRecognized);
-    console.log('키포인트 존재:', !!keypoints);
-    console.log('========================');
-  }, [isInferenceEnabled, inferenceInterval, neckAngleCheck, facePositionCheck, isRecognized, keypoints]);
-
-  // 현재 분석 결과가 있을 때 콘솔 출력
-  useEffect(() => {
-    if (currentAnalysis && isRecognized) {
-      console.log('=== 포즈 분석 결과 ===');
-      console.log('목-어깨 각도:', currentAnalysis.shoulderNeckAngle !== null ? `${Math.round(currentAnalysis.shoulderNeckAngle)}도` : '측정 불가');
-      console.log('얼굴 위치 (하단):', currentAnalysis.faceInLowerHalf ? '예' : '아니오');
-      console.log('목 각도 경고 (20도 초과):', currentAnalysis.isAngleGreaterThan20 ? '예' : '아니오');
-      console.log('분석 유효성:', currentAnalysis.isValid ? '유효' : '무효');
-      console.log('알림 상태:', shouldNotify ? '알림 발송됨' : '정상');
-      console.log('전체 분석 객체:', currentAnalysis);
-      console.log('========================');
-    }
-  }, [currentAnalysis, isRecognized, shouldNotify]);
 
   // 1초마다 상태 출력 (디버깅용)
   useEffect(() => {
@@ -130,7 +105,11 @@ function WebcamComponent() {
                 dispatch({ type: 'SET_IS_RECOGNIZED', payload: recognized });
               }}
               onKeypointsChange={(keypoints) => {
-                console.log('🎯 키포인트 업데이트:', keypoints ? keypoints.length : 0, '개');
+                if (keypoints) {
+                  console.log('🎯 키포인트 업데이트:', keypoints.length, '개');
+                } else {
+                  console.log('🎯 키포인트 업데이트: 감지되지 않음 (null)');
+                }
                 dispatch({ type: 'SET_KEYPOINTS', payload: keypoints });
               }}
             />

@@ -1,5 +1,10 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const fs = require("fs");
+
+const iconPath = path.resolve(__dirname, "../frontend/src/assets/icon_1024.png");
+console.log('Icon path:', iconPath);
+console.log('Icon file exists:', fs.existsSync(iconPath));
 
 let mainWindow;
 let overlayWindow;
@@ -17,12 +22,14 @@ function createMainWindow() {
     console.log('Creating main window...');
     
     mainWindow = new BrowserWindow({
+        title: '몰입메이트',
         width: 1280,  // 16:10 비율에 맞는 크기
         height: 800,  // 1280 * (10/16) = 800
         show: true,
         resizable: true, // 창 크기 조정 허용
         minWidth: 960,   // 최소 너비 (16:10 비율)
         minHeight: 600,  // 최소 높이 (960 * (10/16) = 600)
+        icon: iconPath, // 애플리케이션 아이콘 설정
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
@@ -98,6 +105,7 @@ function createOverlayWindow() {
         focusable: false,
         center: false, // center 대신 수동으로 위치 설정
         show: false,
+        icon: iconPath, // 오버레이 윈도우 아이콘 설정
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
             contextIsolation: true,
@@ -218,7 +226,31 @@ ipcMain.handle('broadcast-timer-state', (event, state) => {
     }
 });
 
-app.on("ready", createMainWindow);
+app.on("ready", () => {
+    // macOS에서 독 아이콘 설정
+    if (process.platform === 'darwin') {
+        // 독 아이콘 설정 시도
+        try {
+            app.dock.setIcon(iconPath);
+            console.log('Dock icon set successfully');
+        } catch (error) {
+            console.error('Failed to set dock icon:', error);
+        }
+        
+        // 독 아이콘 숨기기/보이기로 새로고침 시도
+        setTimeout(() => {
+            try {
+                app.dock.hide();
+                setTimeout(() => {
+                    app.dock.show();
+                }, 100);
+            } catch (error) {
+                console.error('Failed to refresh dock:', error);
+            }
+        }, 1000);
+    }
+    createMainWindow();
+});
 
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {

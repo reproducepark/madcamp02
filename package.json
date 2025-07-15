@@ -1,5 +1,5 @@
 {
-  "name": "react-electron-vite-template",
+  "name": "immersion-mate",
   "author": "Rahil Vahora",
   "link": "github.com/rahil1202",
   "version": "1.0.0",
@@ -15,7 +15,7 @@
     "build-linux": "npm run build && npx electron-builder --linux"
   },
   "build": {
-    "appId": "com.example.project",
+    "appId": "com.immersionmate.app",
     "directories": {
       "output": "dist"
     },
@@ -29,7 +29,8 @@
       "target": "nsis"
     },
     "mac": {
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "frontend/src/assets/icons/icon.icns"
     },
     "linux": {
       "target": "AppImage"
@@ -37,7 +38,7 @@
   },
   "keywords": [],
   "license": "MIT",
-  "description": "Template for creating React Electron apps with Vite",
+  "description": "몰입메이트 - 집중력 향상을 위한 타이머 앱",
   "devDependencies": {
     "concurrently": "^9.1.2",
     "electron": "^33.2.1",
