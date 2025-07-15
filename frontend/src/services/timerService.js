@@ -40,19 +40,32 @@ class TimerService {
     // 상태 업데이트
     this.duration = externalState.duration;
     this.remaining = externalState.remaining;
-    this.isRunning = externalState.isRunning;
     
+    // isRunning 상태는 마지막으로 동기화 (아래 로직에 영향)
+    const newIsRunning = externalState.isRunning;
+
     // 실행 상태가 변경된 경우 interval 관리
-    if (wasRunning && !this.isRunning) {
-      // 다른 창에서 중지된 경우
+    // A창에서 start -> B창으로 전파 -> B창에서 startInterval() 호출 (문제 발생)
+    // 이젠 수신측에서는 interval을 직접 제어하지 않음.
+    // 시작/중지 액션은 항상 사용자의 직접적인 입력(toggle, start, pause)에서 시작되어야 함
+    if (wasRunning && !newIsRunning) {
+      // 다른 창에서 타이머가 '중지'된 경우, 이 창의 interval도 확실히 제거
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
-    } else if (!wasRunning && this.isRunning) {
-      // 다른 창에서 시작된 경우
-      this.startInterval();
+    } else if (!wasRunning && newIsRunning) {
+      // 다른 창에서 타이머가 '시작'된 경우, 이 창은 interval을 시작하지 않음
+      // 대신 상태가 계속 동기화되므로 시각적으로 업데이트됨
+      // 만약 로컬 interval이 돌고 있었다면(엣지 케이스), 확실히 제거
+      if (this.intervalId) {
+        clearInterval(this.intervalId);
+        this.intervalId = null;
+      }
     }
+    
+    // isRunning 상태를 마지막에 설정
+    this.isRunning = newIsRunning;
     
     // 로컬 상태 저장
     this.saveState();
