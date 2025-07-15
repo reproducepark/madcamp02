@@ -222,9 +222,9 @@ function TopMenu({ onLogout }) {
             </div>
           )}
         </div>
-        <button className="icon-button" onClick={() => console.log('Settings clicked')}>
+        {/* <button className="icon-button" onClick={() => console.log('Settings clicked')}>
           <span className="icon">⚙️</span>
-        </button>
+        </button> */}
       </div>
 
       <TeamCreateModal

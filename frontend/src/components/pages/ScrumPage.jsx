@@ -363,16 +363,18 @@ const handleDeleteGoal = async (goalId) => {
               </button>
             </div>
 
-            <ul className="todo-goal-list">
-              {filteredGoals.map((goal) => (
-                <ScrumGoalItem
-                  key={goal.id}
-                  goal={goal}
-                  onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
-                  onDelete={handleDeleteGoal}
-                />
-              ))}
-            </ul>
+            <div className="todo-content">
+              <ul className="todo-goal-list">
+                {filteredGoals.map((goal) => (
+                  <ScrumGoalItem
+                    key={goal.id}
+                    goal={goal}
+                    onToggle={() => handleToggleGoal(goal.id, goal.real_end_date !== null, goal.content)}
+                    onDelete={handleDeleteGoal}
+                  />
+                ))}
+              </ul>
+            </div>
 
             <div className="todo-goal-input-group">
               <div className="date-input-container">
