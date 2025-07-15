@@ -6,26 +6,31 @@ const prisma = new PrismaClient();
 const router = express.Router();
 
 // ✅ 개인 메모 조회 (특정 팀의 개인 메모)
-router.get('/:teamId/personal', authenticateToken, async (req, res) => {
+router.get('/:teamId/personalMemos', authenticateToken, async (req, res) => {
   const { teamId } = req.params;
-  const userId = req.user.id;
-  
+  const selectedUserId = parseInt(req.query.userId); // 쿼리에서 받음
+  const currentUserId = req.user.id;
+
+  // userId 없으면 로그인한 사람 id를 기본값으로
+  const userIdToQuery = selectedUserId || currentUserId;
+
   try {
-    // 사용자가 해당 팀의 멤버인지 확인
+    // 해당 유저가 해당 팀의 멤버인지 확인
     const teamMembership = await prisma.teamMember.findFirst({
       where: {
         team_id: parseInt(teamId),
-        user_id: userId,
+        user_id: userIdToQuery,
       },
     });
 
     if (!teamMembership) {
-      return res.status(403).json({ error: '해당 팀의 멤버가 아닙니다.' });
+      return res.status(403).json({ error: '해당 유저는 팀의 멤버가 아닙니다.' });
     }
 
+    // 해당 유저의 개인 메모만 조회
     const memos = await prisma.memo.findMany({
       where: { 
-        user_id: userId,
+        user_id: userIdToQuery,
         team_id: parseInt(teamId),
       },
       orderBy: { created_at: 'desc' },
