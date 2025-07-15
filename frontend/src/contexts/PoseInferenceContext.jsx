@@ -46,6 +46,13 @@ function poseInferenceReducer(state, action) {
       };
     
     case ACTIONS.SET_INFERENCE_INTERVAL:
+      console.log('🔄 추론 주기 상태 업데이트:', {
+        이전주기: state.inferenceInterval + '분',
+        새주기: action.payload + '분',
+        원시값: action.payload,
+        타입: typeof action.payload,
+        시간: new Date().toLocaleTimeString()
+      });
       return {
         ...state,
         inferenceInterval: action.payload
@@ -302,71 +309,16 @@ export function PoseInferenceProvider({ children }) {
     }
   }, [dispatch, needsPostureCorrection, sendNotification]);
 
-  // 주기적 추론 실행
+  // 주기적 추론 실행 (통합된 로직)
   useEffect(() => {
-    if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
-      // 기존 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      // 스트레칭 페이지와 페이지 활성화 상태에 따라 추론 주기 결정
-      let intervalMs;
-      let mode = '';
-      
-      // 현재 상태를 직접 확인
-      const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
-      
-      if (currentIsStretchingPage && currentIsPageActive) {
-        // 스트레칭 페이지가 활성화되어 있으면 1초마다
-        intervalMs = 1000;
-        mode = '스트레칭 페이지 활성화 모드 (1초)';
-      } else if (currentIsPageActive) {
-        // 다른 페이지가 활성화되어 있으면 설정된 시간에 맞게
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
-      } else {
-        // 페이지가 비활성화되어 있으면 설정된 시간에 맞게
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
-      }
-      
-
-      
-      // 추론 실행 함수 정의
-      intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
-
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
-    } else {
-      // 추론이 비활성화되거나 인식되지 않은 경우 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+    // 기존 인터벌 정리
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
     }
-  }, [
-    state.isInferenceEnabled, 
-    state.isRecognized, 
-    state.keypoints, 
-    state.inferenceInterval,
-    state.neckAngleCheck,
-    state.facePositionCheck,
-    runInferenceWithLatestState
-  ]);
 
-  // 페이지 상태 변경 시 인터벌 재설정
-  useEffect(() => {
+    // 추론이 활성화되고 인식된 경우에만 인터벌 설정
     if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
-      // 기존 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
       // 현재 상태를 직접 확인
       const currentIsStretchingPage = window.location.hash === '#/stretching';
       const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
@@ -375,23 +327,54 @@ export function PoseInferenceProvider({ children }) {
       let intervalMs;
       let mode = '';
       
-      if (currentIsStretchingPage && currentIsPageActive) {
-        intervalMs = 1000;
-        mode = '스트레칭 페이지 활성화 모드 (1초)';
-      } else if (currentIsPageActive) {
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
-      } else {
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
-      }
+      // 모든 페이지에서 설정된 주기를 사용 (스트레칭 페이지에서도 사용자가 설정한 주기 적용)
+      intervalMs = state.inferenceInterval * 60 * 1000;
+      mode = `설정된 주기 모드 (${state.inferenceInterval}분)`;
       
-
+      // 디버깅을 위한 상세 로그
+      console.log('🔍 인터벌 계산 상세:', {
+        inferenceInterval: state.inferenceInterval,
+        inferenceIntervalType: typeof state.inferenceInterval,
+        계산식: `${state.inferenceInterval} * 60 * 1000`,
+        결과: intervalMs,
+        예상값: {
+          '1/6': '10000ms (10초)',
+          '1': '60000ms (1분)',
+          '3': '180000ms (3분)',
+          '5': '300000ms (5분)'
+        }
+      });
+      
+      console.log('⏰ 추론 인터벌 설정:', {
+        모드: mode,
+        주기: intervalMs + 'ms',
+        설정된주기: state.inferenceInterval + '분',
+        계산과정: `${state.inferenceInterval} * 60 * 1000 = ${state.inferenceInterval * 60 * 1000}ms`,
+        원시값: state.inferenceInterval
+      });
       
       // 새로운 인터벌 설정
       intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
     }
-  }, [isPageActive, isStretchingPage, state.isInferenceEnabled, state.isRecognized, state.keypoints, state.inferenceInterval, runInferenceWithLatestState]);
+
+    // 클린업 함수
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [
+    state.isInferenceEnabled, 
+    state.isRecognized, 
+    state.keypoints, 
+    state.inferenceInterval, // 이 의존성이 변경되면 인터벌이 재설정됨
+    state.neckAngleCheck,
+    state.facePositionCheck,
+    isPageActive,
+    isStretchingPage,
+    runInferenceWithLatestState
+  ]);
 
   // 키포인트가 변경될 때마다 즉시 분석 업데이트
   useEffect(() => {

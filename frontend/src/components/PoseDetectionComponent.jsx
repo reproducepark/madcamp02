@@ -1,6 +1,7 @@
 // src/components/PoseDetectionComponent.jsx
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as tf from "@tensorflow/tfjs";
+import { usePoseInference } from '../contexts/PoseInferenceContext';
 
 // 모델 경로를 동적으로 설정
 const getModelUrl = () => {
@@ -42,6 +43,8 @@ const KEYPOINT_CONNECTIONS = [
 ];
 
 function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChange, customInterval }) {
+  // PoseInferenceContext에서 추론 주기 가져오기
+  const { inferenceInterval, isInferenceEnabled } = usePoseInference();
   const canvasRef = useRef(null);
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -337,10 +340,17 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         clearInterval(intervalRef.current);
       }
       
-      // customInterval이 있으면 사용, 없으면 기본값 1초
-      const interval = customInterval || 1000;
+      // PoseInferenceContext의 설정을 우선 사용, 없으면 customInterval, 마지막으로 기본값 1초
+      let interval;
+      if (isInferenceEnabled && inferenceInterval) {
+        // 설정된 주기를 사용 (스트레칭 페이지에서도 사용자가 설정한 주기 적용)
+        interval = inferenceInterval * 60 * 1000; // 분을 밀리초로 변환
+      } else {
+        interval = customInterval || 1000;
+      }
+      
       intervalRef.current = setInterval(runPose, interval);
-      console.log(`✅ 포즈 추론 인터벌 시작 (${interval}ms 간격)`);
+      console.log(`✅ 포즈 추론 인터벌 시작 (${interval}ms 간격, 설정: ${inferenceInterval}분)`);
     };
 
     const stopPoseEstimation = () => {
@@ -372,20 +382,28 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
     return stopPoseEstimation;
   }, [model, videoRef.current, canvasRef.current]);
 
-  // customInterval이 변경될 때마다 인터벌 재설정
+  // PoseInferenceContext 설정이 변경될 때마다 인터벌 재설정
   useEffect(() => {
     if (model && videoRef.current && canvasRef.current && intervalRef.current) {
-      console.log(`🔄 추론 주기 변경: ${customInterval || 1000}ms`);
+      // PoseInferenceContext의 설정을 우선 사용
+      let interval;
+      if (isInferenceEnabled && inferenceInterval) {
+        // 설정된 주기를 사용 (스트레칭 페이지에서도 사용자가 설정한 주기 적용)
+        interval = inferenceInterval * 60 * 1000; // 분을 밀리초로 변환
+      } else {
+        interval = customInterval || 1000;
+      }
+      
+      console.log(`🔄 추론 주기 변경: ${interval}ms (설정: ${inferenceInterval}분)`);
       
       // 기존 인터벌 정리
       clearInterval(intervalRef.current);
       
       // 새로운 인터벌 설정
-      const interval = customInterval || 1000;
       intervalRef.current = setInterval(runPose, interval);
       console.log(`✅ 포즈 추론 인터벌 재설정 (${interval}ms 간격)`);
     }
-  }, [customInterval, model]);
+  }, [inferenceInterval, isInferenceEnabled, customInterval, model]);
 
   if (loading) {
     return (

@@ -74,12 +74,14 @@ function WebcamComponent() {
         알림상태: shouldNotify,
         목각도: currentAnalysis?.shoulderNeckAngle || 'N/A',
         얼굴하단: currentAnalysis?.faceInLowerHalf || false,
-        각도경고: currentAnalysis?.isAngleGreaterThan20 || false
+        각도경고: currentAnalysis?.isAngleGreaterThan20 || false,
+        추론주기: inferenceInterval + '분',
+        추론주기타입: typeof inferenceInterval
       });
     }, 1000); // 1초마다 실행
 
     return () => clearInterval(debugInterval);
-  }, [isInferenceEnabled, isRecognized, keypoints, currentAnalysis, shouldNotify]);
+  }, [isInferenceEnabled, isRecognized, keypoints, currentAnalysis, shouldNotify, inferenceInterval]);
 
 
 
@@ -141,7 +143,17 @@ function WebcamComponent() {
             <select 
               className="setting-select"
               value={inferenceInterval}
-              onChange={(e) => dispatch({ type: 'SET_INFERENCE_INTERVAL', payload: Number(e.target.value) })}
+              onChange={(e) => {
+                const newInterval = Number(e.target.value);
+                console.log('⚙️ 자세 확인 주기 변경:', {
+                  이전주기: inferenceInterval + '분',
+                  새주기: newInterval + '분',
+                  원시값: newInterval,
+                  타입: typeof newInterval,
+                  시간: new Date().toLocaleTimeString()
+                });
+                dispatch({ type: 'SET_INFERENCE_INTERVAL', payload: newInterval });
+              }}
             >
               <option value={1/6}>10초</option>
               <option value={1}>1분</option>
