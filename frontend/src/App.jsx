@@ -8,6 +8,7 @@ import ScrumPage from './components/pages/ScrumPage';
 import StretchingPage from './components/pages/StretchingPage';
 import TeammateTodoListPage from './components/pages/TeammateTodoListPage';
 import LLMExample from './components/LLMExample';
+import GlobalPoseDetection from './components/GlobalPoseDetection';
 import { isAuthenticated, tryAutoLogin, logoutUser } from './services/authService';
 import { PoseInferenceProvider } from './contexts/PoseInferenceContext';
 import './App.css';
@@ -71,6 +72,7 @@ function App() {
   return (
     <PoseInferenceProvider>
       <Router>
+        <GlobalPoseDetection />
         <Routes>
           <Route 
             path="/login" 

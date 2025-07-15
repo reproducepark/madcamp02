@@ -41,7 +41,7 @@ const KEYPOINT_CONNECTIONS = [
     [12, 14], [14, 16]  // 오른쪽 다리
 ];
 
-function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChange }) {
+function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChange, customInterval }) {
   const canvasRef = useRef(null);
   const [model, setModel] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -233,6 +233,13 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         }
       });
 
+      console.log("🔍 추론 결과:", {
+        감지결과수: detections.length,
+        최고신뢰도: highestConfidence,
+        최고감지결과: !!bestDetection,
+        시간: new Date().toLocaleTimeString()
+      });
+
       // 5. 가장 높은 신뢰도의 키포인트만 시각화
       // 비디오 크기에 맞게 스케일링 팩터 계산
       const canvasWidth = canvas.width;
@@ -303,6 +310,14 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
 
         // 키포인트 데이터를 상위 컴포넌트로 전달
         if (onKeypointsChange) {
+          console.log("📤 키포인트 전달 시도 - 시간:", new Date().toLocaleTimeString(), {
+            hasValidDetection,
+            faceDetected,
+            leftShoulderDetected,
+            rightShoulderDetected,
+            keypointsLength: keypoints.length
+          });
+          
           if (hasValidDetection) {
             // 목 각도 계산을 위한 키포인트 정보 로그
             const nose = keypoints[0];
@@ -325,6 +340,8 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
             console.log('📊 키포인트 전달 (무효) - 시간:', new Date().toLocaleTimeString(), ': 감지되지 않음');
             onKeypointsChange(null);
           }
+        } else {
+          console.log("❌ onKeypointsChange 콜백이 없음");
         }
 
         // 키포인트 연결선 그리기 - 투명하게 설정
@@ -395,8 +412,10 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         clearInterval(intervalRef.current);
       }
       
-      intervalRef.current = setInterval(runPose, 1000);
-      console.log("✅ 포즈 추론 인터벌 시작 (1초 간격)");
+      // customInterval이 있으면 사용, 없으면 기본값 1초
+      const interval = customInterval || 1000;
+      intervalRef.current = setInterval(runPose, interval);
+      console.log(`✅ 포즈 추론 인터벌 시작 (${interval}ms 간격)`);
     };
 
     const stopPoseEstimation = () => {
@@ -439,6 +458,21 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
 
     return stopPoseEstimation;
   }, [model, videoRef.current, canvasRef.current, runPose]);
+
+  // customInterval이 변경될 때마다 인터벌 재설정
+  useEffect(() => {
+    if (model && videoRef.current && canvasRef.current && intervalRef.current) {
+      console.log(`🔄 추론 주기 변경: ${customInterval || 1000}ms`);
+      
+      // 기존 인터벌 정리
+      clearInterval(intervalRef.current);
+      
+      // 새로운 인터벌 설정
+      const interval = customInterval || 1000;
+      intervalRef.current = setInterval(runPose, interval);
+      console.log(`✅ 포즈 추론 인터벌 재설정 (${interval}ms 간격)`);
+    }
+  }, [customInterval, model, runPose]);
 
   if (loading) {
     return (

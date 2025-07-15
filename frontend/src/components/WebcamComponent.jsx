@@ -71,9 +71,12 @@ function WebcamComponent() {
         인식상태: isRecognized,
         키포인트수: keypoints ? keypoints.length : 0,
         현재분석: !!currentAnalysis,
-        알림상태: shouldNotify
+        알림상태: shouldNotify,
+        목각도: currentAnalysis?.shoulderNeckAngle || 'N/A',
+        얼굴하단: currentAnalysis?.faceInLowerHalf || false,
+        각도경고: currentAnalysis?.isAngleGreaterThan20 || false
       });
-    }, 1000);
+    }, 1000); // 1초마다 실행
 
     return () => clearInterval(debugInterval);
   }, [isInferenceEnabled, isRecognized, keypoints, currentAnalysis, shouldNotify]);
