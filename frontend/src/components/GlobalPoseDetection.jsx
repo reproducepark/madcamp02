@@ -30,7 +30,7 @@ function GlobalPoseDetection() {
     };
   }, [isInferenceEnabled]);
 
-  // 추론 주기 계산
+    // 추론 주기 계산
   useEffect(() => {
     if (isInferenceEnabled) {
       // 현재 상태를 직접 확인
@@ -41,11 +41,9 @@ function GlobalPoseDetection() {
       if (currentIsStretchingPage && currentIsPageActive) {
         // 스트레칭 페이지가 활성화되어 있으면 1초마다
         newInterval = 1000;
-        console.log('🌐 GlobalPoseDetection: 스트레칭 페이지 모드 (1초)');
       } else {
         // 다른 페이지나 비활성화 상태에서는 10초마다 (기본값)
         newInterval = 10000;
-        console.log('🌐 GlobalPoseDetection: 다른 페이지 모드 (10초)');
       }
       
       setInferenceInterval(newInterval);
@@ -62,10 +60,8 @@ function GlobalPoseDetection() {
         let newInterval;
         if (currentIsStretchingPage && currentIsPageActive) {
           newInterval = 1000;
-          console.log('🌐 GlobalPoseDetection: 페이지 변경 - 스트레칭 페이지 모드 (1초)');
         } else {
           newInterval = 10000;
-          console.log('🌐 GlobalPoseDetection: 페이지 변경 - 다른 페이지 모드 (10초)');
         }
         
         setInferenceInterval(newInterval);
@@ -151,15 +147,9 @@ function GlobalPoseDetection() {
           videoRef={videoRef}
           customInterval={inferenceInterval} // 커스텀 인터벌 전달
           onRecognitionChange={(recognized) => {
-            console.log('🌐 전역 인식 상태 변경:', recognized);
             dispatch({ type: 'SET_IS_RECOGNIZED', payload: recognized });
           }}
           onKeypointsChange={(keypoints) => {
-            if (keypoints) {
-              console.log('🌐 전역 키포인트 업데이트:', keypoints.length, '개');
-            } else {
-              console.log('🌐 전역 키포인트 업데이트: 감지되지 않음');
-            }
             dispatch({ type: 'SET_KEYPOINTS', payload: keypoints });
           }}
         />

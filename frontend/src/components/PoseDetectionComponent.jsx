@@ -51,14 +51,10 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
   // 모델 로드
   useEffect(() => {
     async function loadModel() {
-      console.log("=== 모델 로드 시작 ===");
-      console.log("초기 MODEL_URL:", MODEL_URL);
-      console.log("현재 환경:", import.meta.env.DEV ? "개발" : "프로덕션");
-      console.log("window.location.href:", window.location.href);
-      console.log("window.location.pathname:", window.location.pathname);
+      console.log("🤖 포즈 추론 모델 로드 시작...");
       
       setLoading(true);
-      setErrorMessage(""); // 에러 메시지 초기화
+      setErrorMessage("");
       
       // 여러 경로를 시도
       const modelPaths = [
@@ -68,84 +64,55 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         "model/model.json"
       ];
       
-      console.log("시도할 모델 경로들:", modelPaths);
-      
       for (let i = 0; i < modelPaths.length; i++) {
         const path = modelPaths[i];
-        console.log(`\n--- ${i + 1}번째 시도: ${path} ---`);
         
         try {
-          console.log("TensorFlow.js 초기화 시작...");
           await tf.ready();
-          console.log("TensorFlow.js 초기화 완료");
           
-          console.log("모델 로드 시작...");
           const loadedModel = await tf.loadGraphModel(path, {
             onProgress: (fraction) => {
-              console.log(`모델 로드 진행률: ${(fraction * 100).toFixed(1)}%`);
+              console.log(`📊 모델 로드 진행률: ${(fraction * 100).toFixed(1)}%`);
             }
           });
           
-          console.log("모델 로드 성공!");
-          console.log("로드된 모델 정보:", {
-            inputs: loadedModel.inputs,
-            outputs: loadedModel.outputs,
-            modelUrl: loadedModel.modelUrl
-          });
+          console.log("✅ 포즈 추론 모델 로드 완료");
           
           setModel(loadedModel);
           setLoading(false);
-          console.log("=== 모델 로드 완료 ===");
           return; // 성공하면 함수 종료
           
         } catch (error) {
-          console.error(`모델 로드 실패 (${path}):`, error);
-          console.error("에러 상세 정보:", {
-            name: error.name,
-            message: error.message,
-            stack: error.stack
-          });
-          
-          // 네트워크 에러인지 확인
-          if (error.message.includes("Failed to fetch")) {
-            console.error("네트워크 에러 - 파일을 찾을 수 없음");
-          } else if (error.message.includes("JSON")) {
-            console.error("JSON 파싱 에러 - 파일 형식 문제");
-          }
-          
+          console.error(`❌ 모델 로드 실패 (${path}):`, error.message);
           continue; // 다음 경로 시도
         }
       }
       
       // 모든 경로가 실패한 경우
-      console.error("=== 모든 모델 경로에서 로드 실패 ===");
-      console.error("시도한 경로들:", modelPaths);
+      console.error("❌ 모든 모델 경로에서 로드 실패");
       setErrorMessage("모델을 로드할 수 없습니다. 모델 파일이 올바른 위치에 있는지 확인해주세요.");
       setLoading(false);
     }
     
-    console.log("loadModel 함수 호출");
     loadModel();
   }, []);
 
   // runPose 함수를 useCallback으로 정의
   const runPose = useCallback(async () => {
-    console.log("🔄 runPose 함수 실행 - 시간:", new Date().toLocaleTimeString());
     
-    if (!videoRef.current) {
+    const video = videoRef.current;
+    if (!video) {
       console.log("❌ 비디오 ref 없음");
       return;
     }
     
-    if (videoRef.current.readyState !== 4) {
-      console.log("❌ 비디오 준비되지 않음 (readyState:", videoRef.current.readyState, ")");
+    if (video.readyState !== 4) {
+      console.log("❌ 비디오 준비되지 않음 (readyState:", video.readyState, ")");
       return;
     }
-
-    const video = videoRef.current;
     const canvas = canvasRef.current;
     
-    console.log("비디오 크기:", video.videoWidth, "x", video.videoHeight);
+
     
     // Canvas 요소 존재 여부를 더 안전하게 확인
     if (!canvas) {
@@ -159,7 +126,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
       return;
     }
     
-    console.log("✅ Canvas 준비됨, 추론 시작");
+
 
     const ctx = canvas.getContext("2d");
     const modelInputSize = 640; // 모델 입력 크기
@@ -233,12 +200,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
         }
       });
 
-      console.log("🔍 추론 결과:", {
-        감지결과수: detections.length,
-        최고신뢰도: highestConfidence,
-        최고감지결과: !!bestDetection,
-        시간: new Date().toLocaleTimeString()
-      });
+
 
       // 5. 가장 높은 신뢰도의 키포인트만 시각화
       // 비디오 크기에 맞게 스케일링 팩터 계산
@@ -310,38 +272,12 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
 
         // 키포인트 데이터를 상위 컴포넌트로 전달
         if (onKeypointsChange) {
-          console.log("📤 키포인트 전달 시도 - 시간:", new Date().toLocaleTimeString(), {
-            hasValidDetection,
-            faceDetected,
-            leftShoulderDetected,
-            rightShoulderDetected,
-            keypointsLength: keypoints.length
-          });
-          
           if (hasValidDetection) {
-            // 목 각도 계산을 위한 키포인트 정보 로그
-            const nose = keypoints[0];
-            const leftShoulder = keypoints[5];
-            const rightShoulder = keypoints[6];
-            
-            console.log('📊 키포인트 전달 (유효) - 시간:', new Date().toLocaleTimeString(), {
-              키포인트수: keypoints.length,
-              얼굴감지: faceDetected,
-              왼쪽어깨: leftShoulderDetected,
-              오른쪽어깨: rightShoulderDetected,
-              유효감지: hasValidDetection,
-              코위치: nose ? `(${Math.round(nose.x)}, ${Math.round(nose.y)})` : '없음',
-              왼쪽어깨위치: leftShoulder ? `(${Math.round(leftShoulder.x)}, ${Math.round(leftShoulder.y)})` : '없음',
-              오른쪽어깨위치: rightShoulder ? `(${Math.round(rightShoulder.x)}, ${Math.round(rightShoulder.y)})` : '없음'
-            });
             onKeypointsChange(keypoints);
           } else {
             // 유효하지 않을 때 null 전달
-            console.log('📊 키포인트 전달 (무효) - 시간:', new Date().toLocaleTimeString(), ': 감지되지 않음');
             onKeypointsChange(null);
           }
-        } else {
-          console.log("❌ onKeypointsChange 콜백이 없음");
         }
 
         // 키포인트 연결선 그리기 - 투명하게 설정
@@ -374,41 +310,30 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
       setErrorMessage("추론 중 오류가 발생했습니다. 콘솔을 확인해주세요.");
     } finally {
       // 텐서 메모리 해제
-      input.dispose();
-      if (output) output.dispose();
-      if (processedOutput && processedOutput !== output) processedOutput.dispose();
+      try {
+        input.dispose();
+        if (output) output.dispose();
+        if (processedOutput && processedOutput !== output) processedOutput.dispose();
+        
+        // 임시 캔버스 정리
+        if (tempCanvas) {
+          tempCanvas.width = 0;
+          tempCanvas.height = 0;
+        }
+      } catch (disposeError) {
+        console.warn("텐서 메모리 해제 중 오류:", disposeError);
+      }
     }
-  }, [model, videoRef, onRecognitionChange, onKeypointsChange]);
+  }, [model, onRecognitionChange, onKeypointsChange]);
 
   // 추론 시작 및 중지 관리
   useEffect(() => {
-    console.log("=== 추론 시작 useEffect 실행 ===");
-    console.log("모델 상태:", !!model);
-    console.log("비디오 ref 상태:", !!videoRef.current);
-    console.log("캔버스 ref 상태:", !!canvasRef.current);
-    
-    if (!model) {
-      console.log("❌ 모델이 로드되지 않음");
+    if (!model || !videoRef.current || !canvasRef.current) {
       return;
     }
-    
-    if (!videoRef.current) {
-      console.log("❌ 비디오 ref가 없음");
-      return;
-    }
-    
-    if (!canvasRef.current) {
-      console.log("❌ 캔버스 ref가 없음");
-      return;
-    }
-
-    console.log("✅ 모든 요소 준비됨, 추론 시작...");
 
     const startPoseEstimation = () => {
-      console.log("🚀 포즈 추론 시작 함수 호출");
-      
       if (intervalRef.current) {
-        console.log("기존 인터벌 정리");
         clearInterval(intervalRef.current);
       }
       
@@ -419,45 +344,33 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
     };
 
     const stopPoseEstimation = () => {
-      console.log("🛑 포즈 추론 중지 함수 호출");
-      
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
-        console.log("✅ 포즈 추론 인터벌 중지 완료");
-      } else {
-        console.log("인터벌이 이미 중지된 상태");
       }
     };
 
     // 비디오가 이미 준비된 경우
     if (videoRef.current.readyState === 4) {
-      console.log("✅ 비디오가 이미 준비됨 (readyState: 4)");
       startPoseEstimation();
     } else {
-      console.log("⏳ 비디오 준비 대기 중... (readyState:", videoRef.current.readyState, ")");
-      
       // 비디오가 준비될 때까지 대기
       const handleLoadedData = () => {
-        console.log("🎥 비디오 로드 완료, 추론 시작");
         startPoseEstimation();
       };
 
       videoRef.current.addEventListener('loadeddata', handleLoadedData, { once: true });
-      console.log("비디오 loadeddata 이벤트 리스너 등록");
       
       return () => {
-        console.log("🧹 추론 useEffect 정리 함수 실행");
         if (videoRef.current) {
           videoRef.current.removeEventListener('loadeddata', handleLoadedData);
-          console.log("비디오 이벤트 리스너 제거");
         }
         stopPoseEstimation();
       };
     }
 
     return stopPoseEstimation;
-  }, [model, videoRef.current, canvasRef.current, runPose]);
+  }, [model, videoRef.current, canvasRef.current]);
 
   // customInterval이 변경될 때마다 인터벌 재설정
   useEffect(() => {
@@ -472,7 +385,7 @@ function PoseDetectionComponent({ videoRef, onRecognitionChange, onKeypointsChan
       intervalRef.current = setInterval(runPose, interval);
       console.log(`✅ 포즈 추론 인터벌 재설정 (${interval}ms 간격)`);
     }
-  }, [customInterval, model, runPose]);
+  }, [customInterval, model]);
 
   if (loading) {
     return (

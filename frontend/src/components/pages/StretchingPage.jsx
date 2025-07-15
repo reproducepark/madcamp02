@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from '../layout/Sidebar';
 import TopMenu from '../layout/TopMenu';
 import TimerComponent from '../TimerComponent';
@@ -7,6 +7,9 @@ import '../../styles/StretchingPage.css';
 import '../../styles/WebcamComponent.css';
 
 function StretchingPage({ onLogout }) {
+  const videoRef = useRef(null);
+  const [isStreaming, setIsStreaming] = useState(false);
+  
   // localStorage에서 스트레칭 상태 불러오기
   const [isStretchingEnabled, setIsStretchingEnabled] = useState(() => {
     const saved = localStorage.getItem('stretchingEnabled');
@@ -25,6 +28,52 @@ function StretchingPage({ onLogout }) {
     shouldNotify,
     dispatch
   } = usePoseInference();
+
+  // 웹캠 시작
+  useEffect(() => {
+    if (isStretchingEnabled) {
+      startWebcam();
+    } else {
+      stopWebcam();
+    }
+
+    return () => {
+      stopWebcam();
+    };
+  }, [isStretchingEnabled]);
+
+  const startWebcam = async () => {
+    try {
+      console.log('📹 스트레칭 페이지 웹캠 시작');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: 'user'
+        },
+        audio: false
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setIsStreaming(true);
+        console.log('✅ 스트레칭 페이지 웹캠 시작 성공');
+      }
+    } catch (err) {
+      console.error('❌ 스트레칭 페이지 웹캠 접근 오류:', err);
+      setIsStreaming(false);
+    }
+  };
+
+  const stopWebcam = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => track.stop());
+      videoRef.current.srcObject = null;
+      setIsStreaming(false);
+      console.log('🛑 스트레칭 페이지 웹캠 중지');
+    }
+  };
 
   const handleStretchingToggle = (enabled) => {
     setIsStretchingEnabled(enabled);
@@ -69,7 +118,25 @@ function StretchingPage({ onLogout }) {
 
             <div className="todo-stretching-content">
               {isStretchingEnabled ? (
-                <div className="stretching-status-wrapper">
+                <div className="stretching-webcam-wrapper">
+                  {/* 웹캠 화면 표시 */}
+                  <div className="webcam-video-container">
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="webcam-video"
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '400px',
+                        objectFit: 'cover',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  </div>
+
                   {/* 인식 상태 표시 */}
                   <div className="recognition-status">
                     <div className={`status-indicator ${isRecognized ? 'recognized' : 'not-recognized'}`}></div>
