@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useRef, useCallback, useState } from 'react';
 import { analyzePose } from '../utils/poseAnalysis';
 
 // 액션 타입 정의
@@ -20,8 +20,8 @@ const initialState = {
   // 설정
   isInferenceEnabled: false,
   inferenceInterval: 1/6, // 10초 (1/6분)
-  neckAngleCheck: false,
-  facePositionCheck: false,
+  neckAngleCheck: true,
+  facePositionCheck: true,
   
   // 추론 데이터
   keypoints: null,
@@ -114,17 +114,67 @@ export function PoseInferenceProvider({ children }) {
   const [state, dispatch] = useReducer(poseInferenceReducer, initialState);
   const intervalRef = useRef(null);
   const stateRef = useRef(state);
+  const lastNotificationTimeRef = useRef(0); // 마지막 알림 발송 시간 추적
+  const [isPageActive, setIsPageActive] = useState(true); // 페이지 활성화 상태
+  const [isStretchingPage, setIsStretchingPage] = useState(false); // 스트레칭 페이지 여부
   
   // stateRef를 최신 상태로 업데이트
   useEffect(() => {
     stateRef.current = state;
   }, [state]);
 
+  // 페이지 활성화/비활성화 감지 (블러 기준)
+  useEffect(() => {
+    const handleFocus = () => {
+      setIsPageActive(true);
+      console.log('📱 페이지 포커스 - 활성화');
+    };
+
+    const handleBlur = () => {
+      setIsPageActive(false);
+      console.log('📱 페이지 블러 - 비활성화');
+    };
+
+    // 초기 상태 설정 (페이지가 포커스되어 있으면 활성화)
+    setIsPageActive(document.hasFocus());
+
+    // 이벤트 리스너 등록 (블러/포커스만 사용)
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  // 스트레칭 페이지 여부 감지
+  useEffect(() => {
+    const checkStretchingPage = () => {
+      const isStretching = window.location.hash === '#/stretching';
+      setIsStretchingPage(isStretching);
+      console.log('🏃 스트레칭 페이지 여부:', isStretching ? '스트레칭 페이지' : '다른 페이지');
+    };
+
+    // 초기 체크
+    checkStretchingPage();
+
+    // URL 변경 감지
+    const handleHashChange = () => {
+      checkStretchingPage();
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
   // 자세 교정이 필요한지 확인하는 함수
   const needsPostureCorrection = (analysis) => {
     // 분석이 없거나 유효하지 않으면 자세가 옳다고 가정 (감지되지 않음)
     if (!analysis || !analysis.isValid) {
-      console.log('📷 감지되지 않음 - 자세가 옳다고 가정');
       return false;
     }
     
@@ -140,12 +190,20 @@ export function PoseInferenceProvider({ children }) {
       return true;
     }
     
-    console.log('✅ 자세 정상');
     return false;
   };
 
-  // 알림을 보내는 함수
+  // 알림을 보내는 함수 (중복 방지)
   const sendNotification = () => {
+    const now = Date.now();
+    const timeSinceLastNotification = now - lastNotificationTimeRef.current;
+    
+    // 5초 내에 이미 알림을 보냈다면 중복 방지
+    if (timeSinceLastNotification < 5000) {
+      console.log('🔕 중복 알림 방지 (마지막 알림으로부터', Math.round(timeSinceLastNotification / 1000), '초)');
+      return;
+    }
+    
     if (!('Notification' in window)) {
       console.log('이 브라우저는 알림을 지원하지 않습니다.');
       return;
@@ -154,9 +212,12 @@ export function PoseInferenceProvider({ children }) {
     if (Notification.permission === 'granted') {
       new Notification('자세 교정 알림', {
         body: '잘못된 자세가 감지되었습니다. 자세를 교정해주세요.',
-        icon: '/vite.svg',
         tag: 'posture-correction'
       });
+      
+      // 알림 발송 시간 기록
+      lastNotificationTimeRef.current = now;
+      console.log('🔔 자세 교정 알림 발송 완료');
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
@@ -166,6 +227,81 @@ export function PoseInferenceProvider({ children }) {
     }
   };
 
+  // 최신 상태를 사용하는 추론 함수를 useCallback으로 정의
+  const runInferenceWithLatestState = useCallback(() => {
+    const currentState = stateRef.current;
+    
+    // 현재 모드 결정 (stateRef를 통해 최신 상태 참조)
+    let currentMode = '';
+    const currentIsStretchingPage = window.location.hash === '#/stretching';
+    const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+    
+    if (currentIsStretchingPage && currentIsPageActive) {
+      currentMode = '스트레칭 페이지 활성화 모드 (1초)';
+    } else if (currentIsPageActive) {
+      currentMode = `다른 페이지 활성화 모드 (${currentState.inferenceInterval}분)`;
+    } else {
+      currentMode = `페이지 비활성화 모드 (${currentState.inferenceInterval}분)`;
+    }
+    
+
+    
+    if (currentState.keypoints) {
+      // 실시간으로 최신 키포인트를 사용하여 분석
+      const analysis = analyzePose(currentState.keypoints, 640);
+      
+      // 목 각도와 얼굴 위치 감지 시에만 로그 출력
+      if (analysis.isValid) {
+        const nose = currentState.keypoints[0];
+        const leftShoulder = currentState.keypoints[5];
+        const rightShoulder = currentState.keypoints[6];
+        
+        // 현재 페이지 상태 확인
+        const currentIsStretchingPage = window.location.hash === '#/stretching';
+        const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+        
+        console.log('🎯 포즈 감지:', {
+          시간: new Date().toLocaleTimeString(),
+          페이지: currentIsStretchingPage ? '스트레칭' : '다른페이지',
+          활성화: currentIsPageActive ? '예' : '아니오',
+          목각도: analysis.shoulderNeckAngle.toFixed(1) + '°',
+          얼굴하단: analysis.faceInLowerHalf ? '예' : '아니오',
+          각도경고: analysis.isAngleGreaterThan20 ? '예' : '아니오',
+          코위치: nose ? `(${Math.round(nose.x)}, ${Math.round(nose.y)})` : '없음',
+          왼쪽어깨: leftShoulder ? `(${Math.round(leftShoulder.x)}, ${Math.round(leftShoulder.y)})` : '없음',
+          오른쪽어깨: rightShoulder ? `(${Math.round(rightShoulder.x)}, ${Math.round(rightShoulder.y)})` : '없음'
+        });
+      }
+      
+      // 현재 분석을 이전 분석으로 저장하고 새 분석을 현재로 설정
+      const previousAnalysis = currentState.currentAnalysis;
+      
+      // 상태 업데이트
+      dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: previousAnalysis });
+      dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: analysis });
+      
+      // 이전과 현재 모두 자세 교정이 필요한 경우 알림
+      const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
+      const currentNeedsCorrection = needsPostureCorrection(analysis);
+      
+      // 페이지가 비활성화된 상태에서도 알림 발송
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+      
+      if (lastNeedsCorrection && currentNeedsCorrection) {
+        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
+        
+        // 페이지가 비활성화된 상태에서만 알림 발송
+        if (!currentIsPageActive) {
+          sendNotification();
+        } else {
+          console.log('🔔 자세 교정 필요 (페이지 활성화 상태 - 알림 발송 안함)');
+        }
+      } else {
+        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
+      }
+    }
+  }, [dispatch, needsPostureCorrection, sendNotification]);
+
   // 주기적 추론 실행
   useEffect(() => {
     if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
@@ -174,70 +310,32 @@ export function PoseInferenceProvider({ children }) {
         clearInterval(intervalRef.current);
       }
 
-      // 새로운 인터벌 설정 (분을 밀리초로 변환)
-      const intervalMs = state.inferenceInterval * 60 * 1000;
+      // 스트레칭 페이지와 페이지 활성화 상태에 따라 추론 주기 결정
+      let intervalMs;
+      let mode = '';
+      
+      // 현재 상태를 직접 확인
+      const currentIsStretchingPage = window.location.hash === '#/stretching';
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+      
+      if (currentIsStretchingPage && currentIsPageActive) {
+        // 스트레칭 페이지가 활성화되어 있으면 1초마다
+        intervalMs = 1000;
+        mode = '스트레칭 페이지 활성화 모드 (1초)';
+      } else if (currentIsPageActive) {
+        // 다른 페이지가 활성화되어 있으면 설정된 시간에 맞게
+        intervalMs = state.inferenceInterval * 60 * 1000;
+        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
+      } else {
+        // 페이지가 비활성화되어 있으면 설정된 시간에 맞게
+        intervalMs = state.inferenceInterval * 60 * 1000;
+        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
+      }
+      
+
       
       // 추론 실행 함수 정의
-      const runInference = () => {
-        const currentState = stateRef.current;
-        console.log('⏰ 전역 추론 인터벌 실행 - 시간:', new Date().toLocaleTimeString(), {
-          키포인트존재: !!currentState.keypoints,
-          추론주기: currentState.inferenceInterval,
-          인식상태: currentState.isRecognized
-        });
-        
-        if (currentState.keypoints) {
-          // 키포인트 변경 확인을 위한 로그
-          const nose = currentState.keypoints[0];
-          const leftShoulder = currentState.keypoints[5];
-          const rightShoulder = currentState.keypoints[6];
-          
-          console.log('🎯 현재 키포인트 상태 - 시간:', new Date().toLocaleTimeString(), {
-            코위치: nose ? `(${Math.round(nose.x)}, ${Math.round(nose.y)})` : '없음',
-            왼쪽어깨위치: leftShoulder ? `(${Math.round(leftShoulder.x)}, ${Math.round(leftShoulder.y)})` : '없음',
-            오른쪽어깨위치: rightShoulder ? `(${Math.round(rightShoulder.x)}, ${Math.round(rightShoulder.y)})` : '없음'
-          });
-          
-          const analysis = analyzePose(currentState.keypoints, 640);
-          console.log('🔍 포즈 분석 완료:', {
-            목각도: analysis.shoulderNeckAngle,
-            얼굴하단: analysis.faceInLowerHalf,
-            각도경고: analysis.isAngleGreaterThan20,
-            유효성: analysis.isValid
-          });
-          
-          // 현재 분석을 이전 분석으로 저장하고 새 분석을 현재로 설정
-          const previousAnalysis = currentState.currentAnalysis;
-          console.log('📋 이전 분석 결과:', previousAnalysis);
-          
-          // 상태 업데이트
-          dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: previousAnalysis });
-          dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: analysis });
-          
-          // 이전과 현재 모두 자세 교정이 필요한 경우 알림
-          const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
-          const currentNeedsCorrection = needsPostureCorrection(analysis);
-          
-          console.log('⚠️ 자세 교정 필요 여부:', {
-            이전분석: previousAnalysis,
-            이전교정필요: lastNeedsCorrection,
-            현재교정필요: currentNeedsCorrection,
-            알림발송: lastNeedsCorrection && currentNeedsCorrection
-          });
-          
-          if (lastNeedsCorrection && currentNeedsCorrection) {
-            dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
-            sendNotification();
-            console.log('🔔 자세 교정 알림 발송됨');
-          } else {
-            dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
-          }
-        } else {
-          console.log('❌ 키포인트가 없어서 분석 불가');
-        }
-      };
-      
-      intervalRef.current = setInterval(runInference, intervalMs);
+      intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
 
       return () => {
         if (intervalRef.current) {
@@ -257,9 +355,90 @@ export function PoseInferenceProvider({ children }) {
     state.keypoints, 
     state.inferenceInterval,
     state.neckAngleCheck,
-    state.facePositionCheck
+    state.facePositionCheck,
+    runInferenceWithLatestState
   ]);
 
+  // 페이지 상태 변경 시 인터벌 재설정
+  useEffect(() => {
+    if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
+      // 기존 인터벌 정리
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+
+      // 현재 상태를 직접 확인
+      const currentIsStretchingPage = window.location.hash === '#/stretching';
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+      
+      // 추론 주기 결정
+      let intervalMs;
+      let mode = '';
+      
+      if (currentIsStretchingPage && currentIsPageActive) {
+        intervalMs = 1000;
+        mode = '스트레칭 페이지 활성화 모드 (1초)';
+      } else if (currentIsPageActive) {
+        intervalMs = state.inferenceInterval * 60 * 1000;
+        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
+      } else {
+        intervalMs = state.inferenceInterval * 60 * 1000;
+        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
+      }
+      
+
+      
+      // 새로운 인터벌 설정
+      intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
+    }
+  }, [isPageActive, isStretchingPage, state.isInferenceEnabled, state.isRecognized, state.keypoints, state.inferenceInterval, runInferenceWithLatestState]);
+
+  // 키포인트가 변경될 때마다 즉시 분석 업데이트
+  useEffect(() => {
+    if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
+      const analysis = analyzePose(state.keypoints, 640);
+      
+      // 현재 분석을 이전 분석으로 저장하고 새 분석을 현재로 설정
+      const previousAnalysis = state.currentAnalysis;
+      
+      // 상태 업데이트
+      dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: previousAnalysis });
+      dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: analysis });
+      
+      // 자세 교정 필요 여부 확인
+      const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
+      const currentNeedsCorrection = needsPostureCorrection(analysis);
+      
+      // 페이지가 비활성화된 상태에서도 알림 발송
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
+      
+      if (lastNeedsCorrection && currentNeedsCorrection) {
+        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
+        
+        // 페이지가 비활성화된 상태에서만 알림 발송
+        if (!currentIsPageActive) {
+          sendNotification();
+        } else {
+          console.log('🔔 키포인트 변경으로 인한 자세 교정 필요 (페이지 활성화 상태 - 알림 발송 안함)');
+        }
+      } else {
+        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
+      }
+    } else if (state.isInferenceEnabled && state.isRecognized && !state.keypoints) {
+      // 키포인트가 null인 경우 (감지되지 않음)
+
+      dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: null });
+      dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
+    }
+  }, [state.keypoints, state.isInferenceEnabled, state.isRecognized]);
+
+  // 인식 상태가 false로 변경될 때 분석 리셋
+  useEffect(() => {
+    if (!state.isRecognized && state.isInferenceEnabled) {
+
+      dispatch({ type: ACTIONS.RESET_ANALYSIS });
+    }
+  }, [state.isRecognized, state.isInferenceEnabled]);
 
 
   // 컴포넌트 언마운트 시 인터벌 정리

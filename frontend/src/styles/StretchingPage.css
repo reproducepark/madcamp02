@@ -20,8 +20,8 @@
   position: relative;
 }
 
-/* 스트레칭 섹션 (왼쪽 반) */
-.todo-stretching-section {
+/* 자세감지 섹션 (왼쪽 반) */
+.todo-posture-section {
   flex: 1;
   background: #fff;
   border-radius: 12px;
@@ -31,14 +31,14 @@
   flex-direction: column;
 }
 
-.todo-stretching-title {
+.todo-posture-title {
   font-weight: 600;
   font-size: 1.2rem;
   margin-bottom: 16px;
   color: #374151;
 }
 
-.todo-stretching-content {
+.todo-posture-content {
   flex: 1;
   background: #f5f5f5;
   border-radius: 8px;
@@ -49,8 +49,8 @@
   font-size: 1.1rem;
 }
 
-/* 스트레칭 컨트롤 스타일 */
-.stretching-controls {
+/* 자세감지 컨트롤 스타일 */
+.posture-controls {
   margin-bottom: 16px;
   padding: 12px;
   background: #f8f9fa;
@@ -122,23 +122,136 @@
   transform: scale(1.05);
 }
 
-.stretching-disabled {
+.posture-disabled {
   text-align: center;
   color: #6c757d;
   font-size: 16px;
   padding: 40px 20px;
 }
 
-.stretching-disabled p {
+.posture-disabled p {
   margin: 0;
 }
 
-.stretching-webcam-wrapper {
+.posture-webcam-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+}
+
+.webcam-video-container {
+  flex: 0 0 auto;
+  display: flex;
   align-items: center;
   justify-content: center;
+  background: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  position: relative;
+  max-height: 500px;
+  width: 100%;
+}
+
+.webcam-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.recognition-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.recognition-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6c757d;
+  flex-shrink: 0;
+}
+
+.status-indicator.recognized {
+  background: #28a745;
+  animation: pulse 2s infinite;
+}
+
+.status-indicator.not-recognized {
+  background: #dc3545;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.webcam-settings {
+  flex: 0 0 auto;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.webcam-settings h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #495057;
+}
+
+.settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.setting-item label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #495057;
+  flex: 1;
+}
+
+.setting-select {
+  padding: 6px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  color: #495057;
+  min-width: 100px;
+}
+
+.setting-select:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 /* 타이머 섹션 (오른쪽 반) */
@@ -169,4 +282,13 @@
   justify-content: center;
   color: #6b7280;
   font-size: 1.1rem;
+}
+
+/* 타이머 컨트롤 스타일 */
+.timer-controls {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 } 
