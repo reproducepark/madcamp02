@@ -1,35 +1,76 @@
 /* 전체 레이아웃 */
 .todo-container {
   min-height: calc(100vh - 60px);
+  min-width: 1100px; /* ✅ 추가: 최소 가로 폭 */
   display: flex;
   flex-direction: column;
 }
 
+/* 내부 영역 */
 .todo-body {
   display: flex;
   height: calc(100vh - 60px);
   margin: 5px;
   margin-left: 20px;
+  overflow: hidden; /* ✅ 추가: 넘치지 않도록 */
 }
 
+/* 메인 컨테이너 */
 .todo-main {
   flex: 1;
   display: flex;
   flex-direction: row;
   gap: 24px;
   position: relative;
+  overflow: hidden; /* ✅ 추가 */
 }
 
-/* 자세감지 섹션 (왼쪽 반) */
+/* 자세감지 섹션 (왼쪽) */
 .todo-posture-section {
   flex: 1;
+  min-width: 0; /* ✅ 추가 */
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* ✅ 추가 */
 }
+
+/* 타이머 섹션 (오른쪽) */
+.todo-timer-section {
+  flex: 1;
+  min-width: 0; /* ✅ 추가 */
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* ✅ 추가 */
+}
+
+/* 내부 컨텐츠 */
+.posture-webcam-wrapper,
+.todo-timer-content,
+.recognition-status,
+.webcam-settings,
+.posture-disabled {
+  max-width: 100%; /* ✅ 추가 */
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* toggle 컨테이너와 item */
+.toggle-container,
+.setting-item {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+/* 나머지 기존 스타일 유지 */
 
 .todo-posture-title {
   font-weight: 600;
@@ -49,7 +90,6 @@
   font-size: 1.1rem;
 }
 
-/* 자세감지 컨트롤 스타일 */
 .posture-controls {
   margin-bottom: 16px;
   padding: 12px;
@@ -254,17 +294,6 @@
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-/* 타이머 섹션 (오른쪽 반) */
-.todo-timer-section {
-  flex: 1;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-
 .todo-timer-title {
   font-weight: 600;
   font-size: 1.2rem;
@@ -284,11 +313,10 @@
   font-size: 1.1rem;
 }
 
-/* 타이머 컨트롤 스타일 */
 .timer-controls {
   margin-bottom: 16px;
   padding: 12px;
   background: #f8f9fa;
   border-radius: 8px;
   border: 1px solid #e9ecef;
-} 
+}

@@ -103,8 +103,8 @@ function createMainWindow() {
         height: 800,  // 1280 * (10/16) = 800
         show: true,
         resizable: true, // 창 크기 조정 허용
-        minWidth: 960,   // 최소 너비 (16:10 비율)
-        minHeight: 600,  // 최소 높이 (960 * (10/16) = 600)
+        minWidth: 1250,   // 최소 너비 (16:10 비율)
+        minHeight: 750,  // 최소 높이 (960 * (10/16) = 600)
         icon: iconPath, // 애플리케이션 아이콘 설정
         webPreferences: {
             preload: path.join(__dirname, "preload.js"),
