@@ -310,6 +310,14 @@ const TimerComponent = () => {
 
   return (
     <div className="timer-component">
+      <div className="overlay-button-container">
+        <button
+          onClick={handleOverlayToggle}
+          className="timer-overlay-btn"
+        >
+          <img src="assets/icons/new_window.png" alt="Open Overlay" />
+        </button>
+      </div>
       <div className="timer-container">
         {/* 시계 인덱스 SVG - 별도 레이어로 분리 */}
         <div className="timer-index-layer">
@@ -430,12 +438,6 @@ const TimerComponent = () => {
           disabled={!isRunning}
         >
           리셋
-        </button>
-        <button
-          onClick={handleOverlayToggle}
-          className={`timer-overlay-btn ${isOverlayOpen ? 'active' : ''}`}
-        >
-          {isOverlayOpen ? '오버레이 닫기' : '오버레이 열기'}
         </button>
       </div>
       
