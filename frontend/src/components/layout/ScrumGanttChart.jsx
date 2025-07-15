@@ -20,47 +20,70 @@ export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
   const weekStart = weekDays[0].time;
   const weekEnd = weekDays[6].time;
 
+  const sortedGoals = [...goals].sort((a, b) => {
+    const aStart = new Date(a.start_date);
+    const bStart = new Date(b.start_date);
+    if (aStart.getTime() !== bStart.getTime()) {
+      return aStart - bStart;
+    }
+    const aIsCompleted = a.real_end_date !== null;
+    const bIsCompleted = b.real_end_date !== null;
+    const aEnd = new Date(aIsCompleted ? a.real_end_date : a.planned_end_date);
+    const bEnd = new Date(bIsCompleted ? b.real_end_date : b.planned_end_date);
+    if (aEnd.getTime() !== bEnd.getTime()) {
+      return aEnd - bEnd;
+    }
+    return (a.id || 0) - (b.id || 0);
+  });
+
   return (
     <div className="gantt-chart">
       <div className="gantt-header">
         {weekDays.map(day => <div key={day.date} className="gantt-cell header">{day.label}</div>)}
       </div>
-      {goals.map((goal, idx) => {
-        const rawStart = goal.start_date ? new Date(goal.start_date).getTime() : null;
-        const rawEnd = new Date(goal.real_end_date || goal.planned_end_date).getTime();
-        if (rawStart === null || isNaN(rawEnd)) return null;
-        // 주 범위와 겹치는 경우만 표시
-        if (rawEnd < weekStart || rawStart > weekEnd) return null;
-        // 주 범위 내로 clamp
-        const clampedStart = Math.max(rawStart, weekStart);
-        const clampedEnd = Math.min(rawEnd, weekEnd);
-        const startIdx = weekDays.findIndex(wd => wd.time === clampedStart);
-        const endIdx = weekDays.findIndex(wd => wd.time === clampedEnd);
-        // bar width 계산
-        const total = weekDays.length;
-        const barLeft = `${(startIdx / total) * 100}%`;
-        const barWidth = `${((endIdx - startIdx + 1) / total) * 100}%`;
-        
-        // 완료된 목표인지 확인
+      {sortedGoals.map((goal, idx) => {
         const isCompleted = goal.real_end_date !== null;
         
+        const startDate = new Date(goal.start_date);
+        startDate.setHours(0,0,0,0);
+        const rawStart = startDate.getTime();
+
+        let rawEnd;
+        if (isCompleted) {
+            const realEndDate = new Date(goal.real_end_date);
+            realEndDate.setHours(0,0,0,0);
+            rawEnd = realEndDate.getTime();
+        } else {
+            rawEnd = new Date(goal.planned_end_date).getTime();
+        }
+
+        if (rawStart === null || isNaN(rawEnd)) return null;
+        if (rawEnd < weekStart || rawStart > weekEnd) return null;
+
+        const clampedStart = Math.max(rawStart, weekStart);
+        const clampedEnd = Math.min(rawEnd, weekEnd);
+
+        const startIdx = weekDays.findIndex(wd => wd.time >= clampedStart);
+        const reverseIdx = weekDays.slice().reverse().findIndex(wd => wd.time <= clampedEnd);
+        const endIdx = reverseIdx >= 0 ? weekDays.length - 1 - reverseIdx : weekDays.length - 1;
+
+        if (startIdx < 0 || endIdx < startIdx) return null;
+
+        const barLeft = `${(startIdx / weekDays.length) * 100}%`;
+        const barWidth = `${((endIdx - startIdx + 1) / weekDays.length) * 100}%`;
+
         return (
           <div className="gantt-row" key={goal.id || idx}>
-            {weekDays.map((_, i) => (
-              <div key={i} className="gantt-cell" />
-            ))}
-            {/* bar를 한 번만 absolute로 렌더링 */}
-            {startIdx >= 0 && endIdx >= startIdx && (
-              <div
-                className={`gantt-bar ${isCompleted ? 'completed' : ''}`}
-                style={{ left: barLeft, width: barWidth }}
-              >
-                <span className="gantt-bar-label">{goal.content}</span>
-              </div>
-            )}
+            {weekDays.map((_, i) => <div key={i} className="gantt-cell" />)}
+            <div
+              className={`gantt-bar ${isCompleted ? 'completed' : ''}`}
+              style={{ left: barLeft, width: barWidth }}
+            >
+              <span className="gantt-bar-label">{goal.content}</span>
+            </div>
           </div>
         );
       })}
     </div>
   );
-} 
+}
