@@ -135,6 +135,14 @@ function ScrumPage({ onLogout }) {
     fetchAndSetDefaultTeam();
   }, [navigatedTeamId, navigatedTeamName]); // location.state가 변경될 때마다 실행
 
+  useEffect(() => {
+    if (currentTeamId) {
+      setNewGoalInput('');
+      setStartDate(today);
+      setEndDate(today);
+    }
+  }, [currentTeamId]);
+
   // 스크럼 목표 설정 useEffect
   useEffect(() => {
     if (!currentTeamId) {
