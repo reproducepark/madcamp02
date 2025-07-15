@@ -137,20 +137,28 @@
 }
 
 /* 스크롤바 스타일 */
-.todo-memo-content::-webkit-scrollbar {
+.todo-memo-content::-webkit-scrollbar,
+.todo-schedule-content::-webkit-scrollbar,
+.gantt-chart::-webkit-scrollbar {
   width: 6px;
 }
 
-.todo-memo-content::-webkit-scrollbar-track {
+.todo-memo-content::-webkit-scrollbar-track,
+.todo-schedule-content::-webkit-scrollbar-track,
+.gantt-chart::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.todo-memo-content::-webkit-scrollbar-thumb {
+.todo-memo-content::-webkit-scrollbar-thumb,
+.todo-schedule-content::-webkit-scrollbar-thumb,
+.gantt-chart::-webkit-scrollbar-thumb {
   background: #c1c1c1;
   border-radius: 3px;
 }
 
-.todo-memo-content::-webkit-scrollbar-thumb:hover {
+.todo-memo-content::-webkit-scrollbar-thumb:hover,
+.todo-schedule-content::-webkit-scrollbar-thumb:hover,
+.gantt-chart::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
-} 
+}

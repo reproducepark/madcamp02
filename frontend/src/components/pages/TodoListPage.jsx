@@ -406,20 +406,22 @@ const filteredGoals = goals
                 </div>
               )}
 
-              <div style={{ flexGrow: 1 }}>
-                <GanttChart
-                  goals={filteredGoals.map(goal => {
-                    const myTodos = goal.todos;
-                    const completed = myTodos.filter(todo => todo.is_completed).length;
-                    const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
-                    return {
-                      ...goal,
-                      content: goal.title,
-                      progress
-                    };
-                  })}
-                  baseDate={defaultBaseDate}
-                />
+              <div className="todo-schedule-content">
+                <div className="gantt-chart">
+                  <GanttChart
+                    goals={filteredGoals.map(goal => {
+                      const myTodos = goal.todos;
+                      const completed = myTodos.filter(todo => todo.is_completed).length;
+                      const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
+                      return {
+                        ...goal,
+                        content: goal.title,
+                        progress
+                      };
+                    })}
+                    baseDate={defaultBaseDate}
+                  />
+                </div>
               </div>
             </section>
 
