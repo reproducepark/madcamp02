@@ -212,7 +212,6 @@ export function PoseInferenceProvider({ children }) {
     if (Notification.permission === 'granted') {
       new Notification('자세 교정 알림', {
         body: '잘못된 자세가 감지되었습니다. 자세를 교정해주세요.',
-        icon: '/vite.svg',
         tag: 'posture-correction'
       });
       
