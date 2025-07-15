@@ -1,9 +1,9 @@
 import { apiGet, apiPost, apiDelete } from './apiService';
 
 // 🔥 개인 메모 조회 (특정 팀의 개인 메모)
-export const getPersonalMemos = (teamId) => {
-  return apiGet(`/api/memo/${teamId}/personal`);
-};
+export async function getPersonalMemos(teamId, userId) {
+  return await apiGet(`/api/memo/${teamId}/personalMemos?userId=${userId}`);
+}
 
 // 🔥 팀별 메모 조회 (팀에 속한 모든 멤버의 메모)
 export const getTeamMemos = (teamId) => {

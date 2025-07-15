@@ -229,11 +229,14 @@ const filteredGoals = goals
   useEffect(() => {
     const loadMemos = async () => {
       if (!currentTeamId) return;
-      const res = await getPersonalMemos(currentTeamId);
-      if (res.success) setMemos(res.data.memos);
+      const userId = selectedUserId ?? currentUserId;
+      const res = await getPersonalMemos(currentTeamId, userId);
+      // if (res.success) 
+      setMemos(res.memos ?? res.data?.memos ?? []);
     };
     loadMemos();
-  }, [currentTeamId]);
+  }, [currentTeamId, selectedUserId]);
+
 
   // ✅ 등록
   const handleAdd = async () => {
@@ -244,8 +247,8 @@ const filteredGoals = goals
 
     if (activeGoalId === 'memo') {
       await createPersonalMemo(newInput.trim(), currentTeamId);
-      const res = await getPersonalMemos(currentTeamId);
-      setMemos(res.data.memos);
+      const res = await getPersonalMemos(currentTeamId, userId);
+      setMemos(res.memos ?? res.data?.memos ?? []);
     } else {
       await createSubGoal(activeGoalId, { content: newInput.trim() });
       await loadTeamGoals();
@@ -490,8 +493,8 @@ const filteredGoals = goals
                 onActivate={() => setActiveGoalId('memo')}
                 onDeleteMemo={async (memoId) => {
                   await deleteMemo(memoId);
-                  const res = await getPersonalMemos(currentTeamId);
-                  setMemos(res.data.memos);
+                  const res = await getPersonalMemos(currentTeamId, userId);
+                  setMemos(res.memos ?? res.data?.memos ?? []);
                 }}
               />
             </div>
