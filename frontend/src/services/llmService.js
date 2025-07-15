@@ -9,18 +9,8 @@ const isElectron = window.electronAPI !== undefined;
 console.log('🔧 LLM 서비스 초기화:');
 console.log('Electron 환경:', isElectron);
 
-// Electron이 아닌 경우를 위한 폴백 (개발 환경)
-let fallbackAI = null;
-let fallbackAPIKey = null;
-
 if (!isElectron) {
-  console.log('⚠️ Electron 환경이 아닙니다. 브라우저에서 직접 API 호출을 시도합니다.');
-  fallbackAPIKey = import.meta.env.VITE_GEMINI_API_KEY;
-  
-  if (!fallbackAPIKey) {
-    console.error('❌ 브라우저 환경에서 API 키가 설정되지 않았습니다.');
-    console.error('Electron 환경에서 실행하거나 VITE_GEMINI_API_KEY 환경 변수를 설정해주세요.');
-  }
+  console.error('❌ Electron 환경이 아닙니다. LLM 서비스를 사용할 수 없습니다.');
 }
 
 /**
@@ -58,23 +48,27 @@ const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바�
  */
 const geminiApiRequest = async (prompt, options = {}) => {
   console.log('🚀 LLM API 요청 시작');
-  console.log('Electron 환경:', isElectron);
   
-  // Electron 환경에서는 메인 프로세스로 API 호출
-  if (isElectron) {
-    try {
-      console.log('📡 Electron 메인 프로세스로 API 호출');
-      const response = await window.electronAPI.llmGenerateText(prompt, [], options);
-      console.log('✅ Electron API 호출 성공');
-      return response;
-    } catch (error) {
-      console.error('❌ Electron API 호출 실패:', error);
-      return {
-        success: false,
-        message: `Electron API 오류: ${error.message}`,
-        error: error
-      };
-    }
+  if (!isElectron) {
+    return {
+      success: false,
+      message: 'Electron 환경에서만 사용할 수 있습니다.',
+      error: new Error('Electron 환경이 아닙니다.')
+    };
+  }
+
+  try {
+    console.log('📡 Electron 메인 프로세스로 API 호출');
+    const response = await window.electronAPI.llmGenerateText(prompt, [], options);
+    console.log('✅ Electron API 호출 성공');
+    return response;
+  } catch (error) {
+    console.error('❌ Electron API 호출 실패:', error);
+    return {
+      success: false,
+      message: `Electron API 오류: ${error.message}`,
+      error: error
+    };
   }
 };
 
@@ -152,51 +146,26 @@ export const handleLLMError = (error) => {
  */
 export const generateProjectReport = async (projectData) => {
   console.log('📊 프로젝트 보고서 생성 시작');
-  console.log('Electron 환경:', isElectron);
   
-  // Electron 환경에서는 메인 프로세스로 API 호출
-  if (isElectron) {
-    try {
-      console.log('📡 Electron 메인 프로세스로 프로젝트 보고서 생성 요청');
-      const response = await window.electronAPI.llmGenerateProjectReport(projectData);
-      console.log('✅ Electron 프로젝트 보고서 생성 성공');
-      return response;
-    } catch (error) {
-      console.error('❌ Electron 프로젝트 보고서 생성 실패:', error);
-      return {
-        success: false,
-        error: `Electron API 오류: ${error.message}`,
-        rawResponse: error
-      };
-    }
-  }
-  
-  // 브라우저 환경에서는 기존 방식 사용
-  const prompt = `${PROJECT_REPORT_SYSTEM_PROMPT}
-
-다음 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성해주세요:
-
-${JSON.stringify(projectData, null, 2)}
-
-위 데이터를 분석하여 세 가지 섹션으로 구성된 보고서를 생성해주세요.`;
-
-  const response = await generateTextResponse(prompt, [], {
-    temperature: 0.3, // 일관된 결과를 위해 낮은 temperature 사용
-    maxOutputTokens: 2048
-  });
-
-  if (response.success) {
-    const reportText = extractTextFromResponse(response);
-    return {
-      success: true,
-      report: reportText,
-      rawResponse: response.data
-    };
-  } else {
+  if (!isElectron) {
     return {
       success: false,
-      error: response.message,
-      rawResponse: response
+      error: 'Electron 환경에서만 사용할 수 있습니다.',
+      rawResponse: null
+    };
+  }
+
+  try {
+    console.log('📡 Electron 메인 프로세스로 프로젝트 보고서 생성 요청');
+    const response = await window.electronAPI.llmGenerateProjectReport(projectData);
+    console.log('✅ Electron 프로젝트 보고서 생성 성공');
+    return response;
+  } catch (error) {
+    console.error('❌ Electron 프로젝트 보고서 생성 실패:', error);
+    return {
+      success: false,
+      error: `Electron API 오류: ${error.message}`,
+      rawResponse: error
     };
   }
 };
@@ -249,6 +218,14 @@ const SCRUM_GENERATION_SYSTEM_PROMPT = `당신은 팀의 목표와 메모를 바
  * @returns {Promise<Object>} 생성된 스크럼 페이지
  */
 export const generateScrumPage = async (scrumData) => {
+  if (!isElectron) {
+    return {
+      success: false,
+      error: 'Electron 환경에서만 사용할 수 있습니다.',
+      rawResponse: null
+    };
+  }
+
   const prompt = `${SCRUM_GENERATION_SYSTEM_PROMPT}
 
 다음 팀 데이터를 바탕으로 스크럼 페이지를 생성해주세요:

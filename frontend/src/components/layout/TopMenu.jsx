@@ -110,10 +110,10 @@ function TopMenu({ onLogout }) {
           className="logo" 
           onClick={() => navigate('/')}
           style={{ 
-            height: '40px', 
+            height: '50px', 
             width: 'auto', 
             cursor: 'pointer',
-            objectFit: 'contain'
+            objectFit: 'contain',
           }}
         />
       </div>

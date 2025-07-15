@@ -20,6 +20,7 @@ function StretchingPage({ onLogout }) {
   const {
     isInferenceEnabled,
     inferenceInterval,
+    setInferenceInterval, // setInferenceInterval 추가
     neckAngleCheck,
     facePositionCheck,
     isRecognized,
@@ -156,13 +157,13 @@ function StretchingPage({ onLogout }) {
                         <label>자세 확인 주기</label>
                         <select 
                           className="setting-select"
-                          value={inferenceInterval}
-                          onChange={(e) => dispatch({ type: 'SET_INFERENCE_INTERVAL', payload: Number(e.target.value) })}
+                          value={inferenceInterval} // ms 단위의 전역 상태와 직접 바인딩
+                          onChange={(e) => setInferenceInterval(Number(e.target.value))} // setInferenceInterval 호출
                         >
-                          <option value={1/6}>10초</option>
-                          <option value={1}>1분</option>
-                          <option value={3}>3분</option>
-                          <option value={5}>5분</option>
+                          <option value={10000}>10초</option>
+                          <option value={60000}>1분</option>
+                          <option value={180000}>3분</option>
+                          <option value={300000}>5분</option>
                         </select>
                       </div>
                       <div className="setting-item">

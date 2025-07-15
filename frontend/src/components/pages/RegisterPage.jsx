@@ -5,6 +5,7 @@ import { registerUser } from '../../services/authService';
 import Modal from '../Modal/Modal';
 import { useModal } from '../../hooks/useModal';
 import '../../styles/Auth.css';
+import logo from '../../assets/icon_1024_tp.png';
 
 function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -77,6 +78,7 @@ function RegisterPage() {
 
   return (
     <div className="auth-page">
+      <img src={logo} alt="Logo" className="auth-logo" />
       <div className="auth-form">
         <h1>회원가입</h1>
         <form onSubmit={handleSubmit}>

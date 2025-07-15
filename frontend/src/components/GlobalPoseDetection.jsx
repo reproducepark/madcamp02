@@ -7,14 +7,13 @@ function GlobalPoseDetection() {
   const videoRef = useRef(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState(null);
-  const [inferenceInterval, setInferenceInterval] = useState(1000); // 기본 1초
+  const [effectiveInterval, setEffectiveInterval] = useState(10000); // 실제 적용될 인터벌
   
-  // 전역 추론 상태 사용
+  // 전역 추론 상태 및 사용자 설정 간격 사용
   const {
     isInferenceEnabled,
-    isRecognized,
-    keypoints,
-    dispatch
+    inferenceInterval, // 사용자가 설정한 간격
+    dispatch,
   } = usePoseInference();
 
   // 전역 추론이 활성화되어 있을 때만 웹캠 시작
@@ -30,41 +29,24 @@ function GlobalPoseDetection() {
     };
   }, [isInferenceEnabled]);
 
-    // 추론 주기 계산
-  useEffect(() => {
-    if (isInferenceEnabled) {
-      // 현재 상태를 직접 확인
-      const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = !document.hidden;
-      
-      let newInterval;
-      if (currentIsStretchingPage && currentIsPageActive) {
-        // 스트레칭 페이지가 활성화되어 있으면 1초마다
-        newInterval = 1000;
-      } else {
-        // 다른 페이지나 비활성화 상태에서는 10초마다 (기본값)
-        newInterval = 10000;
-      }
-      
-      setInferenceInterval(newInterval);
-    }
-  }, [isInferenceEnabled]);
-
-  // 페이지 상태 변경 감지
+  // 페이지 상태 변경에 따라 실제 적용될 추론 간격(effectiveInterval) 계산
   useEffect(() => {
     const handlePageChange = () => {
       if (isInferenceEnabled) {
-        const currentIsStretchingPage = window.location.hash === '#/stretching';
-        const currentIsPageActive = !document.hidden;
+        const isStretchingPage = window.location.hash === '#/stretching';
+        const isPageActive = !document.hidden;
         
         let newInterval;
-        if (currentIsStretchingPage && currentIsPageActive) {
+        if (isStretchingPage && isPageActive) {
+          // 스트레칭 페이지가 활성화 상태이면 1초
           newInterval = 1000;
         } else {
-          newInterval = 10000;
+          // 그 외의 경우, 사용자가 설정한 전역 간격 사용
+          newInterval = inferenceInterval;
         }
         
-        setInferenceInterval(newInterval);
+        setEffectiveInterval(newInterval);
+        console.log(`🔄 전역 추론 간격 변경: ${newInterval / 1000}초 (스트레칭: ${isStretchingPage}, 활성: ${isPageActive})`);
       }
     };
 
@@ -83,7 +65,7 @@ function GlobalPoseDetection() {
       window.removeEventListener('focus', handlePageChange);
       window.removeEventListener('blur', handlePageChange);
     };
-  }, [isInferenceEnabled]);
+  }, [isInferenceEnabled, inferenceInterval]); // inferenceInterval이 변경될 때도 이 효과를 재실행
 
   const startWebcam = async () => {
     try {
@@ -145,7 +127,7 @@ function GlobalPoseDetection() {
       {isStreaming && (
         <PoseDetectionComponent 
           videoRef={videoRef}
-          customInterval={inferenceInterval} // 커스텀 인터벌 전달
+          customInterval={effectiveInterval} // 실제 적용될 인터벌 전달
           onRecognitionChange={(recognized) => {
             dispatch({ type: 'SET_IS_RECOGNIZED', payload: recognized });
           }}
