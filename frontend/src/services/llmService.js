@@ -1,31 +1,26 @@
 /**
  * Google AI Studio LLM (Gemini API) 서비스
- * @google/genai 라이브러리 사용
+ * Electron 메인 프로세스를 통한 API 호출
  */
 
-import { GoogleGenAI } from "@google/genai";
+// Electron 환경에서 메인 프로세스로 API 호출
+const isElectron = window.electronAPI !== undefined;
 
-// API 키 설정 (임시 해결책 - 나중에 백엔드로 이동 권장)
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+console.log('🔧 LLM 서비스 초기화:');
+console.log('Electron 환경:', isElectron);
 
-console.log('🔑 API 키 확인:');
-console.log('GEMINI_API_KEY exists:', !!GEMINI_API_KEY);
-console.log('GEMINI_API_KEY length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-console.log('GEMINI_API_KEY preview:', GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 10)}...` : 'undefined');
+// Electron이 아닌 경우를 위한 폴백 (개발 환경)
+let fallbackAI = null;
+let fallbackAPIKey = null;
 
-// API 키가 없으면 에러 발생
-if (!GEMINI_API_KEY) {
-  throw new Error('Gemini API 키가 설정되지 않았습니다.');
-}
-
-// Google GenAI 클라이언트 초기화 - 환경 변수에서 API 키 사용
-let ai;
-try {
-  ai = new GoogleGenAI(GEMINI_API_KEY);
-  console.log('✅ Google GenAI 클라이언트 초기화 성공');
-} catch (error) {
-  console.error('❌ Google GenAI 클라이언트 초기화 실패:', error);
-  throw error;
+if (!isElectron) {
+  console.log('⚠️ Electron 환경이 아닙니다. 브라우저에서 직접 API 호출을 시도합니다.');
+  fallbackAPIKey = import.meta.env.VITE_GEMINI_API_KEY;
+  
+  if (!fallbackAPIKey) {
+    console.error('❌ 브라우저 환경에서 API 키가 설정되지 않았습니다.');
+    console.error('Electron 환경에서 실행하거나 VITE_GEMINI_API_KEY 환경 변수를 설정해주세요.');
+  }
 }
 
 /**
@@ -62,15 +57,44 @@ const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바�
  * @returns {Promise<Object>} API 응답
  */
 const geminiApiRequest = async (prompt, options = {}) => {
-  console.log('API Key exists:', !!GEMINI_API_KEY);
-  console.log('API Key length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
+  console.log('🚀 LLM API 요청 시작');
+  console.log('Electron 환경:', isElectron);
   
-  if (!GEMINI_API_KEY) {
-    throw new Error('Gemini API 키가 설정되지 않았습니다. VITE_GEMINI_API_KEY 환경 변수를 확인해주세요.');
+  // Electron 환경에서는 메인 프로세스로 API 호출
+  if (isElectron) {
+    try {
+      console.log('📡 Electron 메인 프로세스로 API 호출');
+      const response = await window.electronAPI.llmGenerateText(prompt, [], options);
+      console.log('✅ Electron API 호출 성공');
+      return response;
+    } catch (error) {
+      console.error('❌ Electron API 호출 실패:', error);
+      return {
+        success: false,
+        message: `Electron API 오류: ${error.message}`,
+        error: error
+      };
+    }
+  }
+  
+  // 브라우저 환경에서는 직접 API 호출 (개발용)
+  if (!fallbackAPIKey) {
+    return {
+      success: false,
+      message: 'API 키가 설정되지 않았습니다. Electron 환경에서 실행해주세요.',
+      error: new Error('API 키 없음')
+    };
   }
 
   try {
-    const response = await ai.models.generateContent({
+    // 동적으로 GoogleGenAI import (브라우저에서만)
+    const { GoogleGenAI } = await import("@google/genai");
+    
+    if (!fallbackAI) {
+      fallbackAI = new GoogleGenAI(fallbackAPIKey);
+    }
+    
+    const response = await fallbackAI.models.generateContent({
       model: "gemini-1.5-flash",
       contents: prompt,
       config: {
@@ -79,7 +103,7 @@ const geminiApiRequest = async (prompt, options = {}) => {
         topP: options.topP || 0.8,
         topK: options.topK || 40,
         thinkingConfig: {
-          thinkingBudget: 0, // Disables thinking for faster response
+          thinkingBudget: 0,
         },
       }
     });
@@ -91,15 +115,10 @@ const geminiApiRequest = async (prompt, options = {}) => {
       status: 200
     };
   } catch (error) {
-    console.error('Gemini API request failed:', error);
-    console.error('Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
+    console.error('❌ 브라우저 API 호출 실패:', error);
     return {
       success: false,
-      message: `네트워크 오류가 발생했습니다: ${error.message}`,
+      message: `브라우저 API 오류: ${error.message}`,
       error: error
     };
   }
@@ -178,6 +197,27 @@ export const handleLLMError = (error) => {
  * @returns {Promise<Object>} 생성된 보고서
  */
 export const generateProjectReport = async (projectData) => {
+  console.log('📊 프로젝트 보고서 생성 시작');
+  console.log('Electron 환경:', isElectron);
+  
+  // Electron 환경에서는 메인 프로세스로 API 호출
+  if (isElectron) {
+    try {
+      console.log('📡 Electron 메인 프로세스로 프로젝트 보고서 생성 요청');
+      const response = await window.electronAPI.llmGenerateProjectReport(projectData);
+      console.log('✅ Electron 프로젝트 보고서 생성 성공');
+      return response;
+    } catch (error) {
+      console.error('❌ Electron 프로젝트 보고서 생성 실패:', error);
+      return {
+        success: false,
+        error: `Electron API 오류: ${error.message}`,
+        rawResponse: error
+      };
+    }
+  }
+  
+  // 브라우저 환경에서는 기존 방식 사용
   const prompt = `${PROJECT_REPORT_SYSTEM_PROMPT}
 
 다음 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성해주세요:

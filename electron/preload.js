@@ -25,4 +25,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
         ipcRenderer.on('overlay-position-changed', handler);
         return () => ipcRenderer.removeListener('overlay-position-changed', handler);
     },
+    // LLM API 호출 함수들
+    llmGenerateText: (prompt, history, options) => ipcRenderer.invoke('llm-generate-text', prompt, history, options),
+    llmGenerateProjectReport: (projectData) => ipcRenderer.invoke('llm-generate-project-report', projectData),
 });
