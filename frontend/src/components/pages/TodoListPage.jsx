@@ -60,50 +60,6 @@ const filteredGoals = goals
     }
   });
 
-  // const filteredGoals = goals
-  //   .filter(goal => {
-  //     if (filter === 'COMPLETED') {
-  //       // 완료된 목표: 모든 할일이 완료된 목표
-  //       return goal.todos.length > 0 && goal.todos.every(todo => todo.is_completed);
-  //     }
-  //     if (filter === 'INCOMPLETE') {
-  //       // 미완료된 목표: 하나라도 미완료인 할일이 있는 목표
-  //       return goal.todos.length === 0 || goal.todos.some(todo => !todo.is_completed);
-  //     }
-  //     return true; // ALL
-  //   })
-  //   .sort((a, b) => {
-  //     if (filter === 'COMPLETED' || filter === 'INCOMPLETE') {
-  //       // 단일 필터인 경우
-  //       if (a.start_date !== b.start_date) {
-  //         return new Date(a.start_date) - new Date(b.start_date);
-  //       }
-  //       if (filter === 'COMPLETED') {
-  //         return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
-  //       } else {
-  //         return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
-  //       }
-  //     } else {
-  //       // ALL인 경우, 미완 -> 완료
-  //       const aIsDone = a.todos.length > 0 && a.todos.every(todo => todo.is_completed);
-  //       const bIsDone = b.todos.length > 0 && b.todos.every(todo => todo.is_completed);
-  //       if (aIsDone !== bIsDone) return aIsDone ? 1 : -1;
-
-  //       // 같은 상태라면 start_date
-  //       if (a.start_date !== b.start_date) {
-  //         return new Date(a.start_date) - new Date(b.start_date);
-  //       }
-
-  //       if (!aIsDone) {
-  //         // 미완 : planned_end_date 빠른 게 먼저
-  //         return new Date(a.planned_end_date || 0) - new Date(b.planned_end_date || 0);
-  //       } else {
-  //         // 완료 : real_end_date 빠른 게 먼저
-  //         return new Date(a.real_end_date || 0) - new Date(b.real_end_date || 0);
-  //       }
-  //     }
-  //   });
-
   const [activeGoalId, setActiveGoalId] = useState(null);
   const [newInput, setNewInput] = useState('');
   const [memos, setMemos] = useState([]);
@@ -409,7 +365,7 @@ const filteredGoals = goals
               <div className="todo-schedule-content">
                 <div className="gantt-chart">
                   <GanttChart
-                    goals={filteredGoals.map(goal => {
+                    goals={goals.map(goal => {
                       const myTodos = goal.todos;
                       const completed = myTodos.filter(todo => todo.is_completed).length;
                       const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;

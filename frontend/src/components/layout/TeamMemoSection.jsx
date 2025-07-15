@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getTeamMemos, createMemo, deleteMemo } from '../../services/memoService';
 import { getCurrentUser } from '../../services/authService';
 import { gatherDataForLLM } from '../../services/scrumService';
+import { useTeamModal } from '../../hooks/useTeamModal';
 import ScrumGenerationModal from '../Modal/ScrumGenerationModal';
 import '../../styles/TeamMemoSection.css';
 
@@ -10,16 +11,19 @@ function TeamMemoSection({ teamId, teamName }) {
   const [newMemoInput, setNewMemoInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingScrum, setIsGeneratingScrum] = useState(false);
-  const [scrumModalOpen, setScrumModalOpen] = useState(false);
-  const [scrumData, setScrumData] = useState(null);
-  const [scrumError, setScrumError] = useState(null);
+  const [llmResult, setLlmResult] = useState(null);
+  const {
+    isOpen: isScrumModalOpen,
+    openModal: openScrumModal,
+    closeModal: closeScrumModal
+  } = useTeamModal();
   const currentUser = getCurrentUser();
   const abortControllerRef = useRef(null);
 
   // 팀 메모 로드
   const loadTeamMemos = async () => {
     if (!teamId) return;
-    
+
     console.log('🔄 팀 메모 로딩 시작 - 팀 ID:', teamId, '팀 이름:', teamName);
     setIsLoading(true);
     try {
@@ -60,56 +64,47 @@ function TeamMemoSection({ teamId, teamName }) {
 
   // AI 스크럼 생성
   const handleGenerateScrum = async () => {
-    if (!teamId || !teamName) {
+    if (!teamId) {
       console.error('팀 정보가 없습니다.');
       return;
     }
 
     setIsGeneratingScrum(true);
-    setScrumModalOpen(true);
-    setScrumData(null);
-    setScrumError(null);
+    setLlmResult(null);
 
-    // 이전 요청이 있다면 취소
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-
-    // 새로운 AbortController 생성
     abortControllerRef.current = new AbortController();
     const { signal } = abortControllerRef.current;
 
     try {
-      // 1. LLM을 위한 데이터 수집
       const llmDataResponse = await gatherDataForLLM(teamId);
-      if (signal.aborted) {
-        console.log('데이터 수집 중 작업 취소됨');
-        return;
-      }
+      if (signal.aborted) return;
 
       if (!llmDataResponse.success) {
         throw new Error(llmDataResponse.error || 'LLM용 데이터를 수집하는 데 실패했습니다.');
       }
 
-      console.log('📊 LLM에 전달할 데이터 (객체):', llmDataResponse.data);
-      console.log('📄 LLM에 전달할 데이터 (JSON 문자열):');
-      console.log(JSON.stringify(llmDataResponse.data, null, 2));
+      console.log('Sending data to LLM:', JSON.stringify(llmDataResponse.data, null, 2));
 
-      const result = [];
-      if (signal.aborted) {
-        console.log('스크럼 생성 중 작업 취소됨');
-        return;
-      }
-      
+      const result = await window.electronAPI.llmGenerateText(
+        JSON.stringify(llmDataResponse.data)
+      );
+
+      if (signal.aborted) return;
+
+      console.log("Received from LLM:", result);
+
       if (result.success) {
-        setScrumData(result.scrumPage);
+        setLlmResult(result.text);
       } else {
-        setScrumError(result.error || '스크럼 생성에 실패했습니다.');
+        setLlmResult(`Error: ${result.message}`);
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
         console.error('스크럼 생성 실패:', err);
-        setScrumError(err.message || '스크럼 생성 중 오류가 발생했습니다.');
+        setLlmResult(`Error: ${err.message}`);
       }
     } finally {
       if (!signal.aborted) {
@@ -119,18 +114,26 @@ function TeamMemoSection({ teamId, teamName }) {
     }
   };
 
-  // 스크럼 모달 닫기
+  const handleOpenScrumModal = () => {
+    openScrumModal();
+    handleGenerateScrum();
+  };
+
   const handleCloseScrumModal = () => {
-    // 진행 중인 요청이 있다면 취소
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
+      setIsGeneratingScrum(false);
     }
-    
-    setScrumModalOpen(false);
-    setScrumData(null);
-    setScrumError(null);
-    setIsGeneratingScrum(false);
+    setLlmResult(null);
+    closeScrumModal();
+  };
+
+  const handleCopyScrumResult = () => {
+    if (llmResult) {
+      navigator.clipboard.writeText(llmResult);
+      // 사용자에게 복사되었음을 알리는 기능 추가 가능
+    }
   };
 
   // 팀이 변경될 때마다 메모 로드
@@ -153,18 +156,16 @@ function TeamMemoSection({ teamId, teamName }) {
       <section className="todo-memo-section">
         <div className="todo-memo-title">
           <span>{teamName ? `${teamName} 팀 메모장` : '메모장'}</span>
-          {teamId && (
-            <button 
-              className="ai-scrum-generate-btn"
-              onClick={handleGenerateScrum}
-              title="AI 스크럼 생성"
-              disabled={isGeneratingScrum}
-            >
-              스크럼 생성하기
-            </button>
-          )}
+          <button
+            className="ai-scrum-generate-btn"
+            onClick={handleOpenScrumModal}
+            title="AI 스크럼 생성"
+            disabled={isGeneratingScrum || !teamId}
+          >
+            스크럼 생성하기
+          </button>
         </div>
-        
+
         <div className="todo-memo-content">
           {isLoading ? (
             <div className="memo-loading">로딩 중...</div>
@@ -176,7 +177,7 @@ function TeamMemoSection({ teamId, teamName }) {
                 <div key={memo.id} className="memo-item">
                   <div className="memo-content">{memo.content}</div>
                   {currentUser && memo.user_id === currentUser.id && (
-                    <button 
+                    <button
                       className="memo-delete-btn"
                       onClick={() => handleDeleteMemo(memo.id)}
                       title="삭제"
@@ -200,7 +201,7 @@ function TeamMemoSection({ teamId, teamName }) {
             onKeyPress={(e) => e.key === 'Enter' && handleAddMemo()}
             disabled={!teamId}
           />
-          <button 
+          <button
             className="memo-add-btn"
             onClick={handleAddMemo}
             disabled={!teamId || !newMemoInput.trim()}
@@ -210,13 +211,12 @@ function TeamMemoSection({ teamId, teamName }) {
         </div>
       </section>
 
-      {/* AI 스크럼 생성 모달 */}
       <ScrumGenerationModal
-        isOpen={scrumModalOpen}
+        isOpen={isScrumModalOpen}
         onClose={handleCloseScrumModal}
-        scrumData={scrumData}
-        isLoading={isGeneratingScrum}
-        error={scrumError}
+        isGenerating={isGeneratingScrum}
+        result={llmResult}
+        onCopy={handleCopyScrumResult}
       />
     </>
   );

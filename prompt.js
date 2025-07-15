@@ -49,3 +49,15 @@ const SCRUM_GENERATION_SYSTEM_PROMPT = `프로젝트 진행 상황 보고서를 
    - \`team_memos\` 필드가 비어 있다면, \`team_goals\`의 \`content\`를 참고하여 팀에 도움이 될 만한 **관련 사항을 최대 3개까지 생성**합니다. (예: 'LLM API 연동 시 에러 처리 방안', '디자인 시스템 구축 필요성', '다음 스프린트 목표 설정 논의')
  
 6. **빈 필드 처리:** 만약 특정 섹션에 해당하는 입력 데이터가 비어 있다면, 해당 출력 섹션도 비워두어야 합니다.`;
+
+
+teamId && (
+    <button 
+      className="ai-scrum-generate-btn"
+      onClick={handleGenerateScrum}
+      title="AI 스크럼 생성"
+      disabled={isGeneratingScrum}
+    >
+      스크럼 생성하기
+    </button>
+  )
