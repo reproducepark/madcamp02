@@ -4,7 +4,6 @@ import { analyzePose } from '../utils/poseAnalysis';
 // 액션 타입 정의
 const ACTIONS = {
   SET_INFERENCE_ENABLED: 'SET_INFERENCE_ENABLED',
-  SET_INFERENCE_INTERVAL: 'SET_INFERENCE_INTERVAL',
   SET_NECK_ANGLE_CHECK: 'SET_NECK_ANGLE_CHECK',
   SET_FACE_POSITION_CHECK: 'SET_FACE_POSITION_CHECK',
   SET_KEYPOINTS: 'SET_KEYPOINTS',
@@ -19,7 +18,6 @@ const ACTIONS = {
 const initialState = {
   // 설정
   isInferenceEnabled: false,
-  inferenceInterval: 1/6, // 10초 (1/6분)
   neckAngleCheck: true,
   facePositionCheck: true,
   
@@ -43,12 +41,6 @@ function poseInferenceReducer(state, action) {
       return {
         ...state,
         isInferenceEnabled: action.payload
-      };
-    
-    case ACTIONS.SET_INFERENCE_INTERVAL:
-      return {
-        ...state,
-        inferenceInterval: action.payload
       };
     
     case ACTIONS.SET_NECK_ANGLE_CHECK:
@@ -112,6 +104,18 @@ const PoseInferenceContext = createContext();
 // Provider 컴포넌트
 export function PoseInferenceProvider({ children }) {
   const [state, dispatch] = useReducer(poseInferenceReducer, initialState);
+  
+  // 사용자가 설정하는 추론 간격 (기본 10초) - useState로 분리하여 관리
+  const [inferenceInterval, setInferenceInterval] = useState(() => {
+    const savedInterval = localStorage.getItem('inferenceInterval');
+    return savedInterval ? parseInt(savedInterval, 10) : 10000;
+  });
+
+  // inferenceInterval이 변경될 때 localStorage에 저장
+  useEffect(() => {
+    localStorage.setItem('inferenceInterval', inferenceInterval);
+  }, [inferenceInterval]);
+
   const intervalRef = useRef(null);
   const stateRef = useRef(state);
   const lastNotificationTimeRef = useRef(0); // 마지막 알림 발송 시간 추적
@@ -239,12 +243,11 @@ export function PoseInferenceProvider({ children }) {
     if (currentIsStretchingPage && currentIsPageActive) {
       currentMode = '스트레칭 페이지 활성화 모드 (1초)';
     } else if (currentIsPageActive) {
-      currentMode = `다른 페이지 활성화 모드 (${currentState.inferenceInterval}분)`;
+      // 분 단위가 아닌 초 단위로 표시하도록 수정
+      currentMode = `다른 페이지 활성화 모드 (${Math.round(inferenceInterval / 1000)}초)`;
     } else {
-      currentMode = `페이지 비활성화 모드 (${currentState.inferenceInterval}분)`;
+      currentMode = `페이지 비활성화 모드 (${Math.round(inferenceInterval / 1000)}초)`;
     }
-    
-
     
     if (currentState.keypoints) {
       // 실시간으로 최신 키포인트를 사용하여 분석
@@ -300,137 +303,25 @@ export function PoseInferenceProvider({ children }) {
         dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
       }
     }
-  }, [dispatch, needsPostureCorrection, sendNotification]);
+  }, []); // 의존성 배열에서 isPageActive와 inferenceInterval 제거
 
-  // 주기적 추론 실행
+  // 주기적인 추론 실행 로직 제거
+  /*
+  useEffect(() => {
+    if (state.isInferenceEnabled) {
+      // ... setInterval 로직 ...
+    }
+  }, [state.isInferenceEnabled, isPageActive, isStretchingPage, inferenceInterval, runInferenceWithLatestState]);
+  */
+
+  // 키포인트가 변경될 때마다 분석을 실행하도록 로직 변경
   useEffect(() => {
     if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
-      // 기존 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      // 스트레칭 페이지와 페이지 활성화 상태에 따라 추론 주기 결정
-      let intervalMs;
-      let mode = '';
-      
-      // 현재 상태를 직접 확인
-      const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
-      
-      if (currentIsStretchingPage && currentIsPageActive) {
-        // 스트레칭 페이지가 활성화되어 있으면 1초마다
-        intervalMs = 1000;
-        mode = '스트레칭 페이지 활성화 모드 (1초)';
-      } else if (currentIsPageActive) {
-        // 다른 페이지가 활성화되어 있으면 설정된 시간에 맞게
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
-      } else {
-        // 페이지가 비활성화되어 있으면 설정된 시간에 맞게
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
-      }
-      
-
-      
-      // 추론 실행 함수 정의
-      intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
-
-      return () => {
-        if (intervalRef.current) {
-          clearInterval(intervalRef.current);
-        }
-      };
-    } else {
-      // 추론이 비활성화되거나 인식되지 않은 경우 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = null;
-      }
+      console.log('🤸‍♂️ 키포인트 변경 감지, 자세 분석 실행');
+      runInferenceWithLatestState();
     }
-  }, [
-    state.isInferenceEnabled, 
-    state.isRecognized, 
-    state.keypoints, 
-    state.inferenceInterval,
-    state.neckAngleCheck,
-    state.facePositionCheck,
-    runInferenceWithLatestState
-  ]);
+  }, [state.keypoints, state.isInferenceEnabled, state.isRecognized, runInferenceWithLatestState]);
 
-  // 페이지 상태 변경 시 인터벌 재설정
-  useEffect(() => {
-    if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
-      // 기존 인터벌 정리
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      // 현재 상태를 직접 확인
-      const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
-      
-      // 추론 주기 결정
-      let intervalMs;
-      let mode = '';
-      
-      if (currentIsStretchingPage && currentIsPageActive) {
-        intervalMs = 1000;
-        mode = '스트레칭 페이지 활성화 모드 (1초)';
-      } else if (currentIsPageActive) {
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `다른 페이지 활성화 모드 (${state.inferenceInterval}분)`;
-      } else {
-        intervalMs = state.inferenceInterval * 60 * 1000;
-        mode = `페이지 비활성화 모드 (${state.inferenceInterval}분)`;
-      }
-      
-
-      
-      // 새로운 인터벌 설정
-      intervalRef.current = setInterval(runInferenceWithLatestState, intervalMs);
-    }
-  }, [isPageActive, isStretchingPage, state.isInferenceEnabled, state.isRecognized, state.keypoints, state.inferenceInterval, runInferenceWithLatestState]);
-
-  // 키포인트가 변경될 때마다 즉시 분석 업데이트
-  useEffect(() => {
-    if (state.isInferenceEnabled && state.isRecognized && state.keypoints) {
-      const analysis = analyzePose(state.keypoints, 640);
-      
-      // 현재 분석을 이전 분석으로 저장하고 새 분석을 현재로 설정
-      const previousAnalysis = state.currentAnalysis;
-      
-      // 상태 업데이트
-      dispatch({ type: ACTIONS.SET_LAST_ANALYSIS, payload: previousAnalysis });
-      dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: analysis });
-      
-      // 자세 교정 필요 여부 확인
-      const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
-      const currentNeedsCorrection = needsPostureCorrection(analysis);
-      
-      // 페이지가 비활성화된 상태에서도 알림 발송
-      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
-      
-      if (lastNeedsCorrection && currentNeedsCorrection) {
-        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
-        
-        // 페이지가 비활성화된 상태에서만 알림 발송
-        if (!currentIsPageActive) {
-          sendNotification();
-        } else {
-          console.log('🔔 키포인트 변경으로 인한 자세 교정 필요 (페이지 활성화 상태 - 알림 발송 안함)');
-        }
-      } else {
-        dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
-      }
-    } else if (state.isInferenceEnabled && state.isRecognized && !state.keypoints) {
-      // 키포인트가 null인 경우 (감지되지 않음)
-
-      dispatch({ type: ACTIONS.SET_CURRENT_ANALYSIS, payload: null });
-      dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
-    }
-  }, [state.keypoints, state.isInferenceEnabled, state.isRecognized]);
 
   // 인식 상태가 false로 변경될 때 분석 리셋
   useEffect(() => {
@@ -450,21 +341,21 @@ export function PoseInferenceProvider({ children }) {
     };
   }, []);
 
+  // Provider가 제공할 value 객체.
+  // useReducer의 state와 dispatch, 그리고 useState로 관리하는 inferenceInterval 관련 값을 모두 포함.
   const value = {
     ...state,
     dispatch,
-    needsPostureCorrection,
+    inferenceInterval,
+    setInferenceInterval,
+    needsPostureCorrection, // 기존에 있던 함수들도 다시 포함
     sendNotification
   };
 
-  return (
-    <PoseInferenceContext.Provider value={value}>
-      {children}
-    </PoseInferenceContext.Provider>
-  );
+  return <PoseInferenceContext.Provider value={value}>{children}</PoseInferenceContext.Provider>;
 }
 
-// Hook
+// Custom Hook - 컨텍스트를 사용하기 쉽게 만들어주는 훅
 export function usePoseInference() {
   const context = useContext(PoseInferenceContext);
   if (!context) {
