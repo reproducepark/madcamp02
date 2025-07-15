@@ -104,15 +104,19 @@ const filteredGoals = goals
   const [activeGoalId, setActiveGoalId] = useState(null);
   const [newInput, setNewInput] = useState('');
   const [memos, setMemos] = useState([]);
+  
 
   const activeGoalName = goals.find(goal => goal.id === activeGoalId)?.title;
   const inputGroupRef = useRef();
   const inputRef = useRef(); // ✅ 추가
 
   const location = useLocation();
-  const selectedUserId = location.state?.userId;
-  const selectedUserName = location.state?.userName;
+  // ✅ 상태로 교체 (초기값만 location.state에서 받아오기)
+  const [selectedUserId, setSelectedUserId] = useState(location.state?.userId ?? null);
+  const [selectedUserName, setSelectedUserName] = useState(location.state?.userName ?? null);
   const isTeammateView = !!selectedUserId;  // userId가 있으면 무조건 보기 전용
+
+  
 
   const token = localStorage.getItem('token');
   let currentUserId = null;
@@ -186,11 +190,21 @@ const filteredGoals = goals
       const { teamId, teamName } = event.detail;
       setCurrentTeamId(teamId);
       setCurrentTeamName(teamName);
+
+      // ✅ 팀을 변경하면 선택된 유저 초기화 (내 투두 보기)
+      setSelectedUserId(null);
+      setSelectedUserName(null);
     };
 
     window.addEventListener('teamChanged', handleTeamChange);
     return () => window.removeEventListener('teamChanged', handleTeamChange);
   }, []);
+
+  // location.state가 바뀔 때마다 상태 갱신
+  useEffect(() => {
+    setSelectedUserId(location.state?.userId ?? null);
+    setSelectedUserName(location.state?.userName ?? null);
+  }, [location.state]);
 
   // ✅ 팀 목표 + SubGoal 불러오기
   const loadTeamGoals = async () => {
