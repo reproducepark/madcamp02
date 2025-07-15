@@ -362,14 +362,18 @@ const filteredGoals = goals
   const myUserId = userInfo?.id;
 
   return (
-    <div className="app-wrapper">
+    <div className="todo-container">
       <TopMenu onLogout={onLogout} />
-      <div className="container">
+      <div className="todo-body">
         <Sidebar />
-        <main className="main-content">
-          <div className="todo-center-card">
-            <div className="todo-center-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>중앙 영역</span>
+        <main className="todo-main">
+          <div className="todo-left-section">
+
+            <section className="todo-schedule-section">
+              <div className="todo-schedule-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                <div className="todo-schedule-title">
+                  개인 목표 일정
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <Switch.Root
                     checked={showAllPeriods}
@@ -384,41 +388,42 @@ const filteredGoals = goals
                       }}
                     />
                   </Switch.Root>
-
                   <span style={{ fontSize: '0.9rem', color: '#555' }}>전체 기간 보기</span>
                 </div>
-            </div>
-            {/* 슬라이더 UI */}
-            {!showAllPeriods && (
-              <div className="gantt-slider-wrapper">
-                <input
-                  type="range"
-                  min={0}
-                  max={dateArray.length - 1}
-                  value={dateArray.findIndex(d => d === sliderDate)}
-                  onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
-                  step={1}
-                  className="gantt-slider"
-                  style={{ width: '100%' }}
+              </div>
+
+              {!showAllPeriods && (
+                <div className="gantt-slider-wrapper">
+                  <input
+                    type="range"
+                    min={0}
+                    max={dateArray.length - 1}
+                    value={dateArray.findIndex(d => d === sliderDate)}
+                    onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
+                    step={1}
+                    className="gantt-slider"
+                  />
+                </div>
+              )}
+
+              <div style={{ flexGrow: 1 }}>
+                <GanttChart
+                  goals={filteredGoals.map(goal => {
+                    const myTodos = goal.todos;
+                    const completed = myTodos.filter(todo => todo.is_completed).length;
+                    const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
+                    return {
+                      ...goal,
+                      content: goal.title,
+                      progress
+                    };
+                  })}
+                  baseDate={defaultBaseDate}
                 />
               </div>
-            )}
+            </section>
 
-            <GanttChart
-              goals={filteredGoals.map(goal => {
-                const myTodos = goal.todos; // 임시: 모든 todo를 내 것으로 간주
-                const completed = myTodos.filter(todo => todo.is_completed).length;
-                const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
-                return {
-                  ...goal,
-                  content: goal.title, // 추가!
-                  progress
-                };
-              })}
-              baseDate={defaultBaseDate}
-            />
           </div>
-
           {/* 오른쪽 영역 (3:1 비율의 1) - 목표 추가 */}
           <aside className="todo-goal-aside">
             <div className="todo-date">
