@@ -20,6 +20,8 @@ function TodoListPage({ onLogout }) {
   const [currentTeamName, setCurrentTeamName] = useState('');
   const [goals, setGoals] = useState([]);
   const [filter, setFilter] = useState('ALL'); // ALL | COMPLETED | INCOMPLETE
+  const [showAllPeriods, setShowAllPeriods] = useState(false);
+
 
   // 스크럼 페이지와 동일한 필터링 및 정렬 로직 적용
 const filteredGoals = goals
@@ -194,6 +196,7 @@ const filteredGoals = goals
       // ✅ 팀을 변경하면 선택된 유저 초기화 (내 투두 보기)
       setSelectedUserId(null);
       setSelectedUserName(null);
+      setShowAllPeriods(false)
     };
 
     window.addEventListener('teamChanged', handleTeamChange);
@@ -204,6 +207,7 @@ const filteredGoals = goals
   useEffect(() => {
     setSelectedUserId(location.state?.userId ?? null);
     setSelectedUserName(location.state?.userName ?? null);
+    setShowAllPeriods(false)
   }, [location.state]);
 
   // ✅ 팀 목표 + SubGoal 불러오기
@@ -314,6 +318,16 @@ const filteredGoals = goals
 
   // 슬라이더 상태
   const [sliderDate, setSliderDate] = useState(defaultBaseDate);
+
+  // 전체 기간 보기 버튼 기능 on/off
+  const goalsToShow = showAllPeriods
+    ? filteredGoals
+    : filteredGoals.filter(goal => {
+        const start = goal.start_date?.slice(0, 10);
+        const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
+        return start && end && sliderDate >= start && sliderDate <= end;
+      });
+
   // baseDate가 바뀌면 sliderDate도 동기화
   useEffect(() => {
     setSliderDate(defaultBaseDate);
@@ -353,20 +367,30 @@ const filteredGoals = goals
         <Sidebar />
         <main className="main-content">
           <div className="todo-center-card">
-            <div className="todo-center-title">중앙 영역</div>
-            {/* 슬라이더 UI */}
-            <div className="gantt-slider-wrapper">
-              <input
-                type="range"
-                min={0}
-                max={dateArray.length - 1}
-                value={dateArray.findIndex(d => d === sliderDate)}
-                onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
-                step={1}
-                className="gantt-slider"
-                style={{ width: '100%' }}
-              />
+            <div className="todo-center-title">중앙 영역
+                <button 
+                  style={{ float: 'right' }}
+                  onClick={() => setShowAllPeriods(prev => !prev)}
+                >
+                  {showAllPeriods ? '슬라이드 보기' : '전체 기간 보기'}
+                </button>
             </div>
+            {/* 슬라이더 UI */}
+            {!showAllPeriods && (
+              <div className="gantt-slider-wrapper">
+                <input
+                  type="range"
+                  min={0}
+                  max={dateArray.length - 1}
+                  value={dateArray.findIndex(d => d === sliderDate)}
+                  onChange={e => setSliderDate(dateArray[parseInt(e.target.value)])}
+                  step={1}
+                  className="gantt-slider"
+                  style={{ width: '100%' }}
+                />
+              </div>
+            )}
+
             <GanttChart
               goals={filteredGoals.map(goal => {
                 const myTodos = goal.todos; // 임시: 모든 todo를 내 것으로 간주
@@ -417,77 +441,11 @@ const filteredGoals = goals
 
             <div className="todo-content">
 
-
-              {filteredGoals
-                .filter(goal => {
-                  const start = goal.start_date?.slice(0, 10);
-                  const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
-                  const result = start && end && sliderDate >= start && sliderDate <= end;
-                  console.log({
-                    goalId: goal.id,
-                    start,
-                    end,
-                    sliderDate,
-                    result
-                  });
-                  return result;
-                })
-                .map((goal, index) => (
-                  <React.Fragment key={goal.id}>
-                    <GoalSection
-                      goalId={goal.id}
-                      title={goal.title}
-                      todos={goal.todos.map(todo => ({
-                        ...todo,
-                        onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
-                      }))}
-                      onActivate={setActiveGoalId}
-                      onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
-                    />
-                    {index < filteredGoals.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-
-{/* 
-              {filteredGoals
-                .filter(goal => {
-                  const start = goal.start_date?.slice(0, 10);
-                  const end = (goal.real_end_date || goal.planned_end_date)?.slice(0, 10);
-                  const result = start && end && sliderDate >= start && sliderDate <= end;
-                  console.log({
-                    goalId: goal.id,
-                    start,
-                    end,
-                    sliderDate,
-                    result
-                  });
-                  return result;
-                })
-                .map((goal, index) => (
-                  <React.Fragment key={goal.id}>
-                    <GoalSection
-                      goalId={goal.id}
-                      title={goal.title}
-                      todos={goal.todos.map(todo => ({
-                        ...todo,
-                        onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
-                      }))}
-                      onActivate={setActiveGoalId}
-                      onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
-                    />
-                    {index < filteredGoals.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-
-
-
-
-              {goalsWithFilteredTodos.map((goal, index) => (
+              {goalsToShow.map((goal, index) => (
                 <React.Fragment key={goal.id}>
                   <GoalSection
                     goalId={goal.id}
                     title={goal.title}
-                    isTeammateView={isTeammateView}
                     todos={goal.todos.map(todo => ({
                       ...todo,
                       onToggle: () => handleToggleTodo(goal.id, todo.id, todo.is_completed)
@@ -495,12 +453,10 @@ const filteredGoals = goals
                     onActivate={setActiveGoalId}
                     onDeleteTodo={(todoId) => handleDeleteTodo(goal.id, todoId)}
                   />
-                  {index < goalsWithFilteredTodos.length - 1 && <Divider />}
+                  {index < goalsToShow.length - 1 && <Divider />}
                 </React.Fragment>
               ))}
-            */}
-           
-           
+
               <Divider />
               <PersonalMemoSection
                 memos={memos}
