@@ -20,8 +20,8 @@
   position: relative;
 }
 
-/* 스트레칭 섹션 (왼쪽 반) */
-.todo-stretching-section {
+/* 자세감지 섹션 (왼쪽 반) */
+.todo-posture-section {
   flex: 1;
   background: #fff;
   border-radius: 12px;
@@ -31,14 +31,14 @@
   flex-direction: column;
 }
 
-.todo-stretching-title {
+.todo-posture-title {
   font-weight: 600;
   font-size: 1.2rem;
   margin-bottom: 16px;
   color: #374151;
 }
 
-.todo-stretching-content {
+.todo-posture-content {
   flex: 1;
   background: #f5f5f5;
   border-radius: 8px;
@@ -49,8 +49,8 @@
   font-size: 1.1rem;
 }
 
-/* 스트레칭 컨트롤 스타일 */
-.stretching-controls {
+/* 자세감지 컨트롤 스타일 */
+.posture-controls {
   margin-bottom: 16px;
   padding: 12px;
   background: #f8f9fa;
@@ -122,18 +122,18 @@
   transform: scale(1.05);
 }
 
-.stretching-disabled {
+.posture-disabled {
   text-align: center;
   color: #6c757d;
   font-size: 16px;
   padding: 40px 20px;
 }
 
-.stretching-disabled p {
+.posture-disabled p {
   margin: 0;
 }
 
-.stretching-webcam-wrapper {
+.posture-webcam-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
@@ -169,4 +169,13 @@
   justify-content: center;
   color: #6b7280;
   font-size: 1.1rem;
+}
+
+/* 타이머 컨트롤 스타일 */
+.timer-controls {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 } 

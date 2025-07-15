@@ -44,7 +44,7 @@ function StretchingPage({ onLogout }) {
 
   const startWebcam = async () => {
     try {
-      console.log('📹 스트레칭 페이지 웹캠 시작');
+      console.log('📹 자세감지 페이지 웹캠 시작');
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 640 },
@@ -57,10 +57,10 @@ function StretchingPage({ onLogout }) {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         setIsStreaming(true);
-        console.log('✅ 스트레칭 페이지 웹캠 시작 성공');
+        console.log('✅ 자세감지 페이지 웹캠 시작 성공');
       }
     } catch (err) {
-      console.error('❌ 스트레칭 페이지 웹캠 접근 오류:', err);
+      console.error('❌ 자세감지 페이지 웹캠 접근 오류:', err);
       setIsStreaming(false);
     }
   };
@@ -71,7 +71,7 @@ function StretchingPage({ onLogout }) {
       tracks.forEach(track => track.stop());
       videoRef.current.srcObject = null;
       setIsStreaming(false);
-      console.log('🛑 스트레칭 페이지 웹캠 중지');
+      console.log('🛑 자세감지 페이지 웹캠 중지');
     }
   };
 
@@ -84,7 +84,7 @@ function StretchingPage({ onLogout }) {
     dispatch({ type: 'SET_INFERENCE_ENABLED', payload: enabled });
   };
 
-  // 스트레칭 기능이 활성화되면 전역 추론도 활성화
+  // 자세감지 기능이 활성화되면 전역 추론도 활성화
   useEffect(() => {
     if (isStretchingEnabled && !isInferenceEnabled) {
       dispatch({ type: 'SET_INFERENCE_ENABLED', payload: true });
@@ -97,13 +97,13 @@ function StretchingPage({ onLogout }) {
       <div className="todo-body">
         <Sidebar />
         <main className="todo-main">
-          {/* 스트레칭 섹션 (왼쪽 반) */}
-          <section className="todo-stretching-section">
+          {/* 자세감지 섹션 (왼쪽 반) */}
+          <section className="todo-posture-section">
             
             {/* 기능 on/off 토글 버튼 */}
-            <div className="stretching-controls">
+            <div className="posture-controls">
               <div className="toggle-container">
-                <span className="toggle-label">자세 감지</span>
+                <span className="toggle-label">자세감지 및 자세 교정</span>
                 <button 
                   className={`toggle-button ${isStretchingEnabled ? 'active' : ''}`}
                   onClick={() => handleStretchingToggle(!isStretchingEnabled)}
@@ -116,9 +116,9 @@ function StretchingPage({ onLogout }) {
               </div>
             </div>
 
-            <div className="todo-stretching-content">
+            <div className="todo-posture-content">
               {isStretchingEnabled ? (
-                <div className="stretching-webcam-wrapper">
+                <div className="posture-webcam-wrapper">
                   {/* 웹캠 화면 표시 */}
                   <div className="webcam-video-container">
                     <video
@@ -193,8 +193,8 @@ function StretchingPage({ onLogout }) {
                   </div>
                 </div>
               ) : (
-                <div className="stretching-disabled">
-                  <p>스트레칭 및 자세 감지 기능을 활성화해주세요</p>
+                <div className="posture-disabled">
+                  <p>자세감지 및 자세 교정 기능을 활성화해주세요</p>
                 </div>
               )}
             </div>
@@ -202,7 +202,7 @@ function StretchingPage({ onLogout }) {
 
           {/* 타이머 섹션 (오른쪽 반) */}
           <section className="todo-timer-section">
-            <div className="stretching-controls">
+            <div className="timer-controls">
               <div className="toggle-container">
                 <span className="toggle-label">타이머</span>
               </div>
