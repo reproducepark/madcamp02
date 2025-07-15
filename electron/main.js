@@ -317,37 +317,22 @@ ipcMain.handle('llm-generate-text', async (event, prompt, history, options) => {
   try {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
-    // 이력을 기반으로 콘텐츠 구성
-    const contents = history.map(item => ({
-      role: item.role === 'assistant' ? 'model' : 'user', // 'assistant'를 'model'로 변경
-      parts: [{ text: item.content }]
-    }));
-    
-    // 현재 프롬프트를 사용자 메시지로 추가
-    contents.push({
-      role: 'user',
-      parts: [{ text: prompt }]
-    });
-
     const requestBody = {
-      // 시스템 프롬프트와 사용자 프롬프트를 분리합니다.
-      // SCRUM_GENERATION_SYSTEM_PROMPT를 system_instruction으로 사용합니다.
-      // 참고: 이 핸들러는 현재 스크럼 생성에만 사용되므로,
-      // 다른 종류의 텍스트 생성이 필요할 경우 수정이 필요할 수 있습니다.
       system_instruction: {
-        parts: [{ text: SCRUM_GENERATION_SYSTEM_PROMPT }]
+        parts: [
+          {
+            "text": "당신은 프로젝트 진행 상황 보고서를 생성하는 AI 어시스턴트 입니다."
+          }
+        ]
       },
-      contents: contents.slice(contents.length - 1), // 마지막 사용자 프롬프트만 사용
-      generationConfig: {
-        temperature: options.temperature || 0.4,
-        maxOutputTokens: options.maxOutputTokens || 4096,
-        // 기타 설정은 기본값 사용
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      contents: [
+        {
+          "parts": [
+            {
+              "text": prompt
+            }
+          ]
+        }
       ]
     };
 
