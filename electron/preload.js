@@ -27,5 +27,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     // LLM API 호출 함수들
     llmGenerateText: (prompt, history, options) => ipcRenderer.invoke('llm-generate-text', prompt, history, options),
-    llmGenerateProjectReport: (projectData) => ipcRenderer.invoke('llm-generate-project-report', projectData),
 });

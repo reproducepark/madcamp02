@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getTeamMemos, createMemo, deleteMemo } from '../../services/memoService';
 import { getCurrentUser } from '../../services/authService';
-import { generateScrumPage } from '../../services/llmService';
 import { gatherDataForLLM } from '../../services/scrumService';
 import ScrumGenerationModal from '../Modal/ScrumGenerationModal';
 import '../../styles/TeamMemoSection.css';
@@ -96,8 +95,7 @@ function TeamMemoSection({ teamId, teamName }) {
       console.log('📄 LLM에 전달할 데이터 (JSON 문자열):');
       console.log(JSON.stringify(llmDataResponse.data, null, 2));
 
-      // 2. LLM 서비스 호출 (generateScrumPage는 signal을 받지 않음)
-      const result = await generateScrumPage(llmDataResponse.data);
+      const result = [];
       if (signal.aborted) {
         console.log('스크럼 생성 중 작업 취소됨');
         return;

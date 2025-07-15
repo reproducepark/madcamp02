@@ -21,9 +21,6 @@ export {
 
 // LLM Service (Google AI Studio)
 export {
-  generateTextResponse,
-  extractTextFromResponse,
-  formatConversationHistory,
   handleLLMError
 } from './llmService'; 
 

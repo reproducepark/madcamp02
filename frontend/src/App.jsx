@@ -7,7 +7,6 @@ import TodoListPage from './components/pages/TodoListPage';
 import ScrumPage from './components/pages/ScrumPage';
 import StretchingPage from './components/pages/StretchingPage';
 import TeammateTodoListPage from './components/pages/TeammateTodoListPage';
-import LLMExample from './components/LLMExample';
 import GlobalPoseDetection from './components/GlobalPoseDetection';
 import { isAuthenticated, tryAutoLogin, logoutUser } from './services/authService';
 import { PoseInferenceProvider } from './contexts/PoseInferenceContext';
@@ -97,10 +96,6 @@ function App() {
           <Route 
             path="/stretching" 
             element={isLoggedIn ? <StretchingPage onLogout={handleLogout} /> : <Navigate to="/login" />} 
-          />
-          <Route 
-            path="/llm-test" 
-            element={isLoggedIn ? <LLMExample onLogout={handleLogout} /> : <Navigate to="/login" />} 
           />
           <Route 
             path="*" 
