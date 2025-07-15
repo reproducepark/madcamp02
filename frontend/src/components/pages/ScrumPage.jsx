@@ -316,7 +316,7 @@ const handleDeleteGoal = async (goalId) => {
               <div className="todo-schedule-title">팀 목표 일정</div>
               <div className="todo-schedule-content">
                 <ScrumGanttChart 
-                  goals={filteredGoals}
+                  goals={scrumGoals}
                   baseDate={ganttBaseDate}
                 />
               </div>
