@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getTeamMemos, createMemo, deleteMemo } from '../../services/memoService';
 import { getCurrentUser } from '../../services/authService';
 import { generateScrumPage } from '../../services/llmService';
+import { gatherDataForLLM } from '../../services/scrumService';
 import ScrumGenerationModal from '../Modal/ScrumGenerationModal';
 import '../../styles/TeamMemoSection.css';
 
@@ -77,49 +78,45 @@ function TeamMemoSection({ teamId, teamName }) {
 
     // 새로운 AbortController 생성
     abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
 
     try {
-      // 현재 페이지의 목표 데이터를 가져오기 위해 이벤트를 발생시킴
-      const goalsData = await new Promise((resolve) => {
-        const handleGoalsData = (event) => {
-          window.removeEventListener('getGoalsData', handleGoalsData);
-          resolve(event.detail);
-        };
-        window.addEventListener('getGoalsData', handleGoalsData);
-        window.dispatchEvent(new CustomEvent('requestGoalsData'));
-      });
-
-      console.log('📊 스크럼 생성 데이터:', {
-        teamName,
-        goals: goalsData,
-        memos
-      });
-
-      const result = await generateScrumPage({
-        teamName,
-        goals: goalsData,
-        memos
-      });
-
-      // 요청이 취소되었는지 확인
-      if (abortControllerRef.current.signal.aborted) {
-        console.log('스크럼 생성이 취소되었습니다.');
+      // 1. LLM을 위한 데이터 수집
+      const llmDataResponse = await gatherDataForLLM(teamId);
+      if (signal.aborted) {
+        console.log('데이터 수집 중 작업 취소됨');
         return;
       }
 
+      if (!llmDataResponse.success) {
+        throw new Error(llmDataResponse.error || 'LLM용 데이터를 수집하는 데 실패했습니다.');
+      }
+
+      console.log('📊 LLM에 전달할 데이터 (객체):', llmDataResponse.data);
+      console.log('📄 LLM에 전달할 데이터 (JSON 문자열):');
+      console.log(JSON.stringify(llmDataResponse.data, null, 2));
+
+      // 2. LLM 서비스 호출 (generateScrumPage는 signal을 받지 않음)
+      const result = await generateScrumPage(llmDataResponse.data);
+      if (signal.aborted) {
+        console.log('스크럼 생성 중 작업 취소됨');
+        return;
+      }
+      
       if (result.success) {
         setScrumData(result.scrumPage);
       } else {
         setScrumError(result.error || '스크럼 생성에 실패했습니다.');
       }
     } catch (err) {
-      // AbortError는 무시 (사용자가 취소한 경우)
       if (err.name !== 'AbortError') {
         console.error('스크럼 생성 실패:', err);
-        setScrumError('스크럼 생성 중 오류가 발생했습니다.');
+        setScrumError(err.message || '스크럼 생성 중 오류가 발생했습니다.');
       }
     } finally {
-      setIsGeneratingScrum(false);
+      if (!signal.aborted) {
+        setIsGeneratingScrum(false);
+      }
       abortControllerRef.current = null;
     }
   };
@@ -165,7 +162,7 @@ function TeamMemoSection({ teamId, teamName }) {
               title="AI 스크럼 생성"
               disabled={isGeneratingScrum}
             >
-              🤖 AI 스크럼
+              스크럼 생성하기
             </button>
           )}
         </div>

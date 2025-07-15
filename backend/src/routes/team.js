@@ -165,6 +165,39 @@ router.post('/:teamId/members', authenticateToken, async (req, res) => {
   }
 });
 
+// 팀 멤버 조회
+router.get('/:teamId/members', authenticateToken, async (req, res) => {
+  const teamId = parseInt(req.params.teamId, 10);
+
+  try {
+    const members = await prisma.teamMember.findMany({
+      where: { team_id: teamId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: {
+        user: {
+          name: 'asc',
+        },
+      },
+    });
+
+    res.status(200).json({
+      success: true,
+      members: members.map(m => m.user),
+    });
+  } catch (err) {
+    console.error('팀 멤버 조회 실패:', err);
+    res.status(500).json({ success: false, message: "서버 오류가 발생했습니다." });
+  }
+});
+
 // 팀 멤버 삭제 (id 기준)
 router.delete('/:teamId/members/:userId', authenticateToken, async (req, res) => {
   const teamId = parseInt(req.params.teamId, 10);
