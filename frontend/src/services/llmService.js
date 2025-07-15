@@ -5,20 +5,20 @@
 
 import { GoogleGenAI } from "@google/genai";
 
-// 환경 변수에서 API 키 가져오기
+// API 키 설정 (임시 해결책 - 나중에 백엔드로 이동 권장)
 const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-console.log('🔑 환경 변수 확인:');
-console.log('VITE_GEMINI_API_KEY exists:', !!GEMINI_API_KEY);
-console.log('VITE_GEMINI_API_KEY length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
-console.log('VITE_GEMINI_API_KEY preview:', GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 10)}...` : 'undefined');
+console.log('🔑 API 키 확인:');
+console.log('GEMINI_API_KEY exists:', !!GEMINI_API_KEY);
+console.log('GEMINI_API_KEY length:', GEMINI_API_KEY ? GEMINI_API_KEY.length : 0);
+console.log('GEMINI_API_KEY preview:', GEMINI_API_KEY ? `${GEMINI_API_KEY.substring(0, 10)}...` : 'undefined');
 
 // API 키가 없으면 에러 발생
 if (!GEMINI_API_KEY) {
-  throw new Error('VITE_GEMINI_API_KEY 환경 변수가 설정되지 않았습니다. .env 파일을 확인해주세요.');
+  throw new Error('Gemini API 키가 설정되지 않았습니다.');
 }
 
-// Google GenAI 클라이언트 초기화 - API 키를 명시적으로 전달
+// Google GenAI 클라이언트 초기화 - 환경 변수에서 API 키 사용
 let ai;
 try {
   ai = new GoogleGenAI(GEMINI_API_KEY);
