@@ -40,9 +40,10 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex: 1; /* 내부에서 1:1 비율 */
+    flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0; /* flex overflow 안전장치 */
   }
 
   .todo-memo-section {
@@ -50,12 +51,12 @@
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    flex: 1; /* 내부에서 1:1 비율 */
+    flex: 1;
     display: flex;
     flex-direction: column;
-    max-height: 300px; /* 예시로 300px 고정 (조정 가능) */
-    overflow-y: auto;
-    padding-bottom: 20px; /* 사이드바, 간트 차트와 같은 패딩 */
+    /* 삭제: max-height, overflow-y */
+    /* 삭제: padding-bottom */
+    min-height: 0; /* flex overflow 안전장치 */
   }
   
   .todo-schedule-title, .todo-memo-title {
@@ -64,11 +65,13 @@
     margin-bottom: 15px;
   }
   
-  .todo-schedule-content, .todo-memo-content {
-    flex-grow: 1;
-    /* 내용이 채워질 공간 */
-    overflow: hidden;
+  .todo-schedule-content,
+  .todo-memo-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
   }
+
 
   /* 간트 차트 컨테이너 스타일 */
   .todo-schedule-content .gantt-chart {

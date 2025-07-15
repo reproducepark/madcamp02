@@ -406,20 +406,22 @@ const filteredGoals = goals
                 </div>
               )}
 
-              <div style={{ flexGrow: 1 }}>
-                <GanttChart
-                  goals={filteredGoals.map(goal => {
-                    const myTodos = goal.todos;
-                    const completed = myTodos.filter(todo => todo.is_completed).length;
-                    const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
-                    return {
-                      ...goal,
-                      content: goal.title,
-                      progress
-                    };
-                  })}
-                  baseDate={defaultBaseDate}
-                />
+              <div className="todo-schedule-content">
+                <div className="gantt-chart">
+                  <GanttChart
+                    goals={filteredGoals.map(goal => {
+                      const myTodos = goal.todos;
+                      const completed = myTodos.filter(todo => todo.is_completed).length;
+                      const progress = myTodos.length === 0 ? 0 : completed / myTodos.length;
+                      return {
+                        ...goal,
+                        content: goal.title,
+                        progress
+                      };
+                    })}
+                    baseDate={defaultBaseDate}
+                  />
+                </div>
               </div>
             </section>
 
@@ -439,19 +441,27 @@ const filteredGoals = goals
                 className={`filter-btn ${filter === 'INCOMPLETE' ? 'active' : ''}`}
                 onClick={() => setFilter('INCOMPLETE')}
               >
-                미완
+                <img src="/assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
               </button>
               <button 
                 className={`filter-btn ${filter === 'COMPLETED' ? 'active' : ''}`}
                 onClick={() => setFilter('COMPLETED')}
               >
-                완료
+                <img src="/assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
               </button>
               <button 
                 className={`filter-btn ${filter === 'ALL' ? 'active' : ''}`}
                 onClick={() => setFilter('ALL')}
               >
-                모두
+                <img src="/assets/icons/checkbox/blank-check-box.png" alt="미완" style={{ width: '20px', height: '20px' }} />
+                  <span style={{
+                    color: '#000',         // 검은색
+                    fontSize: '14px',      // 조금 더 작게
+                    margin: '0 4px'        // 좌우 여백
+                  }}>
+                    &
+                  </span>
+                <img src="/assets/icons/checkbox/check-box.png" alt="완료" style={{ width: '20px', height: '20px' }} />
               </button>
             </div>
 
