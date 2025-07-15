@@ -1,9 +1,21 @@
 const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
+const isDev = !app.isPackaged;
+
+const envFilePath = isDev
+    ? path.resolve(__dirname, '../.env') // 개발 환경 경로
+    : path.join(process.resourcesPath, '.env'); // 빌드된 앱의 리소스 경로
 
 // dotenv를 사용하여 .env 파일 로드
-require('dotenv').config();
+// 파일이 존재하는지 확인 후 로드하여 오류를 방지합니다.
+if (fs.existsSync(envFilePath)) {
+    require('dotenv').config({ path: envFilePath });
+    console.log(`✅ .env 파일 로드 성공: ${envFilePath}`);
+} else {
+    console.warn(`⚠️ 경고: .env 파일을 찾을 수 없습니다: ${envFilePath}`);
+    console.warn('환경 변수가 제대로 로드되지 않을 수 있습니다.');
+}
 
 const iconPath = path.resolve(__dirname, "../frontend/src/assets/icon_1024.png");
 console.log('Icon path:', iconPath);
@@ -11,8 +23,6 @@ console.log('Icon file exists:', fs.existsSync(iconPath));
 
 let mainWindow;
 let overlayWindow;
-
-const isDev = !app.isPackaged;
 
 // 환경 변수에서 API 키 가져오기
 const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;

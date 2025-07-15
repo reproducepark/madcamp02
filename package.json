@@ -25,6 +25,12 @@
       "backend/dist/**/*",
       "node_modules/**/*"
     ],
+    "extraResources": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
     "win": {
       "target": "nsis"
     },
@@ -40,7 +46,8 @@
   "license": "MIT",
   "description": "몰입메이트 - 집중력 향상을 위한 타이머 앱",
   "dependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "electron-is-dev": "^3.0.1"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",
