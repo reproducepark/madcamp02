@@ -15,7 +15,7 @@ function ScrumGenerationModal({
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal-container scrum-generation-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h3 className="modal-title">AI 스크럼 보고서</h3>
+          <h3 className="modal-title">스크럼 생성 결과</h3>
           <button onClick={onClose} className="modal-close" aria-label="닫기">&times;</button>
         </div>
         
@@ -23,7 +23,7 @@ function ScrumGenerationModal({
           {isGenerating && (
             <div className="loading-spinner-container">
               <div className="loading-spinner"></div>
-              <p>AI가 보고서를 생성하고 있습니다...</p>
+              <p>스크럼을 생성하고 있습니다...</p>
             </div>
           )}
           {result && (
