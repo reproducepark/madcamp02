@@ -1,7 +1,11 @@
 import { apiGet, apiPost, apiDelete, apiPatch } from './apiService';
 
 export const getSubGoals = (goalId, userId) => {
-  return apiGet(`api/teamGoal/${goalId}/subgoals?userId=${userId}`);
+  if (!userId) {
+    console.error('getSubGoals: userId가 undefined입니다.');
+    return Promise.resolve({ success: false, data: { subgoals: [] } });
+  }
+  return apiGet(`/api/teamGoal/${goalId}/subgoals?userId=${userId}`);
 }
 
 // export const getSubGoals = (goalId) => {

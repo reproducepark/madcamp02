@@ -126,7 +126,7 @@ const filteredGoals = goals
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      currentUserId = decoded.id;  // 너희 JWT payload 에 id로 user id 들어있다고 가정
+      currentUserId = decoded.userId;  // JWT payload에서 userId 필드 사용
       console.log("🔍 currentUserId:", currentUserId);
     } catch (err) {
       console.error("JWT 디코드 실패:", err);
