@@ -130,7 +130,7 @@ function StretchingPage({ onLogout }) {
                       style={{
                         width: '100%',
                         height: 'auto',
-                        maxHeight: '400px',
+                        maxHeight: '500px',
                         objectFit: 'cover',
                         borderRadius: '8px'
                       }}
