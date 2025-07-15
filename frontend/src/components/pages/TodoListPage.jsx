@@ -13,6 +13,7 @@ import { getTeams, getTeamGoals } from '../../services/teamService';
 import { getPersonalMemos, createPersonalMemo, deleteMemo } from '../../services/memoService';
 import { getSubGoals, createSubGoal, deleteSubGoal, completeSubGoal, uncompleteSubGoal } from '../../services/subgoalService';
 import GanttChart from '../layout/GanttChart';
+import * as Switch from '@radix-ui/react-switch';
 
 function TodoListPage({ onLogout }) {
   const { modalState, showAlert, showConfirm, closeModal } = useModal();
@@ -367,13 +368,25 @@ const filteredGoals = goals
         <Sidebar />
         <main className="main-content">
           <div className="todo-center-card">
-            <div className="todo-center-title">중앙 영역
-                <button 
-                  style={{ float: 'right' }}
-                  onClick={() => setShowAllPeriods(prev => !prev)}
-                >
-                  {showAllPeriods ? '슬라이드 보기' : '전체 기간 보기'}
-                </button>
+            <div className="todo-center-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>중앙 영역</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Switch.Root
+                    checked={showAllPeriods}
+                    onCheckedChange={setShowAllPeriods}
+                    className="switch-root"
+                    style={{ backgroundColor: showAllPeriods ? '#4caf50' : '#ccc' }}
+                  >
+                    <Switch.Thumb
+                      className="switch-thumb"
+                      style={{
+                        transform: showAllPeriods ? 'translateX(18px)' : 'translateX(2px)'
+                      }}
+                    />
+                  </Switch.Root>
+
+                  <span style={{ fontSize: '0.9rem', color: '#555' }}>전체 기간 보기</span>
+                </div>
             </div>
             {/* 슬라이더 UI */}
             {!showAllPeriods && (
