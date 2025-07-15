@@ -2,6 +2,9 @@ const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
+// dotenv를 사용하여 .env 파일 로드
+require('dotenv').config();
+
 const iconPath = path.resolve(__dirname, "../frontend/src/assets/icon_1024.png");
 console.log('Icon path:', iconPath);
 console.log('Icon file exists:', fs.existsSync(iconPath));
@@ -10,6 +13,79 @@ let mainWindow;
 let overlayWindow;
 
 const isDev = !app.isPackaged;
+
+// 환경 변수에서 API 키 가져오기
+const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY;
+
+console.log('🔑 환경 변수 확인:');
+console.log('process.env.VITE_GEMINI_API_KEY exists:', !!process.env.VITE_GEMINI_API_KEY);
+console.log('process.env.VITE_GEMINI_API_KEY length:', process.env.VITE_GEMINI_API_KEY ? process.env.VITE_GEMINI_API_KEY.length : 0);
+console.log('process.env keys:', Object.keys(process.env).filter(key => key.includes('GEMINI') || key.includes('VITE')));
+
+// Gemini API 직접 호출 함수
+const callGeminiAPI = async (prompt, options = {}) => {
+  try {
+    if (!GEMINI_API_KEY || GEMINI_API_KEY === 'your_actual_api_key_here') {
+      throw new Error('API 키가 설정되지 않았습니다. .env 파일에서 VITE_GEMINI_API_KEY를 설정해주세요.');
+    }
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${GEMINI_API_KEY}`;
+    
+    const requestBody = {
+      contents: [
+        {
+          parts: [
+            {
+              text: prompt
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: options.temperature || 0.7,
+        maxOutputTokens: options.maxOutputTokens || 2048,
+        topP: options.topP || 0.8,
+        topK: options.topK || 40
+      }
+    };
+
+    console.log('📡 Gemini API 직접 호출 시작');
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API 호출 실패: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`API 오류: ${data.error.message}`);
+    }
+
+    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!generatedText) {
+      throw new Error('API 응답에서 텍스트를 찾을 수 없습니다.');
+    }
+
+    console.log('✅ Gemini API 직접 호출 성공');
+    return {
+      success: true,
+      text: generatedText,
+      data: data
+    };
+  } catch (error) {
+    console.error('❌ Gemini API 직접 호출 실패:', error);
+    throw error;
+  }
+};
 
 // 프로덕션 환경에서 로깅 활성화
 if (!isDev) {
@@ -225,6 +301,97 @@ ipcMain.handle('broadcast-timer-state', (event, state) => {
     
     if (mainWindow && !mainWindow.isDestroyed() && mainWindow !== senderWindow) {
         mainWindow.webContents.send('timer-state-updated', state);
+    }
+});
+
+// LLM API 호출 핸들러
+ipcMain.handle('llm-generate-text', async (event, prompt, history = [], options = {}) => {
+    try {
+        console.log('Main: LLM API 호출 시작');
+        
+        // 히스토리가 있으면 프롬프트에 포함
+        let fullPrompt = prompt;
+        if (history.length > 0) {
+            const historyText = history.map(msg => `${msg.role}: ${msg.content}`).join('\n');
+            fullPrompt = `${historyText}\n\n현재 요청: ${prompt}`;
+        }
+        
+        // 직접 API 호출
+        const response = await callGeminiAPI(fullPrompt, options);
+        
+        console.log('Main: LLM API 호출 성공');
+        return {
+            success: true,
+            data: response.data,
+            text: response.text,
+            status: 200
+        };
+    } catch (error) {
+        console.error('Main: LLM API 호출 실패:', error);
+        return {
+            success: false,
+            message: `LLM API 오류: ${error.message}`,
+            error: error
+        };
+    }
+});
+
+// 프로젝트 보고서 생성 핸들러
+ipcMain.handle('llm-generate-project-report', async (event, projectData) => {
+    try {
+        console.log('Main: 프로젝트 보고서 생성 시작');
+        
+        const PROJECT_REPORT_SYSTEM_PROMPT = `당신은 주어진 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성하는 AI 어시스턴트입니다.
+
+당신의 임무는 프로젝트 주제, 팀 체크리스트, 그리고 익명으로 제공된 여러 구성원의 체크리스트를 처리하여 보고서를 생성하는 것입니다.
+
+생성된 보고서는 아래의 세 가지 섹션으로 엄격하게 구성되어야 합니다:
+- 어제까지 한 일
+- 오늘 할 일  
+- 궁금한/필요한/알아낸 것
+
+보고서 생성 시 다음 규칙을 반드시 준수해야 합니다:
+
+구조: 위에 명시된 세 가지 섹션 구조를 반드시 따라야 함.
+언어: 보고서는 반드시 한국어로 작성해야 함.
+작성 스타일: 답변은 '~합니다'와 같은 서술형 문장이 아닌, 'ㅇㅇ 완료', 'ㅁㅁ 필요' 와 같이 명사형으로 간결하게 마무리해야 함.
+
+업무 취합:
+"어제까지 한 일": "team_checklist"와 "member_checklists"에 있는 모든 "completed" 필드의 작업을 취합하여 목록으로 작성.
+"오늘 할 일": 모든 "incomplete" 필드의 작업을 취합하여 목록으로 작성. 더불어, 개별 멤버에게 작업을 할당하지 말고, 팀 전체의 통합된 업무 목록으로 제시해야 함. 만약 없다면 최대 3개의 업무를 기존 완료한 것들을 바탕으로 제시해야 함.
+
+'궁금한/필요한/알아낸 것' 섹션:
+"inquiries" 필드의 정보를 사용하여 이 섹션을 작성함. 만약 "inquiries" 필드가 비어 있다면, "project_topic"을 참고하여 팀에 도움이 될 만한 관련 사항을 생성해야 함. 입력값에 URL이나 참조 링크가 포함된 경우, 해당 내용을 요약하되 URL 자체는 결과물에 포함하지 않아야 함.
+
+빈 필드 처리: 만약 특정 섹션에 해당하는 입력 체크리스트가 비어 있다면, 해당 출력 섹션도 비워두어야 함.`;
+        
+        const prompt = `${PROJECT_REPORT_SYSTEM_PROMPT}
+
+다음 JSON 데이터를 바탕으로 프로젝트 진행 상황 보고서를 생성해주세요:
+
+${JSON.stringify(projectData, null, 2)}
+
+위 데이터를 분석하여 세 가지 섹션으로 구성된 보고서를 생성해주세요.`;
+        
+        // 직접 API 호출
+        const response = await callGeminiAPI(prompt, {
+            temperature: 0.3,
+            maxOutputTokens: 2048
+        });
+        
+        console.log('Main: 프로젝트 보고서 생성 성공');
+        return {
+            success: true,
+            report: response.text,
+            rawResponse: response.data
+        };
+    } catch (error) {
+        console.error('Main: 프로젝트 보고서 생성 실패:', error);
+        return {
+            success: false,
+            error: error.message,
+            rawResponse: error
+        };
     }
 });
 

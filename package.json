@@ -39,6 +39,9 @@
   "keywords": [],
   "license": "MIT",
   "description": "몰입메이트 - 집중력 향상을 위한 타이머 앱",
+  "dependencies": {
+    "dotenv": "^16.4.5"
+  },
   "devDependencies": {
     "concurrently": "^9.1.2",
     "electron": "^33.2.1",
