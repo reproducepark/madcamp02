@@ -164,6 +164,13 @@ function ScrumPage({ onLogout }) {
   }, [currentTeamId]);
 
   // 간트 차트 baseDate 업데이트
+  const durations = [
+    { start: '2025-07-03', end: '2025-07-09' },
+    { start: '2025-07-10', end: '2025-07-16' },
+    { start: '2025-07-17', end: '2025-07-23' },
+    { start: '2025-07-24', end: '2025-07-31' },
+  ];
+
   useEffect(() => {
     if (filteredGoals.length > 0) {
       // 가장 빠른 시작 날짜를 baseDate로 설정
@@ -173,9 +180,17 @@ function ScrumPage({ onLogout }) {
         return startDate < earliest ? startDate : earliest;
       }, filteredGoals[0].start_date || today);
       
-      setGanttBaseDate(earliestStart);
+      // 그 목표가 속하는 duration 찾기
+      const foundDuration = durations.find(d => earliestStart >= d.start && earliestStart <= d.end);
+      if (foundDuration) {
+        setGanttBaseDate(foundDuration.start);
+      } else {
+        setGanttBaseDate(durations[0].start);
+      }
+    } else {
+      setGanttBaseDate(durations[0].start);
     }
-  }, [filteredGoals, today]);
+  }, [filteredGoals]);
 
   // 팀 변경 이벤트 감지
   useEffect(() => {
