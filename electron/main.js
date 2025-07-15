@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, Menu } = require("electron");
 const path = require("path");
 const fs = require("fs");
 
@@ -40,7 +40,9 @@ function createMainWindow() {
         },
     });
 
-   const startURL = isDev
+    Menu.setApplicationMenu(null);
+
+    const startURL = isDev
         ? "http://localhost:5173"
         : `file://${path.join(__dirname, "../frontend/dist/index.html")}`;
 
