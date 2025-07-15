@@ -114,6 +114,7 @@ export function PoseInferenceProvider({ children }) {
   const [state, dispatch] = useReducer(poseInferenceReducer, initialState);
   const intervalRef = useRef(null);
   const stateRef = useRef(state);
+  const lastNotificationTimeRef = useRef(0); // 마지막 알림 발송 시간 추적
   const [isPageActive, setIsPageActive] = useState(true); // 페이지 활성화 상태
   const [isStretchingPage, setIsStretchingPage] = useState(false); // 스트레칭 페이지 여부
   
@@ -122,14 +123,8 @@ export function PoseInferenceProvider({ children }) {
     stateRef.current = state;
   }, [state]);
 
-  // 페이지 활성화/비활성화 감지
+  // 페이지 활성화/비활성화 감지 (블러 기준)
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      const isActive = !document.hidden;
-      setIsPageActive(isActive);
-      console.log('📱 페이지 활성화 상태 변경:', isActive ? '활성화' : '비활성화');
-    };
-
     const handleFocus = () => {
       setIsPageActive(true);
       console.log('📱 페이지 포커스 - 활성화');
@@ -140,16 +135,14 @@ export function PoseInferenceProvider({ children }) {
       console.log('📱 페이지 블러 - 비활성화');
     };
 
-    // 초기 상태 설정
-    setIsPageActive(!document.hidden);
+    // 초기 상태 설정 (페이지가 포커스되어 있으면 활성화)
+    setIsPageActive(document.hasFocus());
 
-    // 이벤트 리스너 등록
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // 이벤트 리스너 등록 (블러/포커스만 사용)
     window.addEventListener('focus', handleFocus);
     window.addEventListener('blur', handleBlur);
 
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('blur', handleBlur);
     };
@@ -200,8 +193,17 @@ export function PoseInferenceProvider({ children }) {
     return false;
   };
 
-  // 알림을 보내는 함수
+  // 알림을 보내는 함수 (중복 방지)
   const sendNotification = () => {
+    const now = Date.now();
+    const timeSinceLastNotification = now - lastNotificationTimeRef.current;
+    
+    // 5초 내에 이미 알림을 보냈다면 중복 방지
+    if (timeSinceLastNotification < 5000) {
+      console.log('🔕 중복 알림 방지 (마지막 알림으로부터', Math.round(timeSinceLastNotification / 1000), '초)');
+      return;
+    }
+    
     if (!('Notification' in window)) {
       console.log('이 브라우저는 알림을 지원하지 않습니다.');
       return;
@@ -213,6 +215,10 @@ export function PoseInferenceProvider({ children }) {
         icon: '/vite.svg',
         tag: 'posture-correction'
       });
+      
+      // 알림 발송 시간 기록
+      lastNotificationTimeRef.current = now;
+      console.log('🔔 자세 교정 알림 발송 완료');
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission().then(permission => {
         if (permission === 'granted') {
@@ -229,7 +235,7 @@ export function PoseInferenceProvider({ children }) {
     // 현재 모드 결정 (stateRef를 통해 최신 상태 참조)
     let currentMode = '';
     const currentIsStretchingPage = window.location.hash === '#/stretching';
-    const currentIsPageActive = !document.hidden;
+    const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
     
     if (currentIsStretchingPage && currentIsPageActive) {
       currentMode = '스트레칭 페이지 활성화 모드 (1초)';
@@ -253,7 +259,7 @@ export function PoseInferenceProvider({ children }) {
         
         // 현재 페이지 상태 확인
         const currentIsStretchingPage = window.location.hash === '#/stretching';
-        const currentIsPageActive = !document.hidden;
+        const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
         
         console.log('🎯 포즈 감지:', {
           시간: new Date().toLocaleTimeString(),
@@ -279,13 +285,18 @@ export function PoseInferenceProvider({ children }) {
       const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
       const currentNeedsCorrection = needsPostureCorrection(analysis);
       
-      // 페이지가 비활성화된 상태에서만 알림 발송
-      const currentIsPageActive = !document.hidden;
+      // 페이지가 비활성화된 상태에서도 알림 발송
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
       
-      if (lastNeedsCorrection && currentNeedsCorrection && !currentIsPageActive) {
+      if (lastNeedsCorrection && currentNeedsCorrection) {
         dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
-        sendNotification();
-        console.log('🔔 자세 교정 알림 발송됨 (페이지 비활성화 상태)');
+        
+        // 페이지가 비활성화된 상태에서만 알림 발송
+        if (!currentIsPageActive) {
+          sendNotification();
+        } else {
+          console.log('🔔 자세 교정 필요 (페이지 활성화 상태 - 알림 발송 안함)');
+        }
       } else {
         dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
       }
@@ -306,7 +317,7 @@ export function PoseInferenceProvider({ children }) {
       
       // 현재 상태를 직접 확인
       const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = !document.hidden;
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
       
       if (currentIsStretchingPage && currentIsPageActive) {
         // 스트레칭 페이지가 활성화되어 있으면 1초마다
@@ -359,7 +370,7 @@ export function PoseInferenceProvider({ children }) {
 
       // 현재 상태를 직접 확인
       const currentIsStretchingPage = window.location.hash === '#/stretching';
-      const currentIsPageActive = !document.hidden;
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
       
       // 추론 주기 결정
       let intervalMs;
@@ -399,13 +410,18 @@ export function PoseInferenceProvider({ children }) {
       const lastNeedsCorrection = needsPostureCorrection(previousAnalysis);
       const currentNeedsCorrection = needsPostureCorrection(analysis);
       
-      // 페이지가 비활성화된 상태에서만 알림 발송
-      const currentIsPageActive = !document.hidden;
+      // 페이지가 비활성화된 상태에서도 알림 발송
+      const currentIsPageActive = isPageActive; // 블러 기준 활성화 상태 사용
       
-      if (lastNeedsCorrection && currentNeedsCorrection && !currentIsPageActive) {
+      if (lastNeedsCorrection && currentNeedsCorrection) {
         dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: true });
-        sendNotification();
-        console.log('🔔 키포인트 변경으로 인한 자세 교정 알림 발송됨 (페이지 비활성화 상태)');
+        
+        // 페이지가 비활성화된 상태에서만 알림 발송
+        if (!currentIsPageActive) {
+          sendNotification();
+        } else {
+          console.log('🔔 키포인트 변경으로 인한 자세 교정 필요 (페이지 활성화 상태 - 알림 발송 안함)');
+        }
       } else {
         dispatch({ type: ACTIONS.SET_SHOULD_NOTIFY, payload: false });
       }
