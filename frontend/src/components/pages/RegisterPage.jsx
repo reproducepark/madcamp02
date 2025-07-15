@@ -76,89 +76,91 @@ function RegisterPage() {
   };
 
   return (
-    <div className="auth-form">
-      <h1>회원가입</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <label htmlFor="username">아이디</label>
-          <input
-            ref={inputRef}
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="아이디를 입력하세요"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">비밀번호</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="비밀번호를 입력하세요"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="confirm-password">비밀번호 확인</label>
-          <input
-            type="password"
-            id="confirm-password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="비밀번호를 다시 입력하세요"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="name">이름</label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="이름을 입력하세요"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="class_section">분반</label>
-          <input
-            type="text"
-            id="class_section"
-            value={class_section}
-            onChange={(e) => setClassSection(e.target.value.replace(/[^0-9]/g, ''))}
-            onKeyPress={handleKeyPress}
-            placeholder="분반을 입력하세요"
-          />
-        </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? '회원가입 중...' : '회원가입'}
-        </button>
-      </form>
-      <p className="switch-auth">
-        이미 계정이 있으신가요? <Link to="/login">로그인</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-form">
+        <h1>회원가입</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="username">아이디</label>
+            <input
+              ref={inputRef}
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="아이디를 입력하세요"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="password">비밀번호</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="비밀번호를 입력하세요"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="confirm-password">비밀번호 확인</label>
+            <input
+              type="password"
+              id="confirm-password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="비밀번호를 다시 입력하세요"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="name">이름</label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="이름을 입력하세요"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="class_section">분반</label>
+            <input
+              type="text"
+              id="class_section"
+              value={class_section}
+              onChange={(e) => setClassSection(e.target.value.replace(/[^0-9]/g, ''))}
+              onKeyPress={handleKeyPress}
+              placeholder="분반을 입력하세요"
+            />
+          </div>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? '회원가입 중...' : '회원가입'}
+          </button>
+        </form>
+        <p className="switch-auth">
+          이미 계정이 있으신가요? <Link to="/login">로그인</Link>
+        </p>
 
-      {/* 모달 */}
-      <Modal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        title={modalState.title}
-        message={modalState.message}
-        type={modalState.type}
-        confirmText={modalState.confirmText}
-        cancelText={modalState.cancelText}
-        onConfirm={modalState.onConfirm}
-        onCancel={modalState.onCancel}
-      />
+        {/* 모달 */}
+        <Modal
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          title={modalState.title}
+          message={modalState.message}
+          type={modalState.type}
+          confirmText={modalState.confirmText}
+          cancelText={modalState.cancelText}
+          onConfirm={modalState.onConfirm}
+          onCancel={modalState.onCancel}
+        />
+      </div>
     </div>
   );
 }

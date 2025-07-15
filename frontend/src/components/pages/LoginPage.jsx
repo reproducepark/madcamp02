@@ -64,54 +64,56 @@ function LoginPage({ onLoginSuccess }) {
   };
 
   return (
-    <div className="auth-form">
-      <h1>로그인</h1>
-      <form onSubmit={handleSubmit}>
-        <div className="input-group">
-          <label htmlFor="username">아이디</label>
-          <input
-            ref={inputRef}
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="아이디를 입력하세요"
-          />
-        </div>
-        <div className="input-group">
-          <label htmlFor="password">비밀번호</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            required
-            placeholder="비밀번호를 입력하세요"
-          />
-        </div>
-        <button type="submit" disabled={isLoading}>
-          {isLoading ? '로그인 중...' : '로그인'}
-        </button>
-      </form>
-      <p className="switch-auth">
-        계정이 없으신가요? <Link to="/register">회원가입</Link>
-      </p>
+    <div className="auth-page">
+      <div className="auth-form">
+        <h1>로그인</h1>
+        <form onSubmit={handleSubmit}>
+          <div className="input-group">
+            <label htmlFor="username">아이디</label>
+            <input
+              ref={inputRef}
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="아이디를 입력하세요"
+            />
+          </div>
+          <div className="input-group">
+            <label htmlFor="password">비밀번호</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyPress={handleKeyPress}
+              required
+              placeholder="비밀번호를 입력하세요"
+            />
+          </div>
+          <button type="submit" disabled={isLoading}>
+            {isLoading ? '로그인 중...' : '로그인'}
+          </button>
+        </form>
+        <p className="switch-auth">
+          계정이 없으신가요? <Link to="/register">회원가입</Link>
+        </p>
 
-      {/* 모달 */}
-      <Modal
-        isOpen={modalState.isOpen}
-        onClose={closeModal}
-        title={modalState.title}
-        message={modalState.message}
-        type={modalState.type}
-        confirmText={modalState.confirmText}
-        cancelText={modalState.cancelText}
-        onConfirm={modalState.onConfirm}
-        onCancel={modalState.onCancel}
-      />
+        {/* 모달 */}
+        <Modal
+          isOpen={modalState.isOpen}
+          onClose={closeModal}
+          title={modalState.title}
+          message={modalState.message}
+          type={modalState.type}
+          confirmText={modalState.confirmText}
+          cancelText={modalState.cancelText}
+          onConfirm={modalState.onConfirm}
+          onCancel={modalState.onCancel}
+        />
+      </div>
     </div>
   );
 }

@@ -1,14 +1,33 @@
+/* 전체 페이지 가운데 정렬용 */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 0px;
+  background: #f8f9fa;
+}
 
 .auth-form {
-  margin: 60px auto;
+  /* margin: 60px auto; 제거 */
   padding: 40px;
   background: #ffffff;
   border: 1px solid #d1d1d1;
-  border-radius: 4px;
+  border-radius: 8px;
   width: 100%;
-  max-width: 420px;
+  max-width: 600px;
   box-sizing: border-box;
-  min-height: 410px;
+  min-height: 570px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 폼 자체를 중앙 정렬 */
+}
+
+.auth-form form {
+  width: 100%;
+  max-width: 500px; /* 폼 안 내용 크기 */
 }
 
 .auth-form h1 {
@@ -22,9 +41,11 @@
 .auth-form .input-group {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  justify-content: center; /* 추가: 중앙정렬 */
+  margin-top: 20px;
+  margin-bottom: 20px;
+  width: 100%;
 }
-
 .auth-form label {
   flex: 0 0 110px;
   padding-right: 10px;
