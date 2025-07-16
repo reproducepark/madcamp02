@@ -1,114 +1,21 @@
-# React Frontend + Vite + Node.js Backend + Electron
+# 몰입메이트
 
-A complete setup for building a cross-platform desktop application using React (frontend), Vite (development tooling), Node.js (backend), and Electron (desktop environment). This project serves as a template for developers looking to build modern desktop applications with a lightweight backend.
+언제 어디서든 몰입하세요
 
----
+|팀원|github|
+|------|---|
+|박재현|https://github.com/reproducepark|
+|윤신이|https://github.com/tlsdl6942|
 
-## Features
+### ✨ 소개
+몰입메이트는 언제 어디서든 당신이 몰입할 수 있게 도와줍니다. 팀별 목표와 개인별 목표를 설정하고 스크럼을 생성해 보세요. 타이머를 통한 시간관리와 자세 교정은 덤!
 
-- **Frontend**: React powered by Vite for fast builds and development.
-- **Backend**: Node.js with Express and ES6+.
-- **Electron**: Cross-platform desktop application framework.
-- **Integrated Workflow**:
-  - Single command to run frontend, backend, and Electron together.
-  - Easy packaging for production with `electron-builder`.
+### 📌 주요 기능
 
----
+### 🚀 기술 스택
+- 서비스 아키텍처
+<img width="1313" height="531" alt="image" src="https://github.com/user-attachments/assets/33d1691a-d455-4647-95a2-086364b908fd" />
 
-## Getting Started
-
-### Prerequisites
-
-- **Node.js**: Install from [Node.js website](https://nodejs.org/).
-
----
-
-### Installation
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/rahil1202/react-electron-vite-template.git
-   cd electron-react-vite-template
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   npm install 
-   cd frontend && npm install
-   cd backend && npm install
-   ```
-
----
-
-### Development
-
-To run the project in development mode:
-Go to root directory
-
-```bash
-npm run dev
-```
-
-This will:
-
-- Start the **React frontend** (`http://localhost:5173`).
-- Start the **Node.js backend** (`http://localhost:4000`).
-- Launch the **Electron desktop application**.
-
----
-
-### Build for Production
-
-1. Build the React frontend:
-
-   ```bash
-   npm run build
-   ```
-
-2. Package the app for distribution:
-
-   ```bash
-   npx electron-builder
-   ```
-If it fails run terminal as administrator and then run above code again.
-
-3. The packaged app will be available in the `dist/` directory, with name `react-electron-vite-template Setup.exe`
-   You may install it and use it. It can be share across easily
-
----
-
-### Project Structure
-
-```plaintext
-project/
-├── backend/            # Node.js backend
-│   ├── src/            # Backend source code
-│   └── package.json    # Backend dependencies
-│
-├── frontend/           # React frontend (with Vite)
-│   ├── src/            # React source code
-│   └── package.json    # Frontend dependencies
-│
-├── electron/           # Electron main and preload scripts
-│   ├── main.js         # Main process
-│   └── preload.js      # Preload script
-│
-├── package.json        # Root dependencies for Electron
-└── README.md           # Project documentation
-```
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Author
-
-- GitHub: [rahil1202](https://github.com/rahil1202)
-- Email: <rahilisvahora@gmail.com>
-- LinkedIn:[rahil-vahora](https://linkedin.com/in/rahil-vahora)
+### 🛠️ 설치 및 실행 방법
+MacOS : dmg 파일 다운로드 및 실행
+Windows : 인스톨러 다운로드 및 실행
