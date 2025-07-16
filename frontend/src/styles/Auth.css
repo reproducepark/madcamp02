@@ -16,20 +16,18 @@
 
 .auth-form {
   /* margin: 60px auto; 제거 */
-  padding: 40px;
-  background: #ffffff;
-  border: 1px solid #d1d1d1;
+  padding: 10px;
+  padding-top: 30px;
   border-radius: 8px;
   width: 100%;
   max-width: 600px;
   box-sizing: border-box;
   min-height: 570px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 
   display: flex;
   flex-direction: column;
   align-items: center; /* 폼 자체를 중앙 정렬 */
-  justify-content: center; /* 내부 콘텐츠 수직 중앙 정렬 */
+  /* justify-content: center; 내부 콘텐츠 수직 중앙 정렬 */
 }
 
 .auth-form form {
