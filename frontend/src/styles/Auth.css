@@ -76,7 +76,7 @@
   padding: 12px;
   border: none;
   border-radius: 6px;
-  background-color: #0078d4;
+  background-color: #002B4B;
   color: white;
   font-size: 18px;
   font-weight: bold;
@@ -85,7 +85,7 @@
 }
 
 .auth-form button:hover {
-  background-color: #005a9e;
+  background-color: #002B4BCD;
 }
 
 .auth-form .switch-auth {

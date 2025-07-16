@@ -8,7 +8,7 @@
 
 
 .gantt-header {
-  background: #18344a;
+  background: #002B4B;
   color: #fff;
   font-weight: bold;
   display: flex;
@@ -73,7 +73,9 @@
 .gantt-bar-progress {
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  background: linear-gradient(90deg, #5c6bc0 0%, #42a5f5 100%);
+  background: #002B4B;
+  opacity: 75%;
+
   border-radius: 10px 0 0 10px;
   z-index: 1; /* gantt-bar-label 보다 아래 */
   transition: width 0.3s, background 0.3s;
@@ -84,18 +86,27 @@
   position: relative;
   z-index: 2; /* progress bar 보다 위에 */
   width: 100%;
-  text-align: center;
+  text-align: left;
   color: #222;
+  padding-left: 10px;
   font-weight: 600;
   letter-spacing: 0.01em;
   text-shadow: 0 1px 2px rgba(255,255,255,0.15);
   font-size: 15px;
 }
 
-.gantt-bar.completed {
-  background: #4caf50;
+.gantt-bar-label.light-text {
   color: #fff;
-  border-color: #388e3c;
+  text-align: left;
+  padding-left: 10px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.gantt-bar.completed {
+  background: #002B4B;
+  opacity: 75%;
+  color: #fff;
+  border-color: #002B4B;
 }
 
 .gantt-bar.completed .gantt-bar-label {
