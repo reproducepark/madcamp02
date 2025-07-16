@@ -129,7 +129,7 @@ const TeamManageModal = ({ isOpen, onClose, team, onTeamUpdated, onTeamDeleted }
             value={currentTeamName}
             onChange={(e) => setCurrentTeamName(e.target.value)}
           />
-          <button className="button primary" onClick={handleNameChange}>이름 변경</button>
+          <button className="menu-button" onClick={handleNameChange}>이름 변경</button>
         </div>
 
         <h3>팀 멤버</h3>
@@ -156,7 +156,7 @@ const TeamManageModal = ({ isOpen, onClose, team, onTeamUpdated, onTeamDeleted }
             onChange={(e) => setNewMemberId(e.target.value)}
             placeholder="추가할 멤버의 사용자 ID"
           />
-          <button className="button primary" onClick={handleAddMember}>멤버 추가</button>
+          <button className="menu-button" onClick={handleAddMember}>멤버 추가</button>
         </div>
 
         <div className="danger-zone">

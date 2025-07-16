@@ -15,6 +15,18 @@
   transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
+.menu-button {
+  background-color: #002B4B;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-top: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
 .modal.open {
   opacity: 1;
   visibility: visible;

@@ -150,7 +150,7 @@ function WebcamComponent() {
             </select>
           </div>
           <div className="setting-item">
-            <label>목 각도 확인</label>
+            <label>몸 각도 확인</label>
             <button 
               className={`toggle-button ${neckAngleCheck ? 'active' : ''}`}
               onClick={() => dispatch({ type: 'SET_NECK_ANGLE_CHECK', payload: !neckAngleCheck })}
