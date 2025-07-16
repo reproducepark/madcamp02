@@ -1,4 +1,4 @@
-# 몰입메이트
+# <img width="32" height="32" alt="icon_1024_tp" src="https://github.com/user-attachments/assets/c67ea644-9466-4b42-b13a-7114a1e70f18" /> 몰입메이트
 
 언제 어디서든 몰입하세요
 
@@ -13,9 +13,14 @@
 ### 📌 주요 기능
 
 ### 🚀 기술 스택
+<p align="center">
+  <a href="https://skillicons.dev">
+    <img src="https://skillicons.dev/icons?i=electron,react,nodejs,tensorflow,docker,postgres" />
+  </a>
+</p>
 - 서비스 아키텍처
 <img width="1313" height="531" alt="image" src="https://github.com/user-attachments/assets/33d1691a-d455-4647-95a2-086364b908fd" />
 
 ### 🛠️ 설치 및 실행 방법
-MacOS : dmg 파일 다운로드 및 실행
-Windows : 인스톨러 다운로드 및 실행
+- MacOS : dmg 파일 다운로드 및 실행
+- Windows : 인스톨러 다운로드 및 실행
