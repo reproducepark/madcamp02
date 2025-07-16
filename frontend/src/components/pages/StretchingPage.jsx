@@ -111,7 +111,7 @@ function StretchingPage({ onLogout }) {
                 >
                   <span className="toggle-slider"></span>
                   <span className="toggle-text">
-                    {isStretchingEnabled ? 'ON' : 'OFF'}
+                    {/* {isStretchingEnabled ? 'ON' : 'OFF'} */}
                   </span>
                 </button>
               </div>
@@ -174,7 +174,7 @@ function StretchingPage({ onLogout }) {
                         >
                           <span className="toggle-slider"></span>
                           <span className="toggle-text">
-                            {neckAngleCheck ? 'ON' : 'OFF'}
+                            {/* {neckAngleCheck ? 'ON' : 'OFF'} */}
                           </span>
                         </button>
                       </div>
@@ -186,7 +186,7 @@ function StretchingPage({ onLogout }) {
                         >
                           <span className="toggle-slider"></span>
                           <span className="toggle-text">
-                            {facePositionCheck ? 'ON' : 'OFF'}
+                            {/* {facePositionCheck ? 'ON' : 'OFF'} */}
                           </span>
                         </button>
                       </div>
