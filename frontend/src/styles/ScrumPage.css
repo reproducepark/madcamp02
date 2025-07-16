@@ -146,7 +146,7 @@
   .todo-goal-btn {
     padding: 10px 15px;
     border: none;
-    background-color: #28a745;
+    background-color: #002B4B;
     color: white;
     border-radius: 4px;
     cursor: pointer;
@@ -154,7 +154,7 @@
   }
   
   .todo-goal-btn:hover {
-    background-color: #218838;
+    background-color: #002B4B;
   }
   
   /* ScrumGoalItem 스타일 */
@@ -175,6 +175,10 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
+  }
+
+  input[type="checkbox"] {
+    accent-color: #002B4B8D; /* 체크박스 색상을 초록색으로 변경 */
   }
   
   .scrum-goal-text {
@@ -224,7 +228,7 @@
   }
 
   .filter-btn.active {
-    background: #4CAF50;
+    background: #002B4B2D;
     color: #fff;
-    border-color: #4CAF50;
+    border-color: #002B4B;
   }

@@ -75,6 +75,9 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
         const barLeft = `${(startIdx / weekDays.length) * 100}%`;
         const barWidth = `${((endIdx - startIdx + 1) / weekDays.length) * 100}%`;
 
+        const hasAnyCompletedSubGoal = goal.todos?.some(todo => todo.is_completed);
+
+
         return (
           <div className="gantt-row" key={goal.id || idx}>
             {weekDays.map((_, i) => <div key={i} className="gantt-cell" />)}
@@ -93,7 +96,11 @@ export default function GanttChart({ goals, baseDate = '2024-07-14' }) {
                   }}
                 />
               )}
-              <span className="gantt-bar-label">{goal.content}</span>
+              <span 
+                className={`gantt-bar-label ${hasAnyCompletedSubGoal ? 'light-text' : ''}`}
+              >
+                {goal.content}
+              </span>
             </div>
           </div>
         );

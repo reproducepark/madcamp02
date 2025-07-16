@@ -335,7 +335,7 @@ const filteredGoals = goals
                     checked={showAllPeriods}
                     onCheckedChange={setShowAllPeriods}
                     className="switch-root"
-                    style={{ backgroundColor: showAllPeriods ? '#4caf50' : '#ccc' }}
+                    style={{ backgroundColor: showAllPeriods ? '#002B4B' : '#ccc' }}
                   >
                     <Switch.Thumb
                       className="switch-thumb"
