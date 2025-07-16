@@ -1,6 +1,6 @@
 # <img width="32" height="32" alt="icon_1024_tp" src="https://github.com/user-attachments/assets/c67ea644-9466-4b42-b13a-7114a1e70f18" /> 몰입메이트
 
-언제 어디서든 몰입하세요
+![KakaoTalk_20250716_184452134](https://github.com/user-attachments/assets/d53a1321-26a7-4aa5-ba24-8fb83bcd3cf8)
 
 |팀원|github|
 |------|---|
