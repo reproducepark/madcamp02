@@ -40,10 +40,31 @@ export const gatherDataForLLM = async (teamId) => {
     const allMemos = memosResponse.data.memos;
 
     // 2. 지난 24시간과 관련된 팀 목표를 필터링합니다.
+    console.log(allTeamGoals);  
     const recentTeamGoals = allTeamGoals.filter(goal => {
+      const now = new Date();
       const startDate = new Date(goal.start_date);
-      // 시작 날짜가 24시간 이내인 경우
-      return startDate >= twentyFourHoursAgo && startDate <= now;
+      const plannedEndDate = new Date(goal.planned_end_date);
+      let realEndDate = null;
+      if (goal.real_end_date != null){
+        realEndDate = new Date(goal.real_end_date);
+      }
+      else{
+        realEndDate = null;
+      }
+      if (startDate <= twentyFourHoursAgo && twentyFourHoursAgo <= plannedEndDate) {
+        // if (realEndDate != null){
+        //   return twentyFourHoursAgo <= realEndDate;
+        // }
+        return true;
+      }
+      if (startDate <= now && now <= plannedEndDate) {
+        // if (realEndDate != null){
+        //   return twentyFourHoursAgo <= realEndDate;
+        // }
+        return true;
+      }
+      return false;
     });
 
     // 3. 필터링된 각 팀 목표에 대해 모든 멤버의 하위 목표를 가져옵니다.

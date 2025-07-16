@@ -64,7 +64,7 @@ function RegisterPage() {
         // 회원가입 성공 후 로그인 페이지로 이동 시 페이지 리로드
         window.location.href = '/#/login';
       } else {
-        await showAlert('오류', result.message);
+        await showAlert('오류', "다른 ID를 입력해 주세요.");
         inputRef.current?.focus();
       }
     } catch (error) {
