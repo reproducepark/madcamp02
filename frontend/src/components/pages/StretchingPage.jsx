@@ -102,7 +102,7 @@ function StretchingPage({ onLogout }) {
           <section className="todo-posture-section">
             
             {/* 기능 on/off 토글 버튼 */}
-            <div className="posture-controls">
+            <div className="controls-box">
               <div className="toggle-container">
                 <span className="toggle-label">자세감지 및 자세 교정</span>
                 <button 
@@ -203,7 +203,7 @@ function StretchingPage({ onLogout }) {
 
           {/* 타이머 섹션 (오른쪽 반) */}
           <section className="todo-timer-section">
-            <div className="timer-controls">
+            <div className="controls-box">
               <div className="toggle-container">
                 <span className="toggle-label">타이머</span>
               </div>
