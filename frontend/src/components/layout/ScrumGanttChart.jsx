@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import '../../styles/GanttChart.css';
 
 function getWeekDays(baseDateStr) {
@@ -16,6 +16,30 @@ function getWeekDays(baseDateStr) {
 }
 
 export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
+  const chartRef = useRef(null);
+  const [fontSize, setFontSize] = useState(16);
+
+  useEffect(() => {
+    const updateFontSize = () => {
+      if (chartRef.current) {
+        const width = chartRef.current.offsetWidth;
+        // Adjust font size based on width. These are example values.
+        if (width < 500) {
+          setFontSize(10);
+        } else if (width < 800) {
+          setFontSize(12);
+        } else {
+          setFontSize(14);
+        }
+      }
+    };
+
+    window.addEventListener('resize', updateFontSize);
+    updateFontSize(); // Initial call
+
+    return () => window.removeEventListener('resize', updateFontSize);
+  }, []);
+
   const weekDays = getWeekDays(baseDate);
   const weekStart = weekDays[0].time;
   const weekEnd = new Date(weekDays[6].time).setHours(23, 59, 59, 999);
@@ -37,7 +61,7 @@ export default function ScrumGanttChart({ goals, baseDate = '2024-07-14' }) {
   });
 
   return (
-    <div className="gantt-chart">
+    <div className="gantt-chart" ref={chartRef} style={{ fontSize: `${fontSize}px` }}>
       <div className="gantt-header">
         {weekDays.map(day => <div key={day.date} className="gantt-cell header">{day.label}</div>)}
       </div>
