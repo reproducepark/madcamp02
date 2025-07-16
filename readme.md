@@ -38,5 +38,5 @@
 - 백엔드와 DB는 virtual network 내에서 통신
 
 ### 🛠️ 설치 및 실행 방법
-- MacOS : dmg 파일 다운로드 및 실행
-- Windows : 인스톨러 다운로드 및 실행
+- MacOS : dmg 파일 다운로드 및 실행 - https://github.com/reproducepark/madcamp02/releases/tag/mac
+- Windows : 인스톨러 다운로드 및 실행 - https://github.com/reproducepark/madcamp02/releases/tag/win
